@@ -1,7 +1,13 @@
-﻿namespace Cashlog.Data.Entities
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Cashlog.Core.Core.Models
 {
-    public class MoneyOperationDto : Entity
+    public class MoneyOperation
     {
+        public long Id { get; set; }
+
         /// <summary>
         /// ID времени расчёта.
         /// </summary>
@@ -25,13 +31,11 @@
         /// <summary>
         /// Тип операции с деньгами.
         /// </summary>
-        public MoneyOperationTypeDto OperationType { get; set; }
+        public MoneyOperationType OperationType { get; set; }
 
         /// <summary>
         /// Комментарий операции.
         /// </summary>
         public string Comment { get; set; }
-
-        public virtual BillingPeriodDto BillingPeriod { get; set; }
     }
 }

@@ -30,32 +30,31 @@ namespace Cashlog.Data
             modelBuilder.Entity<GroupDto>().ToTable(nameof(Groups));
             modelBuilder.Entity<GroupDto>().HasMany(x => x.Customers).WithOne(x => x.Group);
             modelBuilder.Entity<GroupDto>().HasMany(x => x.Receipts).WithOne(x => x.Group);
-            modelBuilder.Entity<GroupDto>().HasMany(x => x.BillingTimes).WithOne(x => x.Group);
+            modelBuilder.Entity<GroupDto>().HasMany(x => x.BillingPeriods).WithOne(x => x.Group);
 
             modelBuilder.Entity<ReceiptDto>().ToTable(nameof(Receipts));
             modelBuilder.Entity<ReceiptDto>().HasMany(x => x.ConsumerMaps).WithOne(x => x.Receipt);
             modelBuilder.Entity<ReceiptDto>().HasOne(x => x.Customer).WithMany(x => x.CustomerReceipts);
-            modelBuilder.Entity<ReceiptDto>().HasOne(x => x.Group).WithMany(x => x.Receipts);
-            modelBuilder.Entity<ReceiptDto>().HasOne(x => x.BillingTime).WithMany(x => x.Receipts);
+            modelBuilder.Entity<ReceiptDto>().HasOne(x => x.BillingPeriod).WithMany(x => x.Receipts);
 
             modelBuilder.Entity<CustomerDto>().ToTable(nameof(Customers));
             modelBuilder.Entity<CustomerDto>().HasMany(x => x.ConsumerReceiptMaps).WithOne(x => x.Consumer);
             modelBuilder.Entity<CustomerDto>().HasMany(x => x.CustomerReceipts).WithOne(x => x.Customer);
             modelBuilder.Entity<CustomerDto>().HasOne(x => x.Group).WithMany(x => x.Customers);
 
-            modelBuilder.Entity<BillingTimeDto>().ToTable(nameof(BillingTimes));
-            modelBuilder.Entity<BillingTimeDto>().HasOne(x => x.Group).WithMany(x => x.BillingTimes);
-            modelBuilder.Entity<BillingTimeDto>().HasMany(x => x.Receipts).WithOne(x => x.BillingTime);
-            modelBuilder.Entity<BillingTimeDto>().HasMany(x => x.MoneyOperations).WithOne(x => x.BillingTime);
+            modelBuilder.Entity<BillingPeriodDto>().ToTable(nameof(BillingPeriods));
+            modelBuilder.Entity<BillingPeriodDto>().HasOne(x => x.Group).WithMany(x => x.BillingPeriods);
+            modelBuilder.Entity<BillingPeriodDto>().HasMany(x => x.Receipts).WithOne(x => x.BillingPeriod);
+            modelBuilder.Entity<BillingPeriodDto>().HasMany(x => x.MoneyOperations).WithOne(x => x.BillingPeriod);
 
             modelBuilder.Entity<MoneyOperationDto>().ToTable(nameof(MoneyOperations));
-            modelBuilder.Entity<MoneyOperationDto>().HasOne(x => x.BillingTime).WithMany(x => x.MoneyOperations);
+            modelBuilder.Entity<MoneyOperationDto>().HasOne(x => x.BillingPeriod).WithMany(x => x.MoneyOperations);
         }
 
         public DbSet<GroupDto> Groups { get; set; }
         public DbSet<ReceiptDto> Receipts { get; set; }
         public DbSet<CustomerDto> Customers { get; set; }
-        public DbSet<BillingTimeDto> BillingTimes { get; set; }
+        public DbSet<BillingPeriodDto> BillingPeriods { get; set; }
         public DbSet<MoneyOperationDto> MoneyOperations { get; set; }
         public DbSet<ReceiptConsumerMapDto> ReceiptConsumerMaps { get; set; }
     }

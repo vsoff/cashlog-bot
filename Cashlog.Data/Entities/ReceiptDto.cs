@@ -4,7 +4,6 @@ namespace Cashlog.Data.Entities
 {
     public class ReceiptDto : Entity
     {
-        public long GroupId { get; set; }
         public DateTime PurchaseTime { get; set; }
         public double TotalAmount { get; set; }
         public string FiscalDocument { get; set; }
@@ -13,7 +12,7 @@ namespace Cashlog.Data.Entities
         public ReceiptStatusDto Status { get; set; }
 
         public long? CustomerId { get; set; }
-        public long BillingTimeId { get; set; }
+        public long BillingPeriodId { get; set; }
 
         public string RetailAddress { get; set; }
         public string RetailInn { get; set; }
@@ -22,7 +21,7 @@ namespace Cashlog.Data.Entities
         public string ReceiptItemsJson { get; set; }
 
         public virtual ReceiptConsumerMapDto[] ConsumerMaps { get; set; }
-        public virtual BillingTimeDto BillingTime { get; set; }
+        public virtual BillingPeriodDto BillingPeriod { get; set; }
         public virtual CustomerDto Customer { get; set; }
         public virtual GroupDto Group { get; set; }
     }

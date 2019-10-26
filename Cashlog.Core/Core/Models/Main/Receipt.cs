@@ -2,10 +2,9 @@
 
 namespace Cashlog.Core.Core.Models
 {
-    public class Receipt
+    public class Receipt 
     {
         public long Id { get; set; }
-        public long GroupId { get; set; }
         public DateTime PurchaseTime { get; set; }
         public double TotalAmount { get; set; }
         public string FiscalDocument { get; set; }
@@ -14,7 +13,7 @@ namespace Cashlog.Core.Core.Models
         public ReceiptStatus Status { get; set; }
 
         public long? CustomerId { get; set; }
-        //public long[] ConsumerIds { get; set; }
+        public long BillingPeriodId { get; set; }
 
         public string RetailAddress { get; set; }
         public string RetailInn { get; set; }

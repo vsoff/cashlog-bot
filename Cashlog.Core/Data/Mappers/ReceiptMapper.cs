@@ -11,7 +11,7 @@ namespace Cashlog.Core.Data.Mappers
             return new Receipt
             {
                 Id = obj.Id,
-                GroupId = obj.GroupId,
+                BillingPeriodId = obj.BillingPeriodId,
                 PurchaseTime = obj.PurchaseTime,
                 TotalAmount = obj.TotalAmount,
                 FiscalDocument = obj.FiscalDocument,
@@ -32,7 +32,7 @@ namespace Cashlog.Core.Data.Mappers
             return new ReceiptDto
             {
                 Id = obj.Id,
-                GroupId = obj.GroupId,
+                BillingPeriodId = obj.BillingPeriodId,
                 PurchaseTime = obj.PurchaseTime,
                 TotalAmount = obj.TotalAmount,
                 FiscalDocument = obj.FiscalDocument,

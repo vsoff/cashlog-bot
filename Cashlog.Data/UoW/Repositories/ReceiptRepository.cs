@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Cashlog.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -8,8 +9,7 @@ namespace Cashlog.Data.UoW.Repositories
 {
     public interface IReceiptRepository : IRepository<ReceiptDto>
     {
-        Task<ReceiptDto[]> GetByGroupIdAsync(long groupId);
-        Task<ReceiptDto[]> GetAllFilteredAsync(long groupId, DateTime begin, DateTime end);
+        Task<ReceiptDto[]> GetByBillingPeriodIdAsync(long billingPeriodId);
     }
 
     public class ReceiptRepository : Repository<ReceiptDto>, IReceiptRepository
@@ -18,10 +18,7 @@ namespace Cashlog.Data.UoW.Repositories
         {
         }
 
-        public async Task<ReceiptDto[]> GetByGroupIdAsync(long groupId)
-            => await Context.Set<ReceiptDto>().Where(x => x.GroupId == groupId).ToArrayAsync();
-
-        public async Task<ReceiptDto[]> GetAllFilteredAsync(long groupId, DateTime begin, DateTime end)
-            => await Context.Set<ReceiptDto>().Where(x => x.GroupId == groupId && x.PurchaseTime >= begin && x.PurchaseTime < end).ToArrayAsync();
+        public async Task<ReceiptDto[]> GetByBillingPeriodIdAsync(long billingPeriodId)
+            => await Context.Set<ReceiptDto>().Where(x => x.BillingPeriodId == billingPeriodId).ToArrayAsync();
     }
 }

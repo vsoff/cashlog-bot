@@ -1,9 +1,13 @@
-﻿using Cashlog.Data.Entities;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Cashlog.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cashlog.Data.UoW.Repositories
 {
     public interface IMoneyOperationRepository : IRepository<MoneyOperationDto>
     {
+        Task<MoneyOperationDto[]> GetByBillingPeriodIdAsync(long billingPeriodId);
     }
 
     public class MoneyOperationRepository : Repository<MoneyOperationDto>, IMoneyOperationRepository
@@ -11,5 +15,8 @@ namespace Cashlog.Data.UoW.Repositories
         public MoneyOperationRepository(ApplicationContext context) : base(context)
         {
         }
+
+        public async Task<MoneyOperationDto[]> GetByBillingPeriodIdAsync(long billingPeriodId)
+            => await Context.MoneyOperations.Where(x => x.BillingPeriodId == billingPeriodId).ToArrayAsync();
     }
 }

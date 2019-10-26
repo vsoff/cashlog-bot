@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Cashlog.Core.Core.Models;
@@ -45,11 +46,11 @@ namespace Cashlog.Core.Core.Services
             }
         }
 
-        public async Task<Receipt[]> GetByGroupIdAsync(long groupId)
+        public async Task<Receipt[]> GetByBillingPeriodIdAsync(long billingPeriodId)
         {
             using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
             {
-                return (await uow.Receipts.GetByGroupIdAsync(groupId))?.Select(x => x.ToCore()).ToArray();
+                return (await uow.Receipts.GetByBillingPeriodIdAsync(billingPeriodId))?.Select(x => x.ToCore()).ToArray();
             }
         }
 
@@ -63,6 +64,14 @@ namespace Cashlog.Core.Core.Services
                     ReceiptId = receiptId
                 }));
                 await uow.SaveChangesAsync();
+            }
+        }
+
+        public async Task<Dictionary<long, long[]>> GetConsumerIdsByReceiptIdsMapAsync(long[] receiptIds)
+        {
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            {
+                return await uow.ReceiptConsumerMaps.GetConsumerIdsByReceiptIdsMapAsync(receiptIds);
             }
         }
     }

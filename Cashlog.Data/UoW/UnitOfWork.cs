@@ -15,12 +15,16 @@ namespace Cashlog.Data.UoW
             Groups = new GroupRepository(_context);
             Receipts = new ReceiptRepository(_context);
             Customers = new CustomerRepository(_context);
+            BillingPeriods = new BillingPeriodRepository(_context);
+            MoneyOperations = new MoneyOperationRepository(_context);
             ReceiptConsumerMaps = new ReceiptConsumerMapRepository(_context);
         }
 
         public GroupRepository Groups { get; }
         public ReceiptRepository Receipts { get; }
         public CustomerRepository Customers { get; }
+        public BillingPeriodRepository BillingPeriods { get; }
+        public MoneyOperationRepository MoneyOperations { get; }
         public ReceiptConsumerMapRepository ReceiptConsumerMaps { get; }
 
         public void Dispose() => _context.Dispose();

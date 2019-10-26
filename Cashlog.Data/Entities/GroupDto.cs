@@ -8,6 +8,6 @@
 
         public virtual ReceiptDto[] Receipts { get; set; }
         public virtual CustomerDto[] Customers { get; set; }
-        public virtual BillingTimeDto[] BillingTimes { get; set; }
+        public virtual BillingPeriodDto[] BillingPeriods { get; set; }
     }
 }

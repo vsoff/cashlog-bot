@@ -4,7 +4,11 @@ using Cashlog.Data.Entities;
 
 namespace Cashlog.Data.UoW
 {
-    public interface IRepository<T> where T : Entity
+    public interface IRepository
+    {
+    }
+
+    public interface IRepository<T> : IRepository where T : Entity
     {
         Task<T> GetAsync(long id);
         Task<T[]> GetListAsync(long[] ids);

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Cashlog.Core.Core.Models;
+using Cashlog.Core.Core.Services.Abstract;
 using Cashlog.Core.Data.Mappers;
 using Cashlog.Data.Entities;
 using Cashlog.Data.UoW;
@@ -17,7 +18,7 @@ namespace Cashlog.Core.Core.Services
             _cashogSettings = cashogSettings ?? throw new ArgumentNullException(nameof(cashogSettings));
         }
 
-        public async Task<Customer> Add(Customer customer)
+        public async Task<Customer> AddAsync(Customer customer)
         {
             using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
             {
@@ -27,7 +28,7 @@ namespace Cashlog.Core.Core.Services
             }
         }
 
-        public async Task<Customer> Get(long customerId)
+        public async Task<Customer> GetAsync(long customerId)
         {
             using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
             {
@@ -35,7 +36,7 @@ namespace Cashlog.Core.Core.Services
             }
         }
 
-        public async Task<Customer[]> GetByGroupId(long groupId)
+        public async Task<Customer[]> GetByGroupIdAsync(long groupId)
         {
             using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
             {
