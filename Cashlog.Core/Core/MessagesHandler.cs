@@ -87,6 +87,27 @@ namespace Cashlog.Core.Core
 
                 switch (cmd)
                 {
+                    case "debts":
+                    {
+                        if (args.Length != 0)
+                        {
+                            await _messenger.SendMessageAsync(userMessageInfo, "Неверное кол-во параметров для команды", true);
+                            return;
+                        }
+
+                        var currentBilling = await _billingPeriodService.GetLastByGroupIdAsync(userMessageInfo.Group.Id);
+                        var debts = await _mainLogicService.CalculatePeriodCurrentDebts(currentBilling.Id);
+
+                        string[] debtsMessages = debts.Select(x =>
+                        {
+                            string from = userMessageInfo.Customers.First(c => c.Id == x.FromId).Caption;
+                            string to = userMessageInfo.Customers.First(c => c.Id == x.ToId).Caption;
+                            return $"* {from} должен {to}: {(int) x.Amount}р.";
+                        }).ToArray();
+
+                        await _messenger.SendMessageAsync(userMessageInfo, $"Промежуточный итог долгов на период с {currentBilling.PeriodBegin}:\n{string.Join("\n", debtsMessages)}", true);
+                        return;
+                    }
                     case "customer":
                     {
                         if (args.Length != 1)
