@@ -49,7 +49,8 @@ namespace Cashlog.Core.Core.Services
         public async Task<MoneyOperationShortInfo[]> CalculatePeriodCurrentDebts(long billingPeriodId)
         {
             MoneyOperation[] periodOperations = await _moneyOperationService.GetByBillingPeriodIdAsync(billingPeriodId);
-            Receipt[] periodReceipts = await _receiptService.GetByBillingPeriodIdAsync(billingPeriodId);
+            Receipt[] periodReceipts = (await _receiptService.GetByBillingPeriodIdAsync(billingPeriodId))
+                .Where(x => x.Status.IsFinalStatus()).ToArray();
             Dictionary<long, long[]> consumerMap = await _receiptService.GetConsumerIdsByReceiptIdsMapAsync(periodReceipts.Select(x => x.Id).ToArray());
 
             return await _debtsCalculator.Calculate(periodOperations, periodReceipts.Where(x => x.CustomerId.HasValue).Select(x => new ReceiptCalculatorInfo
@@ -88,7 +89,7 @@ namespace Cashlog.Core.Core.Services
                 MoneyOperationShortInfo[] debtsShortInfo = await CalculatePeriodCurrentDebts(lastBillingPeriod.Id);
                 debts = debtsShortInfo.Select(x => new MoneyOperation
                 {
-                    Amount = (int) x.Amount,
+                    Amount = (int)x.Amount,
                     BillingPeriodId = newBillingPeriod.Id,
                     Comment = "Долг с предыдущего периода",
                     CustomerFromId = x.FromId,
