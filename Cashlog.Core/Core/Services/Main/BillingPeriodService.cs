@@ -11,11 +11,11 @@ namespace Cashlog.Core.Core.Services
     public class BillingPeriodService : IBillingPeriodService
     {
         private readonly IMoneyOperationService _moneyOperationService;
-        private readonly ICashogSettings _cashogSettings;
+        private readonly CashlogSettings _cashogSettings;
 
         public BillingPeriodService(
             IMoneyOperationService moneyOperationService,
-            ICashogSettings cashogSettings)
+            CashlogSettings cashogSettings)
         {
             _moneyOperationService = moneyOperationService ?? throw new ArgumentNullException(nameof(moneyOperationService));
             _cashogSettings = cashogSettings ?? throw new ArgumentNullException(nameof(cashogSettings));

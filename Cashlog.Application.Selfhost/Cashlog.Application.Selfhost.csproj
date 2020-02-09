@@ -14,4 +14,10 @@
     <ProjectReference Include="..\Cashlog.Data\Cashlog.Data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="botconfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

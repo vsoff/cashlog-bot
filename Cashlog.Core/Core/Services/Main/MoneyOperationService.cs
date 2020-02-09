@@ -10,9 +10,9 @@ namespace Cashlog.Core.Core.Services.Abstract
 {
     public class MoneyOperationService : IMoneyOperationService
     {
-        private readonly ICashogSettings _cashogSettings;
+        private readonly CashlogSettings _cashogSettings;
 
-        public MoneyOperationService(ICashogSettings cashogSettings)
+        public MoneyOperationService(CashlogSettings cashogSettings)
         {
             _cashogSettings = cashogSettings ?? throw new ArgumentNullException(nameof(cashogSettings));
         }

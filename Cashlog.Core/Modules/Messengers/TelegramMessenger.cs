@@ -38,7 +38,7 @@ namespace Cashlog.Core.Messengers
         private readonly IQueryDataSerializer _queryDataSerializer;
         private readonly ICustomerService _customerService;
         private readonly IReceiptService _receiptService;
-        private readonly ICashogSettings _cashogSettings;
+        private readonly CashlogSettings _cashogSettings;
         private readonly IGroupService _groupService;
         private readonly IMenuProvider _menuProvider;
         private readonly ILogger _logger;
@@ -51,7 +51,7 @@ namespace Cashlog.Core.Messengers
             IQueryDataSerializer queryDataSerializer,
             ICustomerService customerService,
             IReceiptService receiptService,
-            ICashogSettings cashogSettings,
+            CashlogSettings cashogSettings,
             IGroupService groupService,
             IMenuProvider menuProvider,
             ILogger logger)

@@ -16,9 +16,9 @@ namespace Cashlog.Core.Core.Services
 {
     public class ReceiptHandleService : IReceiptHandleService
     {
-        private readonly ICashogSettings _cashogSettings;
+        private readonly CashlogSettings _cashogSettings;
 
-        public ReceiptHandleService(ICashogSettings cashogSettings)
+        public ReceiptHandleService(CashlogSettings cashogSettings)
         {
             _cashogSettings = cashogSettings ?? throw new ArgumentNullException(nameof(cashogSettings));
         }

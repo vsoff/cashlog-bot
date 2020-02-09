@@ -9,9 +9,9 @@ namespace Cashlog.Core.Core.Services
 {
     public class GroupService : IGroupService
     {
-        private readonly ICashogSettings _cashogSettings;
+        private readonly CashlogSettings _cashogSettings;
 
-        public GroupService(ICashogSettings cashogSettings)
+        public GroupService(CashlogSettings cashogSettings)
         {
             _cashogSettings = cashogSettings ?? throw new ArgumentNullException(nameof(cashogSettings));
         }

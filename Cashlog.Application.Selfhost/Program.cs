@@ -15,6 +15,7 @@ using Cashlog.Core.Modules.Calculator;
 using Cashlog.Data;
 using Cashlog.Data.Entities;
 using Cashlog.Data.UoW;
+using Newtonsoft.Json;
 using Telegram.Bot.Types;
 using ZXing;
 
@@ -22,11 +23,25 @@ namespace Cashlog.Application.Selfhost
 {
     class Program
     {
+        /// <summary>
+        /// Название файла с конфигурацией бота.
+        /// </summary>
+        private const string _botConfigFileName = "botconfig.json";
+
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Console.WriteLine("Selfhost started!");
+
+            if (!System.IO.File.Exists(_botConfigFileName))
+            {
+                Console.WriteLine($"file {_botConfigFileName} not exists!");
+                return;
+            }
+
+            var config = ReadConfig();
 
             ContainerBuilder builder = new ContainerBuilder();
+            builder.RegisterInstance(config);
             builder.RegisterType<TelegramMessenger>().As<IMessenger>().SingleInstance().AutoActivate();
             builder.RegisterType<MessagesHandler>().As<IMessagesHandler>().SingleInstance().AutoActivate();
             builder.RegisterType<QueryDataSerializer>().As<IQueryDataSerializer>().SingleInstance();
@@ -39,10 +54,15 @@ namespace Cashlog.Application.Selfhost
             builder.RegisterType<ReceiptService>().As<IReceiptService>().SingleInstance();
             builder.RegisterType<TelegramMenuProvider>().As<IMenuProvider>().SingleInstance();
             builder.RegisterType<GroupService>().As<IGroupService>().SingleInstance();
-            builder.RegisterType<TestCashogSettings>().As<ICashogSettings>().SingleInstance();
             builder.RegisterType<ConsoleLogger>().As<ILogger>().SingleInstance();
             IContainer container = builder.Build();
             Console.ReadLine();
+        }
+
+        static CashlogSettings ReadConfig()
+        {
+            var json = System.IO.File.ReadAllText(_botConfigFileName);
+            return JsonConvert.DeserializeObject<CashlogSettings>(json);
         }
     }
 }

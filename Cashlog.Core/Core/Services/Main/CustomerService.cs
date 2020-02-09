@@ -11,9 +11,9 @@ namespace Cashlog.Core.Core.Services
 {
     public class CustomerService : ICustomerService
     {
-        private readonly ICashogSettings _cashogSettings;
+        private readonly CashlogSettings _cashogSettings;
 
-        public CustomerService(ICashogSettings cashogSettings)
+        public CustomerService(CashlogSettings cashogSettings)
         {
             _cashogSettings = cashogSettings ?? throw new ArgumentNullException(nameof(cashogSettings));
         }
