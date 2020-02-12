@@ -23,7 +23,7 @@ namespace Cashlog.Core.Core.Services
             _cashogSettings = cashogSettings ?? throw new ArgumentNullException(nameof(cashogSettings));
         }
 
-        public async Task<QrCodeData> ParsePhotoAsync(Bitmap photo)
+        public QrCodeData ParsePhoto(Bitmap photo)
         {
             byte[] byteArray;
             using (MemoryStream bitmapStream = new MemoryStream())
@@ -70,7 +70,7 @@ namespace Cashlog.Core.Core.Services
 
         public async Task<ReceiptInfo> GetReceiptInfoAsync(QrCodeData data)
         {
-            CheckFnsResult checkResult = await FnsManager.CheckAsync(data.FiscalNumber, data.FiscalDocument, data.FiscalSign, data.PurchaseTime, (decimal) data.TotalAmount);
+            CheckFnsResult checkResult = await FnsManager.CheckAsync(data.FiscalNumber, data.FiscalDocument, data.FiscalSign, data.PurchaseTime, (decimal)data.TotalAmount);
 
             if (!checkResult.ReceiptExists)
                 return null;
@@ -88,7 +88,7 @@ namespace Cashlog.Core.Core.Services
                 FiscalSign = data.FiscalSign,
                 FiscalDocument = data.FiscalDocument,
                 FiscalNumber = data.FiscalNumber,
-                TotalAmount = (double) fnsResult.Document.Receipt.TotalSum / 100,
+                TotalAmount = (double)fnsResult.Document.Receipt.TotalSum / 100,
                 RetailAddress = fnsResult.Document.Receipt.RetailPlaceAddress,
                 RetailInn = fnsResult.Document.Receipt.RetailInn,
                 CompanyName = fnsResult.Document.Receipt.StoreName,
@@ -96,7 +96,7 @@ namespace Cashlog.Core.Core.Services
                 Items = fnsResult.Document.Receipt.Items.Select(x => new ReceiptItem
                 {
                     Name = x.Name,
-                    Price = (double) x.Price / 100,
+                    Price = (double)x.Price / 100,
                     Quantity = x.Quantity
                 }).ToArray()
             };
@@ -107,8 +107,7 @@ namespace Cashlog.Core.Core.Services
         /// </summary>
         private static DateTime? ParseReceiptDateTime(string checkDateTime)
         {
-            const string defaultDatePattern =
-                @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})T(?<hours>\d{2})(?<minutes>\d{2})";
+            const string defaultDatePattern = @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})T(?<hours>\d{2})(?<minutes>\d{2})";
 
             Match match = Regex.Match(checkDateTime, defaultDatePattern);
             if (!match.Success)

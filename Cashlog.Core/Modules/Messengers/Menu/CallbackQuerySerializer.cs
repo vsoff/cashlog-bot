@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Cashlog.Core.Common;
 using ProtoBuf;
 using ProtoBuf.Meta;
 

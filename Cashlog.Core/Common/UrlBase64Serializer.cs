@@ -1,7 +1,8 @@
 ﻿using System;
+using Cashlog.Core.Messengers;
 using ProtoBuf.Meta;
 
-namespace Cashlog.Core.Messengers
+namespace Cashlog.Core.Common
 {
     public static class UrlBase64Serializer
     {

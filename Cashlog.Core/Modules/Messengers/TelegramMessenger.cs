@@ -4,26 +4,23 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using Cashlog.Core.Common;
 using Cashlog.Core.Core;
-using Cashlog.Core.Messengers.Menu;
 using Cashlog.Core.Core.Models;
+using Cashlog.Core.Core.Providers;
 using Cashlog.Core.Core.Services;
 using Cashlog.Core.Core.Services.Abstract;
-using Newtonsoft.Json;
-using ProtoBuf;
+using Cashlog.Core.Messengers;
+using Cashlog.Core.Messengers.Menu;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InputFiles;
 using Telegram.Bot.Types.ReplyMarkups;
 using File = Telegram.Bot.Types.File;
 using MessageType = Telegram.Bot.Types.Enums.MessageType;
 
-namespace Cashlog.Core.Messengers
+namespace Cashlog.Core.Modules.Messengers
 {
     /// <summary>
     /// 
@@ -38,11 +35,13 @@ namespace Cashlog.Core.Messengers
         private readonly IQueryDataSerializer _queryDataSerializer;
         private readonly ICustomerService _customerService;
         private readonly IReceiptService _receiptService;
-        private readonly CashlogSettings _cashogSettings;
+        private readonly CashlogSettings _cashlogSettings;
+        private readonly IProxyProvider _proxyProvider;
         private readonly IGroupService _groupService;
         private readonly IMenuProvider _menuProvider;
         private readonly ILogger _logger;
-        private readonly TelegramBotClient _client;
+
+        private TelegramBotClient _client;
 
         public TelegramMessenger(
             IMoneyOperationService moneyOperationService,
@@ -51,7 +50,8 @@ namespace Cashlog.Core.Messengers
             IQueryDataSerializer queryDataSerializer,
             ICustomerService customerService,
             IReceiptService receiptService,
-            CashlogSettings cashogSettings,
+            CashlogSettings cashlogSettings,
+            IProxyProvider proxyProvider,
             IGroupService groupService,
             IMenuProvider menuProvider,
             ILogger logger)
@@ -62,23 +62,48 @@ namespace Cashlog.Core.Messengers
             _queryDataSerializer = queryDataSerializer ?? throw new ArgumentNullException(nameof(queryDataSerializer));
             _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
             _receiptService = receiptService ?? throw new ArgumentNullException(nameof(receiptService));
-            _cashogSettings = cashogSettings ?? throw new ArgumentNullException(nameof(cashogSettings));
+            _cashlogSettings = cashlogSettings ?? throw new ArgumentNullException(nameof(cashlogSettings));
+            _proxyProvider = proxyProvider ?? throw new ArgumentNullException(nameof(proxyProvider));
             _groupService = groupService ?? throw new ArgumentNullException(nameof(groupService));
             _menuProvider = menuProvider ?? throw new ArgumentNullException(nameof(menuProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            IWebProxy proxy = new WebProxy(_cashogSettings.ProxyAddress);
-            _client = new TelegramBotClient(_cashogSettings.TelegramBotToken, proxy);
+            StartBotAsync().GetAwaiter().GetResult();
+        }
 
-            // TODO Убрать и сделать проверку постоянной.
-            _logger.Info("Проверка прокси...");
-            var checkResult = _client.GetMeAsync().Result;
-            _client.SendTextMessageAsync(_cashogSettings.AdminChatToken, "helllo");
-            _logger.Info("Прокси работает!");
+        private async Task StartBotAsync()
+        {
+            var proxies = await _proxyProvider.GetProxiesAsync();
+            if (proxies == null || proxies.Count == 0)
+                throw new InvalidOperationException("Не было получено ни одного прокси от провайдера");
 
-            _client.OnMessage += OnMessageReceived;
-            _client.OnCallbackQuery += OnCallbackQuery;
-            _client.StartReceiving();
+            foreach (var proxy in proxies)
+            {
+                _client = new TelegramBotClient(_cashlogSettings.TelegramBotToken, proxy);
+
+                _logger.Trace($"Проверка прокси `{proxy.Address}`...");
+                try
+                {
+                    await _client.GetMeAsync();
+                }
+                catch (Exception)
+                {
+                    _logger.Trace($"Прокси `{proxy.Address}` не работает.");
+                    continue;
+                }
+
+                await _client.SendTextMessageAsync(_cashlogSettings.AdminChatToken, "Бот запущен!");
+                _logger.Trace($"Прокси `{proxy.Address}` работает. Бот продолжает свою работу.");
+                _logger.Info($"Был установлен новый прокси-сервер `{proxy.Address}`.");
+
+                _client.OnMessage += OnMessageReceived;
+                _client.OnCallbackQuery += OnCallbackQuery;
+                _client.StartReceiving();
+
+                return;
+            }
+
+            throw new InvalidOperationException("Ни один из полученных от провайдера прокси серверов не отработал");
         }
 
         private async void OnCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
@@ -107,114 +132,114 @@ namespace Cashlog.Core.Messengers
             switch (queryData.MenuType)
             {
                 case MenuType.NewReceiptSelectCustomer:
-                {
-                    var data = (AddReceiptQueryData) queryData;
-                    if (data.TargetId == data.SelectedCustomerId)
+                    {
+                        var data = (AddReceiptQueryData)queryData;
+                        if (data.TargetId == data.SelectedCustomerId)
+                            break;
+
+                        data.SelectedCustomerId = data.TargetId;
+
+                        IMenu menu = _menuProvider.GetMenu(userMessageInfo, data);
+                        await EditMessageAsync(userMessageInfo, "Кто оплатил чек?", menu);
                         break;
-
-                    data.SelectedCustomerId = data.TargetId;
-
-                    IMenu menu = _menuProvider.GetMenu(userMessageInfo, data);
-                    await EditMessageAsync(userMessageInfo, "Кто оплатил чек?", menu);
-                    break;
-                }
+                    }
                 case MenuType.NewReceiptSelectConsumers:
-                {
-                    var data = (AddReceiptQueryData) queryData;
-                    var selectedConsumers = new List<long>(data.SelectedConsumerIds ?? new long[0]);
-                    if (data.TargetId != null)
                     {
-                        if (selectedConsumers.Contains(data.TargetId.Value))
-                            selectedConsumers.Remove(data.TargetId.Value);
-                        else
-                            selectedConsumers.Add(data.TargetId.Value);
-                    }
+                        var data = (AddReceiptQueryData)queryData;
+                        var selectedConsumers = new List<long>(data.SelectedConsumerIds ?? new long[0]);
+                        if (data.TargetId != null)
+                        {
+                            if (selectedConsumers.Contains(data.TargetId.Value))
+                                selectedConsumers.Remove(data.TargetId.Value);
+                            else
+                                selectedConsumers.Add(data.TargetId.Value);
+                        }
 
-                    selectedConsumers = selectedConsumers.Distinct().ToList();
-                    data.SelectedConsumerIds = selectedConsumers.ToArray();
+                        selectedConsumers = selectedConsumers.Distinct().ToList();
+                        data.SelectedConsumerIds = selectedConsumers.ToArray();
 
-                    IMenu menu = _menuProvider.GetMenu(userMessageInfo, data);
-                    await EditMessageAsync(userMessageInfo, "На кого делится чек?", menu);
-                    break;
-                }
-                case MenuType.NewReceiptAdd:
-                {
-                    var data = (AddReceiptQueryData) queryData;
-                    string customerText = userMessageInfo.Customers.FirstOrDefault(x => data.SelectedCustomerId.Value == x.Id).Caption;
-                    string[] consumerTexts = userMessageInfo.Customers
-                        .Where(x => data.SelectedCustomerId.Value == x.Id || data.SelectedConsumerIds.Contains(x.Id))
-                        .Select(x => x.Caption).ToArray();
-                    Receipt receipt = await _receiptService.GetAsync(data.ReceiptId);
-                    await EditMessageAsync(userMessageInfo, $"Чек готов!\nОплатил: {customerText}\nСумма: {receipt.TotalAmount} руб.\nДелится на: {string.Join(", ", consumerTexts)}");
-                    if (receipt.Status == ReceiptStatus.New || receipt.Status == ReceiptStatus.NewManual)
-                    {
-                        receipt.Status = receipt.Status == ReceiptStatus.New ? ReceiptStatus.Filled : ReceiptStatus.Manual;
-                        receipt.CustomerId = data.SelectedCustomerId;
-                        await _receiptService.SetCustomersToReceiptAsync(receipt.Id, data.SelectedConsumerIds);
-                        await _receiptService.UpdateAsync(receipt);
-                    }
-
-                    break;
-                }
-                case MenuType.NewReceiptCancel:
-                {
-                    var data = (AddReceiptQueryData) queryData;
-                    await EditMessageAsync(userMessageInfo, "Добавление чека было отменено");
-                    Receipt receipt = await _receiptService.GetAsync(data.ReceiptId);
-                    receipt.Status = ReceiptStatus.Deleted;
-                    await _receiptService.UpdateAsync(receipt);
-                    break;
-                }
-                case MenuType.MoneyTransferSelectFrom:
-                {
-                    var data = (MoneyTransferQueryData) queryData;
-                    IMenu menu = _menuProvider.GetMenu(userMessageInfo, data);
-                    await EditMessageAsync(userMessageInfo, "Кто переводит?", menu);
-                    break;
-                }
-                case MenuType.MoneyTransferSelectTo:
-                {
-                    var data = (MoneyTransferQueryData) queryData;
-                    IMenu menu = _menuProvider.GetMenu(userMessageInfo, data);
-                    await EditMessageAsync(userMessageInfo, "Кому переводит?", menu);
-                    break;
-                }
-                case MenuType.MoneyTransferAdd:
-                {
-                    var data = (MoneyTransferQueryData) queryData;
-                    string customerFrom = userMessageInfo.Customers.FirstOrDefault(x => data.CustomerFromId == x.Id)?.Caption ?? $"Id: {data.CustomerFromId}";
-                    string customerTo = userMessageInfo.Customers.FirstOrDefault(x => data.CustomerToId == x.Id)?.Caption ?? $"Id: {data.CustomerToId}";
-                    await EditMessageAsync(userMessageInfo, $"Добавление перевода было успешно совершено.\nПеревёл: {customerFrom}\nКому: {customerTo}\nСумма: {data.Amount} руб.");
-
-                    var lastBillingPeriod = await _billingPeriodService.GetLastByGroupIdAsync(userMessageInfo.Group.Id);
-                    if (lastBillingPeriod == null)
-                    {
-                        await EditMessageAsync(userMessageInfo, "Нельзя добавить перевод денег, если не начат расчётный период");
+                        IMenu menu = _menuProvider.GetMenu(userMessageInfo, data);
+                        await EditMessageAsync(userMessageInfo, "На кого делится чек?", menu);
                         break;
                     }
-
-                    await _moneyOperationService.AddAsync(new MoneyOperation
+                case MenuType.NewReceiptAdd:
                     {
-                        Amount = data.Amount,
-                        Comment = data.Caption,
-                        CustomerFromId = data.CustomerFromId.Value,
-                        CustomerToId = data.CustomerToId.Value,
-                        OperationType = MoneyOperationType.Transfer,
-                        BillingPeriodId = lastBillingPeriod.Id
-                    });
-                    break;
-                }
+                        var data = (AddReceiptQueryData)queryData;
+                        string customerText = userMessageInfo.Customers.FirstOrDefault(x => data.SelectedCustomerId.Value == x.Id).Caption;
+                        string[] consumerTexts = userMessageInfo.Customers
+                            .Where(x => data.SelectedCustomerId.Value == x.Id || data.SelectedConsumerIds.Contains(x.Id))
+                            .Select(x => x.Caption).ToArray();
+                        Receipt receipt = await _receiptService.GetAsync(data.ReceiptId);
+                        await EditMessageAsync(userMessageInfo, $"Чек готов!\nОплатил: {customerText}\nСумма: {receipt.TotalAmount} руб.\nДелится на: {string.Join(", ", consumerTexts)}");
+                        if (receipt.Status == ReceiptStatus.New || receipt.Status == ReceiptStatus.NewManual)
+                        {
+                            receipt.Status = receipt.Status == ReceiptStatus.New ? ReceiptStatus.Filled : ReceiptStatus.Manual;
+                            receipt.CustomerId = data.SelectedCustomerId;
+                            await _receiptService.SetCustomersToReceiptAsync(receipt.Id, data.SelectedConsumerIds);
+                            await _receiptService.UpdateAsync(receipt);
+                        }
+
+                        break;
+                    }
+                case MenuType.NewReceiptCancel:
+                    {
+                        var data = (AddReceiptQueryData)queryData;
+                        await EditMessageAsync(userMessageInfo, "Добавление чека было отменено");
+                        Receipt receipt = await _receiptService.GetAsync(data.ReceiptId);
+                        receipt.Status = ReceiptStatus.Deleted;
+                        await _receiptService.UpdateAsync(receipt);
+                        break;
+                    }
+                case MenuType.MoneyTransferSelectFrom:
+                    {
+                        var data = (MoneyTransferQueryData)queryData;
+                        IMenu menu = _menuProvider.GetMenu(userMessageInfo, data);
+                        await EditMessageAsync(userMessageInfo, "Кто переводит?", menu);
+                        break;
+                    }
+                case MenuType.MoneyTransferSelectTo:
+                    {
+                        var data = (MoneyTransferQueryData)queryData;
+                        IMenu menu = _menuProvider.GetMenu(userMessageInfo, data);
+                        await EditMessageAsync(userMessageInfo, "Кому переводит?", menu);
+                        break;
+                    }
+                case MenuType.MoneyTransferAdd:
+                    {
+                        var data = (MoneyTransferQueryData)queryData;
+                        string customerFrom = userMessageInfo.Customers.FirstOrDefault(x => data.CustomerFromId == x.Id)?.Caption ?? $"Id: {data.CustomerFromId}";
+                        string customerTo = userMessageInfo.Customers.FirstOrDefault(x => data.CustomerToId == x.Id)?.Caption ?? $"Id: {data.CustomerToId}";
+                        await EditMessageAsync(userMessageInfo, $"Добавление перевода было успешно совершено.\nПеревёл: {customerFrom}\nКому: {customerTo}\nСумма: {data.Amount} руб.");
+
+                        var lastBillingPeriod = await _billingPeriodService.GetLastByGroupIdAsync(userMessageInfo.Group.Id);
+                        if (lastBillingPeriod == null)
+                        {
+                            await EditMessageAsync(userMessageInfo, "Нельзя добавить перевод денег, если не начат расчётный период");
+                            break;
+                        }
+
+                        await _moneyOperationService.AddAsync(new MoneyOperation
+                        {
+                            Amount = data.Amount,
+                            Comment = data.Caption,
+                            CustomerFromId = data.CustomerFromId.Value,
+                            CustomerToId = data.CustomerToId.Value,
+                            OperationType = MoneyOperationType.Transfer,
+                            BillingPeriodId = lastBillingPeriod.Id
+                        });
+                        break;
+                    }
                 case MenuType.MoneyTransferCancel:
-                {
-                    await EditMessageAsync(userMessageInfo, "Добавление перевода было отменено");
-                    break;
-                }
+                    {
+                        await EditMessageAsync(userMessageInfo, "Добавление перевода было отменено");
+                        break;
+                    }
             }
         }
 
         public async Task EditMessageAsync(UserMessageInfo userMessageInfo, string text, IMenu menu = null)
         {
-            await _client.EditMessageTextAsync(userMessageInfo.Group.ChatToken, int.Parse(userMessageInfo.Message.Token), text, replyMarkup: (InlineKeyboardMarkup) ((TelegramMenu) menu)?.Markup);
+            await _client.EditMessageTextAsync(userMessageInfo.Group.ChatToken, int.Parse(userMessageInfo.Message.Token), text, replyMarkup: (InlineKeyboardMarkup)((TelegramMenu)menu)?.Markup);
         }
 
         private async void OnMessageReceived(object sender, Telegram.Bot.Args.MessageEventArgs e)
@@ -224,7 +249,7 @@ namespace Cashlog.Core.Messengers
 
             long chatId = e.Message.Chat.Id;
 
-            if (chatId.ToString() != _cashogSettings.AdminChatToken)
+            if (chatId.ToString() != _cashlogSettings.AdminChatToken)
             {
                 _logger.Info($"Произведена попытка использования бота в группе `{e.Message.Chat.Title}` ({chatId})");
                 await _client.SendTextMessageAsync(chatId, "Чтобы бот мог работать в этой группе обратитесь к @vsoff");
@@ -272,30 +297,33 @@ namespace Cashlog.Core.Messengers
             switch (e.Message.Type)
             {
                 case MessageType.Photo:
-                {
-                    PhotoSize photoSize = e.Message.Photo.OrderByDescending(x => x.Width).First();
-                    _logger.Trace($"Получено фото чека с разрешением {photoSize.Width}x{photoSize.Height}");
-
-                    File file = await _client.GetFileAsync(photoSize.FileId);
-
-                    using (MemoryStream clientStream = new MemoryStream())
                     {
-                        await _client.DownloadFileAsync(file.FilePath, clientStream);
+                        PhotoSize photoSize = e.Message.Photo.OrderByDescending(x => x.Width).First();
+                        _logger.Trace($"Получено фото чека с разрешением W:{photoSize.Width} H:{photoSize.Height}");
 
-                        // Получаем изображение из потока.
-                        Bitmap returnImage = (Bitmap) Image.FromStream(clientStream);
-                        userMessageInfo.Message.QrCode = await _receiptHandleService.ParsePhotoAsync(returnImage);
-                        userMessageInfo.MessageType = Core.Models.MessageType.QrCode;
+                        File file = await _client.GetFileAsync(photoSize.FileId);
+
+                        using (MemoryStream clientStream = new MemoryStream())
+                        {
+                            await _client.DownloadFileAsync(file.FilePath, clientStream);
+
+                            // Получаем изображение из потока.
+                            Bitmap returnImage = (Bitmap)Image.FromStream(clientStream);
+                            var data = _receiptHandleService.ParsePhoto(returnImage);
+                            _logger.Trace(data == null ? "Не удалось распознать QR код на чеке" : $"Данные с QR кода чека {data.Data}");
+
+                            userMessageInfo.Message.QrCode = data;
+                            userMessageInfo.MessageType = Core.Models.MessageType.QrCode;
+                        }
+
+                        break;
                     }
 
-                    break;
-                }
-
                 case MessageType.Text:
-                {
-                    userMessageInfo.MessageType = Core.Models.MessageType.Text;
-                    break;
-                }
+                    {
+                        userMessageInfo.MessageType = Core.Models.MessageType.Text;
+                        break;
+                    }
             }
 
             // Уведомляем подписчиков о новом сообщении.

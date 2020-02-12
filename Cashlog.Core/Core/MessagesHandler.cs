@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using Cashlog.Core.Common;
 using Cashlog.Core.Core.Models;
 using Cashlog.Core.Core.Services;
@@ -16,9 +14,7 @@ namespace Cashlog.Core.Core
 {
     public class MessagesHandler : IMessagesHandler
     {
-        private readonly IMoneyOperationService _moneyOperationService;
         private readonly IBillingPeriodService _billingPeriodService;
-        private readonly IReceiptHandleService _receiptHandleService;
         private readonly IMainLogicService _mainLogicService;
         private readonly ICustomerService _customerService;
         private readonly IReceiptService _receiptService;
@@ -27,9 +23,7 @@ namespace Cashlog.Core.Core
         private readonly ILogger _logger;
 
         public MessagesHandler(
-            IMoneyOperationService moneyOperationService,
             IBillingPeriodService billingPeriodService,
-            IReceiptHandleService receiptHandleService,
             IMainLogicService mainLogicService,
             ICustomerService customerService,
             IReceiptService receiptService,
@@ -37,9 +31,7 @@ namespace Cashlog.Core.Core
             IMessenger messenger,
             ILogger logger)
         {
-            _moneyOperationService = moneyOperationService ?? throw new ArgumentNullException(nameof(moneyOperationService));
             _billingPeriodService = billingPeriodService ?? throw new ArgumentNullException(nameof(billingPeriodService));
-            _receiptHandleService = receiptHandleService ?? throw new ArgumentNullException(nameof(receiptHandleService));
             _mainLogicService = mainLogicService ?? throw new ArgumentNullException(nameof(mainLogicService));
             _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
             _receiptService = receiptService ?? throw new ArgumentNullException(nameof(receiptService));
@@ -52,6 +44,7 @@ namespace Cashlog.Core.Core
 
         private async void OnMessage(object sender, UserMessageInfo e)
         {
+            _logger.Trace($"Получено сообщение типа {e.MessageType} от {e.UserToken} из группы {e.Group.ChatToken}");
             switch (e.MessageType)
             {
                 case MessageType.Text:
@@ -69,25 +62,30 @@ namespace Cashlog.Core.Core
             }
         }
 
-        private async Task HandleCommandMessageAsync(UserMessageInfo userMessageInfo)
+        private Task HandleCommandMessageAsync(UserMessageInfo userMessageInfo)
         {
+            throw new NotImplementedException(nameof(HandleCommandMessageAsync));
         }
 
         private async Task HandleTextMessageAsync(UserMessageInfo userMessageInfo)
         {
-            _logger.Trace($"@{userMessageInfo.UserName} прислал сообщение");
+            _logger.Trace($"@{userMessageInfo.UserName} прислал сообщение. Длина сообщения: {userMessageInfo.Message.Text.Length}");
 
+            // Читаем только команды.
             string text = userMessageInfo.Message.Text;
-            // Команда
-            if (text.StartsWith("/"))
+            if (!text.StartsWith("/"))
             {
-                string[] args = text.Split(' ').ToArray();
-                string cmd = args.First().Substring(1);
-                args = args.Skip(1).ToArray();
+                await _messenger.SendMessageAsync(userMessageInfo, "Я не читаю сообщения, попробуй прислать мне фото или используй команду /help", true);
+                return;
+            }
 
-                switch (cmd)
-                {
-                    case "debts":
+            string[] args = text.Split(' ').ToArray();
+            string cmd = args.First().Substring(1);
+            args = args.Skip(1).ToArray();
+
+            switch (cmd)
+            {
+                case "debts":
                     {
                         if (args.Length != 0)
                         {
@@ -102,13 +100,13 @@ namespace Cashlog.Core.Core
                         {
                             string from = userMessageInfo.Customers.First(c => c.Id == x.FromId).Caption;
                             string to = userMessageInfo.Customers.First(c => c.Id == x.ToId).Caption;
-                            return $"* {from} должен {to}: {(int) x.Amount}р.";
+                            return $"* {from} должен {to}: {(int)x.Amount}р.";
                         }).ToArray();
 
                         await _messenger.SendMessageAsync(userMessageInfo, $"Промежуточный итог долгов на период с {currentBilling.PeriodBegin}:\n{string.Join("\n", debtsMessages)}", true);
                         return;
                     }
-                    case "customer":
+                case "customer":
                     {
                         if (args.Length != 1)
                         {
@@ -125,7 +123,7 @@ namespace Cashlog.Core.Core
                         await _messenger.SendMessageAsync(userMessageInfo, $"Добавлен новый потребитель: {args[0]}", true);
                         return;
                     }
-                    case "period":
+                case "period":
                     {
                         if (args.Length != 0)
                         {
@@ -147,7 +145,7 @@ namespace Cashlog.Core.Core
                         await _messenger.SendMessageAsync(userMessageInfo, $"Был начат новый период, долги за предыдущий составляют:\n{debts}", true);
                         return;
                     }
-                    case "send":
+                case "send":
                     {
                         if (args.Length <= 1)
                         {
@@ -188,7 +186,7 @@ namespace Cashlog.Core.Core
                         await _messenger.SendMessageAsync(userMessageInfo, "Кто переводит деньги?", true, menu);
                         return;
                     }
-                    case "receipt":
+                case "receipt":
                     {
                         if (args.Length <= 1)
                         {
@@ -236,15 +234,12 @@ namespace Cashlog.Core.Core
                         await _messenger.SendMessageAsync(userMessageInfo, "_Кто оплатил чек?", true, menu);
                         return;
                     }
-                    default:
+                default:
                     {
                         await _messenger.SendMessageAsync(userMessageInfo, "Неизвестная команда, попробуй команду /help", true);
                         return;
                     }
-                }
             }
-
-            await _messenger.SendMessageAsync(userMessageInfo, "Я не читаю сообщения, попробуй прислать мне фото или используй команду /help", true);
         }
 
         private async Task HandlePhotoMessageAsync(UserMessageInfo userMessageInfo)

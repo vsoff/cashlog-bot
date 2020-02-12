@@ -1,26 +1,22 @@
-using System;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Cashlog.Core.Core.Models;
-using Cashlog.Core.Core.Services;
-using Cashlog.Core.Messengers.Menu;
 using Cashlog.Core.Modules.Calculator;
-using NUnit.Framework;
+using Cashlog.Core.Tests;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Cashlog.Core.Tests
+namespace Cashlog.Tests
 {
+    [TestClass]
     public class DebtsCalculatorTests
     {
         private IDebtsCalculator _calculator;
-
-        [SetUp]
-        public void Setup()
+        [TestInitialize]
+        public void TestMethod1()
         {
             _calculator = new DebtsCalculator();
         }
 
-        [Test]
+        [TestMethod]
         public async Task Test1()
         {
             MoneyOperation[] operations =
@@ -41,10 +37,11 @@ namespace Cashlog.Core.Tests
 
             MoneyOperationShortInfo[] debts = await _calculator.Calculate(operations, receipts);
 
-            Assert.Pass();
+            Assert.IsNotNull(debts);
+            Assert.IsTrue(debts.Length > 0);
         }
 
-        [Test]
+        [TestMethod]
         public async Task Test2()
         {
             MoneyOperation[] operations =
@@ -65,7 +62,8 @@ namespace Cashlog.Core.Tests
 
             MoneyOperationShortInfo[] debts = await _calculator.Calculate(operations, receipts);
 
-            Assert.Pass();
+            Assert.IsNotNull(debts);
+            Assert.IsTrue(debts.Length > 0);
         }
     }
 }

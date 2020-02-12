@@ -2,10 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <UserSecretsId>564dbaf0-e8e7-40ff-a6b2-d7b1fe3444e0</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.9.4" />
+    <PackageReference Include="Flurl.Http" Version="2.4.2" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.18" />
     <PackageReference Include="protobuf-net" Version="2.4.1" />
     <PackageReference Include="System.Drawing.Common" Version="4.6.0" />
     <PackageReference Include="Telegram.Bot" Version="15.0.0" />

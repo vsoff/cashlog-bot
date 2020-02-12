@@ -1,23 +1,17 @@
 ﻿using System;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using Autofac;
-using Autofac.Core;
-using Cashlog.Core;
-using Cashlog.Core.Common;
 using Cashlog.Core.Core;
+using Cashlog.Core.Core.Providers;
 using Cashlog.Core.Core.Services;
 using Cashlog.Core.Core.Services.Abstract;
 using Cashlog.Core.Messengers;
 using Cashlog.Core.Messengers.Menu;
 using Cashlog.Core.Modules.Calculator;
-using Cashlog.Data;
-using Cashlog.Data.Entities;
-using Cashlog.Data.UoW;
+using Cashlog.Core.Modules.Messengers;
 using Newtonsoft.Json;
-using Telegram.Bot.Types;
-using ZXing;
+using Serilog;
+using ILogger = Cashlog.Core.Common.ILogger;
 
 namespace Cashlog.Application.Selfhost
 {
@@ -26,24 +20,35 @@ namespace Cashlog.Application.Selfhost
         /// <summary>
         /// Название файла с конфигурацией бота.
         /// </summary>
-        private const string _botConfigFileName = "botconfig.json";
+        private const string BotConfigFileName = "botconfig.json";
+
+        private static IContainer _container;
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Selfhost started!");
+            ILogger logger = GetLogger();
 
-            if (!System.IO.File.Exists(_botConfigFileName))
+            logger.Info("Приложение запущено!");
+
+            if (!File.Exists(BotConfigFileName))
             {
-                Console.WriteLine($"file {_botConfigFileName} not exists!");
+                logger.Error($"Файл конфига {BotConfigFileName} не найден!");
                 return;
             }
 
             var config = ReadConfig();
+            if (string.IsNullOrEmpty(config.TelegramBotToken))
+            {
+                logger.Error($"Поле `{nameof(config.TelegramBotToken)}` в конфиге пустое. Дальнейшее выполнение программы невозможно.");
+                return;
+            }
 
             ContainerBuilder builder = new ContainerBuilder();
             builder.RegisterInstance(config);
+            builder.RegisterInstance(logger);
             builder.RegisterType<TelegramMessenger>().As<IMessenger>().SingleInstance().AutoActivate();
             builder.RegisterType<MessagesHandler>().As<IMessagesHandler>().SingleInstance().AutoActivate();
+            builder.RegisterType<ProxyProvider>().As<IProxyProvider>().SingleInstance();
             builder.RegisterType<QueryDataSerializer>().As<IQueryDataSerializer>().SingleInstance();
             builder.RegisterType<ReceiptHandleService>().As<IReceiptHandleService>().SingleInstance();
             builder.RegisterType<DebtsCalculator>().As<IDebtsCalculator>().SingleInstance();
@@ -54,14 +59,33 @@ namespace Cashlog.Application.Selfhost
             builder.RegisterType<ReceiptService>().As<IReceiptService>().SingleInstance();
             builder.RegisterType<TelegramMenuProvider>().As<IMenuProvider>().SingleInstance();
             builder.RegisterType<GroupService>().As<IGroupService>().SingleInstance();
-            builder.RegisterType<ConsoleLogger>().As<ILogger>().SingleInstance();
-            IContainer container = builder.Build();
+
+            try
+            {
+                _container = builder.Build();
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Произошла ошибка во время построения IoC контейнера", ex);
+                throw;
+            }
+
             Console.ReadLine();
         }
 
-        static CashlogSettings ReadConfig()
+        private static ILogger GetLogger()
         {
-            var json = System.IO.File.ReadAllText(_botConfigFileName);
+            var serilogLogger = new LoggerConfiguration()
+                .MinimumLevel.Verbose()
+                .WriteTo.RollingFile(@"logs\Main_{Date}.txt", outputTemplate: "{Timestamp:HH:mm:ss.fff zzz} [{Level}]: {Message}{NewLine}{Exception}")
+                .CreateLogger();
+
+            return new SerilogLogger(serilogLogger);
+        }
+
+        private static CashlogSettings ReadConfig()
+        {
+            var json = File.ReadAllText(BotConfigFileName);
             return JsonConvert.DeserializeObject<CashlogSettings>(json);
         }
     }

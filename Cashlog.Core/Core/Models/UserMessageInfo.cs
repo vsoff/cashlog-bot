@@ -14,24 +14,4 @@ namespace Cashlog.Core.Core.Models
         public MessageInfo Message { get; set; }
         public MessageType MessageType { get; set; }
     }
-
-    public class MessageInfo
-    {
-        public string Token { get; set; }
-        public string Text { get; set; }
-        public QrCodeData QrCode { get; set; }
-    }
-
-    public enum MessageType
-    {
-        Unknown = 1,
-        Text = 2,
-        QrCode = 3,
-        Command = 4
-    }
-
-    public static class UserInfoExtensions
-    {
-        public static bool IsAdmin(this UserMessageInfo messageInfo) => messageInfo.Group.AdminToken == messageInfo.UserToken;
-    }
 }
