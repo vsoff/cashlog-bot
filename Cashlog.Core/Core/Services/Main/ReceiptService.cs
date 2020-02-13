@@ -20,7 +20,7 @@ namespace Cashlog.Core.Core.Services
 
         public async Task<Receipt> AddAsync(Receipt receipt)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
             {
                 ReceiptDto newReceipt = await uow.Receipts.AddAsync(receipt.ToData());
                 await uow.SaveChangesAsync();
@@ -30,7 +30,7 @@ namespace Cashlog.Core.Core.Services
 
         public async Task<Receipt> GetAsync(long receiptId)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
             {
                 return (await uow.Receipts.GetAsync(receiptId))?.ToCore();
             }
@@ -38,7 +38,7 @@ namespace Cashlog.Core.Core.Services
 
         public async Task<Receipt> UpdateAsync(Receipt receipt)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
             {
                 ReceiptDto newReceipt = await uow.Receipts.UpdateAsync(receipt.ToData());
                 await uow.SaveChangesAsync();
@@ -48,7 +48,7 @@ namespace Cashlog.Core.Core.Services
 
         public async Task<Receipt[]> GetByBillingPeriodIdAsync(long billingPeriodId)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
             {
                 return (await uow.Receipts.GetByBillingPeriodIdAsync(billingPeriodId))?.Select(x => x.ToCore()).ToArray();
             }
@@ -56,7 +56,7 @@ namespace Cashlog.Core.Core.Services
 
         public async Task SetCustomersToReceiptAsync(long receiptId, long[] consumerIds)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
             {
                 await uow.ReceiptConsumerMaps.AddRangeAsync(consumerIds.Select(x => new ReceiptConsumerMapDto
                 {
@@ -69,7 +69,7 @@ namespace Cashlog.Core.Core.Services
 
         public async Task<Dictionary<long, long[]>> GetConsumerIdsByReceiptIdsMapAsync(long[] receiptIds)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
             {
                 return await uow.ReceiptConsumerMaps.GetConsumerIdsByReceiptIdsMapAsync(receiptIds);
             }

@@ -19,7 +19,7 @@ namespace Cashlog.Core.Core.Services.Abstract
 
         public async Task<MoneyOperation> AddAsync(MoneyOperation item)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
             {
                 MoneyOperationDto operation = await uow.MoneyOperations.AddAsync(item.ToData());
                 await uow.SaveChangesAsync();
@@ -29,7 +29,7 @@ namespace Cashlog.Core.Core.Services.Abstract
 
         public async Task<MoneyOperation[]> AddAsync(MoneyOperation[] items)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
             {
                 MoneyOperationDto[] operations = await uow.MoneyOperations.AddRangeAsync(items.Select(x => x.ToData()));
                 await uow.SaveChangesAsync();
@@ -39,7 +39,7 @@ namespace Cashlog.Core.Core.Services.Abstract
 
         public async Task<MoneyOperation[]> GetByBillingPeriodIdAsync(long billingPeriodId)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
             {
                 MoneyOperationDto[] operations = await uow.MoneyOperations.GetByBillingPeriodIdAsync(billingPeriodId);
                 return operations.Select(x => x.ToCore()).ToArray();

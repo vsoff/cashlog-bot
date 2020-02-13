@@ -16,11 +16,17 @@ namespace Cashlog.Data.UoW
             Context = context;
         }
 
-        public async Task<T[]> GetListAsync(long[] ids)
-            => await Context.Set<T>().Where(x => ids.Contains(x.Id)).ToArrayAsync();
+        public Task<T[]> GetListAsync(long[] ids)
+            => Context.Set<T>().Where(x => ids.Contains(x.Id)).ToArrayAsync();
+
+        public Task<T[]> GetAllAsync()
+            => Context.Set<T>().ToArrayAsync();
+
+        public Task<bool> AnyAsync()
+            => Context.Set<T>().AnyAsync();
 
         public async Task<T> AddAsync(T item)
-            => (await AddRangeAsync(new[] {item})).First();
+            => (await AddRangeAsync(new[] { item })).First();
 
         public async Task<T[]> AddRangeAsync(IEnumerable<T> items)
         {
@@ -28,8 +34,8 @@ namespace Cashlog.Data.UoW
 
             foreach (var item in items)
             {
-                item.CreatedAt = DateTime.Now;
-                item.UpdatedAt = DateTime.Now;
+                item.CreatedAt = item.CreatedAt == DateTime.MinValue ? DateTime.UtcNow : item.CreatedAt;
+                item.UpdatedAt = item.UpdatedAt == DateTime.MinValue ? DateTime.UtcNow : item.UpdatedAt;
                 var newItem = (await Context.Set<T>().AddAsync(item)).Entity;
                 Context.Entry(newItem).State = EntityState.Added;
 
@@ -46,8 +52,8 @@ namespace Cashlog.Data.UoW
             return item;
         }
 
-        public async Task<T> GetAsync(long id)
-            => await Context.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
+        public Task<T> GetAsync(long id)
+            => Context.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
 
         public async Task<T> UpdateAsync(T item)
         {

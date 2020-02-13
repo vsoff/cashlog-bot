@@ -18,7 +18,7 @@ namespace Cashlog.Core.Core.Services
 
         public async Task<Group> AddAsync(string chatToken, string adminToken, string chatName)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
             {
                 GroupDto newGroup = await uow.Groups.AddAsync(new GroupDto
                 {
@@ -33,7 +33,7 @@ namespace Cashlog.Core.Core.Services
 
         public async Task<Group> GetByChatTokenAsync(string chatToken)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
             {
                 GroupDto group = await uow.Groups.GetByChatTokenAsync(chatToken);
                 return group?.ToCore();

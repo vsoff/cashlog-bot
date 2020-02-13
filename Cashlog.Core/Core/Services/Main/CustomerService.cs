@@ -20,7 +20,7 @@ namespace Cashlog.Core.Core.Services
 
         public async Task<Customer> AddAsync(Customer customer)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
             {
                 CustomerDto newCustomer = await uow.Customers.AddAsync(customer.ToData());
                 await uow.SaveChangesAsync();
@@ -30,7 +30,7 @@ namespace Cashlog.Core.Core.Services
 
         public async Task<Customer> GetAsync(long customerId)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
             {
                 return (await uow.Customers.GetAsync(customerId))?.ToCore();
             }
@@ -38,7 +38,7 @@ namespace Cashlog.Core.Core.Services
 
         public async Task<Customer[]> GetByGroupIdAsync(long groupId)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
             {
                 return (await uow.Customers.GetByGroupId(groupId))?.Select(x => x.ToCore()).ToArray();
             }

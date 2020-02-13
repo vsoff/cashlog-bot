@@ -16,5 +16,7 @@ namespace Cashlog.Data.UoW
         Task<T[]> AddRangeAsync(IEnumerable<T> items);
         Task<T> UpdateAsync(T item);
         Task<T> DeleteAsync(long id);
+        Task<T[]> GetAllAsync();
+        Task<bool> AnyAsync();
     }
 }

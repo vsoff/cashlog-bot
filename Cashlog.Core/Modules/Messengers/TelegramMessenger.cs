@@ -77,6 +77,8 @@ namespace Cashlog.Core.Modules.Messengers
             if (proxies == null || proxies.Count == 0)
                 throw new InvalidOperationException("Не было получено ни одного прокси от провайдера");
 
+            _logger.Trace($"Было получено {proxies.Count} различных прокси.");
+
             foreach (var proxy in proxies)
             {
                 _client = new TelegramBotClient(_cashlogSettings.TelegramBotToken, proxy);
@@ -244,90 +246,98 @@ namespace Cashlog.Core.Modules.Messengers
 
         private async void OnMessageReceived(object sender, Telegram.Bot.Args.MessageEventArgs e)
         {
-            if (e.Message.Chat.Type != ChatType.Group)
-                return;
-
-            long chatId = e.Message.Chat.Id;
-
-            if (chatId.ToString() != _cashlogSettings.AdminChatToken)
+            try
             {
-                _logger.Info($"Произведена попытка использования бота в группе `{e.Message.Chat.Title}` ({chatId})");
-                await _client.SendTextMessageAsync(chatId, "Чтобы бот мог работать в этой группе обратитесь к @vsoff");
-                return;
-            }
+                if (e.Message.Chat.Type != ChatType.Group)
+                    return;
 
-            // Получаем группу этого чата.
-            Group group = await _groupService.GetByChatTokenAsync(chatId.ToString());
+                long chatId = e.Message.Chat.Id;
 
-            // Если группы для этого чата нету, то создаём её.
-            if (group == null)
-            {
-                var admins = await _client.GetChatAdministratorsAsync(chatId);
-                var creator = admins.FirstOrDefault(x => x.Status == ChatMemberStatus.Creator);
-
-                if (creator == null)
+                if (chatId.ToString() != _cashlogSettings.AdminChatToken)
                 {
-                    _logger.Warning($"В группе {chatId} не был найден создатель");
+                    _logger.Info($"Произведена попытка использования бота в группе `{e.Message.Chat.Title}` ({chatId})");
+                    await _client.SendTextMessageAsync(chatId, "Чтобы бот мог работать в этой группе обратитесь к @vsoff");
                     return;
                 }
 
-                group = await _groupService.AddAsync(e.Message.Chat.Id.ToString(), creator.User.Id.ToString(), e.Message.Chat.Title ?? "Default chat name");
-            }
+                // Получаем группу этого чата.
+                Group group = await _groupService.GetByChatTokenAsync(chatId.ToString());
 
-            Customer[] customers = await _customerService.GetByGroupIdAsync(group.Id);
-
-            // Собираем всю информацию о пользователе и сообщении.
-            UserMessageInfo userMessageInfo = new UserMessageInfo
-            {
-                Group = group,
-                Customers = customers,
-                UserName = e.Message.From.Username,
-                UserToken = e.Message.From.Id.ToString(),
-                MessageType = Core.Models.MessageType.Unknown,
-                Message = new MessageInfo
+                // Если группы для этого чата нету, то создаём её.
+                if (group == null)
                 {
-                    //e.Message.ReplyToMessage.MessageId
-                    Token = e.Message.MessageId.ToString(),
-                    QrCode = null,
-                    Text = e.Message.Text,
-                }
-            };
+                    var admins = await _client.GetChatAdministratorsAsync(chatId);
+                    var creator = admins.FirstOrDefault(x => x.Status == ChatMemberStatus.Creator);
 
-            // Дописываем дополнительную инфу.
-            switch (e.Message.Type)
-            {
-                case MessageType.Photo:
+                    if (creator == null)
                     {
-                        PhotoSize photoSize = e.Message.Photo.OrderByDescending(x => x.Width).First();
-                        _logger.Trace($"Получено фото чека с разрешением W:{photoSize.Width} H:{photoSize.Height}");
+                        _logger.Warning($"В группе {chatId} не был найден создатель");
+                        return;
+                    }
 
-                        File file = await _client.GetFileAsync(photoSize.FileId);
+                    group = await _groupService.AddAsync(e.Message.Chat.Id.ToString(), creator.User.Id.ToString(), e.Message.Chat.Title ?? "Default chat name");
+                }
 
-                        using (MemoryStream clientStream = new MemoryStream())
+                Customer[] customers = await _customerService.GetByGroupIdAsync(group.Id);
+
+                // Собираем всю информацию о пользователе и сообщении.
+                UserMessageInfo userMessageInfo = new UserMessageInfo
+                {
+                    Group = group,
+                    Customers = customers,
+                    UserName = e.Message.From.Username,
+                    UserToken = e.Message.From.Id.ToString(),
+                    MessageType = Core.Models.MessageType.Unknown,
+                    Message = new MessageInfo
+                    {
+                        //e.Message.ReplyToMessage.MessageId
+                        Token = e.Message.MessageId.ToString(),
+                        QrCode = null,
+                        Text = e.Message.Text,
+                    }
+                };
+
+                // Дописываем дополнительную инфу.
+                switch (e.Message.Type)
+                {
+                    case MessageType.Photo:
                         {
-                            await _client.DownloadFileAsync(file.FilePath, clientStream);
+                            PhotoSize photoSize = e.Message.Photo.OrderByDescending(x => x.Width).First();
+                            _logger.Trace($"Получено фото чека с разрешением W:{photoSize.Width} H:{photoSize.Height}");
 
-                            // Получаем изображение из потока.
-                            Bitmap returnImage = (Bitmap)Image.FromStream(clientStream);
-                            var data = _receiptHandleService.ParsePhoto(returnImage);
-                            _logger.Trace(data == null ? "Не удалось распознать QR код на чеке" : $"Данные с QR кода чека {data.Data}");
+                            File file = await _client.GetFileAsync(photoSize.FileId);
 
-                            userMessageInfo.Message.QrCode = data;
-                            userMessageInfo.MessageType = Core.Models.MessageType.QrCode;
+                            using (MemoryStream clientStream = new MemoryStream())
+                            {
+                                await _client.DownloadFileAsync(file.FilePath, clientStream);
+
+                                // Получаем изображение из потока.
+                                Bitmap returnImage = (Bitmap)Image.FromStream(clientStream);
+                                var data = _receiptHandleService.ParsePhoto(returnImage);
+                                _logger.Trace(data == null ? "Не удалось распознать QR код на чеке" : $"Данные с QR кода чека {data.Data}");
+
+                                userMessageInfo.Message.QrCode = data;
+                                userMessageInfo.MessageType = Core.Models.MessageType.QrCode;
+                            }
+
+                            break;
                         }
 
-                        break;
-                    }
+                    case MessageType.Text:
+                        {
+                            userMessageInfo.MessageType = Core.Models.MessageType.Text;
+                            break;
+                        }
+                }
 
-                case MessageType.Text:
-                    {
-                        userMessageInfo.MessageType = Core.Models.MessageType.Text;
-                        break;
-                    }
+                // Уведомляем подписчиков о новом сообщении.
+                OnMessage?.Invoke(this, userMessageInfo);
+
             }
-
-            // Уведомляем подписчиков о новом сообщении.
-            OnMessage?.Invoke(this, userMessageInfo);
+            catch (Exception ex)
+            {
+                _logger.Error($"{GetType().Name}: Во время обработки полученного сообщения произошла ошибка", ex);
+            }
         }
 
         public event EventHandler<UserMessageInfo> OnMessage;

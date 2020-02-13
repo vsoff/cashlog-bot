@@ -37,7 +37,7 @@ namespace Cashlog.Core.Core.Services
             Receipt[] periodReceipts = (await _receiptService.GetByBillingPeriodIdAsync(billingPeriodId))
                 .Where(x => x.Status.IsFinalStatus()).ToArray();
             Dictionary<long, long[]> consumerMap = await _receiptService.GetConsumerIdsByReceiptIdsMapAsync(periodReceipts.Select(x => x.Id).ToArray());
-
+            
             return await _debtsCalculator.Calculate(periodOperations, periodReceipts.Where(x => x.CustomerId.HasValue).Select(x => new ReceiptCalculatorInfo
             {
                 Amount = x.TotalAmount,

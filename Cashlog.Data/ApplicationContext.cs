@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Cashlog.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -8,10 +9,12 @@ namespace Cashlog.Data
     public sealed class ApplicationContext : DbContext
     {
         private readonly string _connectionString;
+        private readonly DataProviderType _providerType;
 
-        public ApplicationContext(string connectionString)
+        public ApplicationContext(string connectionString, DataProviderType providerType)
         {
             _connectionString = connectionString;
+            _providerType = providerType;
 
             if (Database.EnsureCreated())
                 Database.Migrate();
@@ -19,9 +22,18 @@ namespace Cashlog.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseMySql(_connectionString);
+            switch (_providerType)
+            {
+                case DataProviderType.MsSql:
+                    optionsBuilder.UseSqlServer(_connectionString);
+                    break;
 
-            // optionsBuilder.UseSqlServer(_connectionString);
+                case DataProviderType.MySql:
+                    optionsBuilder.UseMySql(_connectionString);
+                    break;
+
+                default: throw new InvalidOperationException($"Неизвестный провайдер данных {_providerType}");
+            }
         }
 
 

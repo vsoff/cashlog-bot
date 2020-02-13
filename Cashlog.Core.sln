@@ -11,7 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cashlog.Data", "Cashlog.Dat
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{68FF3967-27C8-4761-ABCE-F59B903A4A46}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cashlog.Tests", "Tests\Cashlog.Tests\Cashlog.Tests.csproj", "{F4C6DF13-DD22-404F-B713-210DAB434662}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cashlog.Tests", "Tests\Cashlog.Tests\Cashlog.Tests.csproj", "{F4C6DF13-DD22-404F-B713-210DAB434662}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utils", "Utils", "{46A5D681-4D25-41C7-8B21-2D2E715DD565}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cashlog.Utils.DataMigrator", "Utils\Cashlog.Utils.DataMigrator\Cashlog.Utils.DataMigrator.csproj", "{C609FFCC-8013-43DF-AC99-9C6E9C5BD6A4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,12 +39,17 @@ Global
 		{F4C6DF13-DD22-404F-B713-210DAB434662}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4C6DF13-DD22-404F-B713-210DAB434662}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4C6DF13-DD22-404F-B713-210DAB434662}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C609FFCC-8013-43DF-AC99-9C6E9C5BD6A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C609FFCC-8013-43DF-AC99-9C6E9C5BD6A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C609FFCC-8013-43DF-AC99-9C6E9C5BD6A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C609FFCC-8013-43DF-AC99-9C6E9C5BD6A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F4C6DF13-DD22-404F-B713-210DAB434662} = {68FF3967-27C8-4761-ABCE-F59B903A4A46}
+		{C609FFCC-8013-43DF-AC99-9C6E9C5BD6A4} = {46A5D681-4D25-41C7-8B21-2D2E715DD565}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6254246B-5E21-41CB-96F1-497E514BD03F}

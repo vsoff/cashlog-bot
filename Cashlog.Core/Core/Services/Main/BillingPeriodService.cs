@@ -23,7 +23,7 @@ namespace Cashlog.Core.Core.Services
 
         public async Task<BillingPeriod> AddAsync(BillingPeriod item)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
             {
                 BillingPeriodDto operation = await uow.BillingPeriods.AddAsync(item.ToData());
                 await uow.SaveChangesAsync();
@@ -33,7 +33,7 @@ namespace Cashlog.Core.Core.Services
 
         public async Task<BillingPeriod> UpdateAsync(BillingPeriod item)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
             {
                 BillingPeriodDto operation = await uow.BillingPeriods.UpdateAsync(item.ToData());
                 await uow.SaveChangesAsync();
@@ -43,7 +43,7 @@ namespace Cashlog.Core.Core.Services
 
         public async Task<BillingPeriod> GetLastByGroupIdAsync(long groupId)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
             {
                 BillingPeriodDto operation = await uow.BillingPeriods.GetLastByGroupIdAsync(groupId);
                 return operation?.ToCore();
@@ -52,7 +52,7 @@ namespace Cashlog.Core.Core.Services
 
         public async Task<BillingPeriod> GetAsync(long billingPeriodId)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString))
+            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
             {
                 return (await uow.BillingPeriods.GetAsync(billingPeriodId))?.ToCore();
             }

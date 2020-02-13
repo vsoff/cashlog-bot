@@ -1,22 +1,18 @@
-﻿namespace Cashlog.Core.Core
+﻿using Cashlog.Data;
+
+namespace Cashlog.Core.Core
 {
     public class CashlogSettings
     {
-        public CashlogSettings(string dataBaseConnectionString, string adminChatToken, string telegramBotToken, string proxyAddress, string fnsPhone, string fnsPassword)
+        public CashlogSettings()
         {
-            DataBaseConnectionString = dataBaseConnectionString;
-            AdminChatToken = adminChatToken;
-            TelegramBotToken = telegramBotToken;
-            ProxyAddress = proxyAddress;
-            FnsPhone = fnsPhone;
-            FnsPassword = fnsPassword;
         }
 
-        public string DataBaseConnectionString { get; }
-        public string AdminChatToken { get; }
-        public string TelegramBotToken { get; }
-        public string ProxyAddress { get; }
-        public string FnsPhone { get; }
-        public string FnsPassword { get; }
+        public string DataBaseConnectionString { get; set; }
+        public DataProviderType DataProviderType { get; set; }
+        public string AdminChatToken { get; set; }
+        public string TelegramBotToken { get; set; }
+        public string FnsPhone { get; set; }
+        public string FnsPassword { get; set; }
     }
 }

@@ -18,7 +18,9 @@ namespace Cashlog.Data.UoW.Repositories
         }
 
         public async Task<Dictionary<long, long[]>> GetConsumerIdsByReceiptIdsMapAsync(long[] receiptIds)
-            => await Context.Set<ReceiptConsumerMapDto>().Where(x => receiptIds.Contains(x.ReceiptId)).GroupBy(x => x.ReceiptId)
-                .ToDictionaryAsync(x => x.Key, x => x.Select(y => y.ConsumerId).ToArray());
+        {
+            var maps = await Context.Set<ReceiptConsumerMapDto>().Where(x => receiptIds.Contains(x.ReceiptId)).ToArrayAsync();
+            return maps.GroupBy(x => x.ReceiptId).ToDictionary(x => x.Key, x => x.Select(y => y.ConsumerId).ToArray());
+        }
     }
 }
