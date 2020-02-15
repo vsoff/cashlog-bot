@@ -37,13 +37,16 @@ namespace Cashlog.Core.Core.Services
             Receipt[] periodReceipts = (await _receiptService.GetByBillingPeriodIdAsync(billingPeriodId))
                 .Where(x => x.Status.IsFinalStatus()).ToArray();
             Dictionary<long, long[]> consumerMap = await _receiptService.GetConsumerIdsByReceiptIdsMapAsync(periodReceipts.Select(x => x.Id).ToArray());
-            
-            return await _debtsCalculator.Calculate(periodOperations, periodReceipts.Where(x => x.CustomerId.HasValue).Select(x => new ReceiptCalculatorInfo
-            {
-                Amount = x.TotalAmount,
-                CustomerId = x.CustomerId.Value,
-                ConsumerIds = consumerMap[x.Id]
-            }).ToArray());
+
+            return await _debtsCalculator
+                .Calculate(periodOperations, periodReceipts
+                    .Where(x => x.CustomerId.HasValue)
+                    .Select(x => new ReceiptCalculatorInfo
+                    {
+                        Amount = x.TotalAmount,
+                        CustomerId = x.CustomerId.Value,
+                        ConsumerIds = consumerMap[x.Id]
+                    }).ToArray());
         }
 
         public async Task<ClosingPeriodResult> CloseCurrentAndOpenNewPeriod(long groupId)
@@ -74,7 +77,7 @@ namespace Cashlog.Core.Core.Services
                 MoneyOperationShortInfo[] debtsShortInfo = await CalculatePeriodCurrentDebts(lastBillingPeriod.Id);
                 debts = debtsShortInfo.Select(x => new MoneyOperation
                 {
-                    Amount = (int)x.Amount,
+                    Amount = (int) x.Amount,
                     BillingPeriodId = newBillingPeriod.Id,
                     Comment = "Долг с предыдущего периода",
                     CustomerFromId = x.FromId,
