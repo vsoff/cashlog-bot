@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Cashlog.Core.Common;
+using Cashlog.Core.Core.Providers.Abstract;
 using Flurl.Http;
 using HtmlAgilityPack;
 

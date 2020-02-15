@@ -12,6 +12,7 @@ namespace Cashlog.Core.Core
         public DataProviderType DataProviderType { get; set; }
         public string AdminChatToken { get; set; }
         public string TelegramBotToken { get; set; }
+        public string ProxyAddress { get; set; }
         public string FnsPhone { get; set; }
         public string FnsPassword { get; set; }
     }

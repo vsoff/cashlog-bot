@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Cashlog.Core.Core.Models;
+using Cashlog.Core.Core.Providers;
+using Cashlog.Core.Core.Providers.Abstract;
 using Cashlog.Core.Data.Mappers;
 using Cashlog.Data.Entities;
 using Cashlog.Data.UoW;
@@ -9,16 +11,16 @@ namespace Cashlog.Core.Core.Services
 {
     public class GroupService : IGroupService
     {
-        private readonly CashlogSettings _cashogSettings;
+        private readonly IDatabaseContextProvider _databaseContextProvider;
 
-        public GroupService(CashlogSettings cashogSettings)
+        public GroupService(IDatabaseContextProvider databaseContextProvider)
         {
-            _cashogSettings = cashogSettings ?? throw new ArgumentNullException(nameof(cashogSettings));
+            _databaseContextProvider = databaseContextProvider ?? throw new ArgumentNullException(nameof(databaseContextProvider));
         }
 
         public async Task<Group> AddAsync(string chatToken, string adminToken, string chatName)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
+            using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
             {
                 GroupDto newGroup = await uow.Groups.AddAsync(new GroupDto
                 {
@@ -33,7 +35,7 @@ namespace Cashlog.Core.Core.Services
 
         public async Task<Group> GetByChatTokenAsync(string chatToken)
         {
-            using (var uow = new UnitOfWork(_cashogSettings.DataBaseConnectionString, _cashogSettings.DataProviderType))
+            using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
             {
                 GroupDto group = await uow.Groups.GetByChatTokenAsync(chatToken);
                 return group?.ToCore();

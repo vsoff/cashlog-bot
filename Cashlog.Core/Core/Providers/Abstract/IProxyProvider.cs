@@ -2,7 +2,7 @@
 using System.Net;
 using System.Threading.Tasks;
 
-namespace Cashlog.Core.Core.Providers
+namespace Cashlog.Core.Core.Providers.Abstract
 {
     /// <summary>
     /// Поставляет списки прокси серверов.

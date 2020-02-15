@@ -3,8 +3,10 @@ using System.IO;
 using Autofac;
 using Cashlog.Core.Core;
 using Cashlog.Core.Core.Providers;
+using Cashlog.Core.Core.Providers.Abstract;
 using Cashlog.Core.Core.Services;
 using Cashlog.Core.Core.Services.Abstract;
+using Cashlog.Core.Core.Services.Main;
 using Cashlog.Core.Messengers;
 using Cashlog.Core.Messengers.Menu;
 using Cashlog.Core.Modules.Calculator;
@@ -36,7 +38,8 @@ namespace Cashlog.Application.Selfhost
                 return;
             }
 
-            var config = ReadConfig();
+            ICashlogSettingsService settingsService = new CashlogSettingsService();
+            var config = settingsService.ReadSettings();
             if (string.IsNullOrEmpty(config.TelegramBotToken))
             {
                 logger.Error($"Поле `{nameof(config.TelegramBotToken)}` в конфиге пустое. Дальнейшее выполнение программы невозможно.");
@@ -44,8 +47,9 @@ namespace Cashlog.Application.Selfhost
             }
 
             ContainerBuilder builder = new ContainerBuilder();
-            builder.RegisterInstance(config);
+            builder.RegisterInstance(settingsService);
             builder.RegisterInstance(logger);
+            builder.RegisterType<DatabaseContextProvider>().As<IDatabaseContextProvider>().SingleInstance().AutoActivate();
             builder.RegisterType<TelegramMessenger>().As<IMessenger>().SingleInstance().AutoActivate();
             builder.RegisterType<MessagesHandler>().As<IMessagesHandler>().SingleInstance().AutoActivate();
             builder.RegisterType<ProxyProvider>().As<IProxyProvider>().SingleInstance();
@@ -81,12 +85,6 @@ namespace Cashlog.Application.Selfhost
                 .CreateLogger();
 
             return new SerilogLogger(serilogLogger);
-        }
-
-        private static CashlogSettings ReadConfig()
-        {
-            var json = File.ReadAllText(BotConfigFileName);
-            return JsonConvert.DeserializeObject<CashlogSettings>(json);
         }
     }
 }

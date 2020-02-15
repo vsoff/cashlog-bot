@@ -8,9 +8,9 @@ namespace Cashlog.Data.UoW
     {
         private readonly ApplicationContext _context;
 
-        public UnitOfWork(string connectionString, DataProviderType providerType)
+        public UnitOfWork(ApplicationContext context)
         {
-            _context = new ApplicationContext(connectionString, providerType);
+            _context = context ?? throw new ArgumentNullException(nameof(context));
 
             Groups = new GroupRepository(_context);
             Receipts = new ReceiptRepository(_context);

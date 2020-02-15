@@ -53,18 +53,25 @@ namespace Cashlog.Utils.DataMigrator
             Console.ReadLine();
         }
 
+        /// <summary>
+        /// Производит миграцию объектов для определённого репозитория.
+        /// </summary>
+        /// <typeparam name="T">Типа данных в репозитории</typeparam>
+        /// <param name="getTargetField">Функция-указатель на поле репозитория.</param>
+        /// <param name="settingsFrom">Настройки сервера с которого происходит миграция данных.</param>
+        /// <param name="settingsTo">Настройки сервера на который происходит миграция данных.</param>
         private static async Task MigrateObjects<T>(Func<UnitOfWork, IRepository<T>> getTargetField, CashlogSettings settingsFrom, CashlogSettings settingsTo) where T : Entity
         {
             Console.WriteLine($"Миграция данных для типа {typeof(T)}...");
 
-            using var uowTo = new UnitOfWork(settingsTo.DataBaseConnectionString, settingsTo.DataProviderType);
+            using var uowTo = new UnitOfWork(new ApplicationContext(settingsTo.DataBaseConnectionString, settingsTo.DataProviderType));
             var repositoryTo = getTargetField(uowTo);
 
             // Проверяем что табличка пустая.
             if (await repositoryTo.AnyAsync())
                 throw new InvalidOperationException($"В репозитории типа {typeof(T)} уже есть данные");
 
-            using var uowFrom = new UnitOfWork(settingsFrom.DataBaseConnectionString, settingsFrom.DataProviderType);
+            using var uowFrom = new UnitOfWork(new ApplicationContext(settingsFrom.DataBaseConnectionString, settingsFrom.DataProviderType));
 
             // Получаем все объекты.
             var data = await getTargetField(uowFrom).GetAllAsync();

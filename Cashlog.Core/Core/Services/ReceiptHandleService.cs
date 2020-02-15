@@ -8,6 +8,8 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Cashlog.Core.Core.Models;
+using Cashlog.Core.Core.Providers;
+using Cashlog.Core.Core.Services.Abstract;
 using Cashlog.Core.Fns;
 using Cashlog.Core.Fns.Models;
 using ZXing;
@@ -16,11 +18,11 @@ namespace Cashlog.Core.Core.Services
 {
     public class ReceiptHandleService : IReceiptHandleService
     {
-        private readonly CashlogSettings _cashogSettings;
+        private readonly ICashlogSettingsService _cashlogSettingsService;
 
-        public ReceiptHandleService(CashlogSettings cashogSettings)
+        public ReceiptHandleService(ICashlogSettingsService cashlogSettingsService)
         {
-            _cashogSettings = cashogSettings ?? throw new ArgumentNullException(nameof(cashogSettings));
+            _cashlogSettingsService = cashlogSettingsService ?? throw new ArgumentNullException(nameof(cashlogSettingsService));
         }
 
         public QrCodeData ParsePhoto(Bitmap photo)
@@ -75,9 +77,10 @@ namespace Cashlog.Core.Core.Services
             if (!checkResult.ReceiptExists)
                 return null;
 
-            ReceiptFnsResult fnsResult = await FnsManager.ReceiveAsync(data.FiscalNumber, data.FiscalDocument, data.FiscalSign, _cashogSettings.FnsPhone, _cashogSettings.FnsPassword);
+            var settings = _cashlogSettingsService.ReadSettings();
+            ReceiptFnsResult fnsResult = await FnsManager.ReceiveAsync(data.FiscalNumber, data.FiscalDocument, data.FiscalSign, settings.FnsPhone, settings.FnsPassword);
             if (fnsResult.StatusCode == HttpStatusCode.Accepted)
-                fnsResult = await FnsManager.ReceiveAsync(data.FiscalNumber, data.FiscalDocument, data.FiscalSign, _cashogSettings.FnsPhone, _cashogSettings.FnsPassword);
+                fnsResult = await FnsManager.ReceiveAsync(data.FiscalNumber, data.FiscalDocument, data.FiscalSign, settings.FnsPhone, settings.FnsPassword);
 
             if (!fnsResult.IsSuccess || fnsResult.StatusCode == HttpStatusCode.Accepted)
                 return null;
