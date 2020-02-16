@@ -55,7 +55,7 @@ namespace Cashlog.Tests
                         if (data != null)
                             receiptDetailInfos.Add(data);
                     }
-                    catch (Exception ex)
+                    catch
                     {
                         throw;
                     }

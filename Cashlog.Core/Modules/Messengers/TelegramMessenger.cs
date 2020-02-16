@@ -82,7 +82,7 @@ namespace Cashlog.Core.Modules.Messengers
             if (!string.IsNullOrEmpty(settings.ProxyAddress))
             {
                 _logger.Trace($"Попытка подключения к последнему работающему прокси...");
-                var newClient = await TestProxy(settings, new WebProxy(settings.ProxyAddress));
+                var newClient = TestProxy(settings, new WebProxy(settings.ProxyAddress));
                 if (newClient != null)
                 {
                     _client = newClient;
@@ -102,7 +102,7 @@ namespace Cashlog.Core.Modules.Messengers
                 {
                     _logger.Trace($"Проверка прокси `{proxy.Address}`...");
 
-                    var newClient = await TestProxy(settings, proxy);
+                    var newClient = TestProxy(settings, proxy);
                     if (newClient == null)
                     {
                         _logger.Trace($"Прокси `{proxy.Address}` не работает.");
@@ -134,7 +134,7 @@ namespace Cashlog.Core.Modules.Messengers
             throw new InvalidOperationException("Ни один из полученных от провайдера прокси серверов не отработал");
         }
 
-        private async Task<TelegramBotClient> TestProxy(CashlogSettings cashlogSettings, WebProxy proxy)
+        private TelegramBotClient TestProxy(CashlogSettings cashlogSettings, WebProxy proxy)
         {
             _client = new TelegramBotClient(cashlogSettings.TelegramBotToken, proxy);
 
