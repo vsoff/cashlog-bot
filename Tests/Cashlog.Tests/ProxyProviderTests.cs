@@ -1,12 +1,9 @@
-﻿using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Cashlog.Core.Common;
 using Cashlog.Core.Core.Providers;
-using Microsoft.EntityFrameworkCore.Internal;
+using Cashlog.Core.Core.Providers.Abstract;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Match = System.Text.RegularExpressions.Match;
 
 namespace Cashlog.Tests
 {

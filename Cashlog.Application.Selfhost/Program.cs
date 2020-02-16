@@ -7,6 +7,7 @@ using Cashlog.Core.Core.Providers.Abstract;
 using Cashlog.Core.Core.Services;
 using Cashlog.Core.Core.Services.Abstract;
 using Cashlog.Core.Core.Services.Main;
+using Cashlog.Core.Fns;
 using Cashlog.Core.Messengers;
 using Cashlog.Core.Messengers.Menu;
 using Cashlog.Core.Modules.Calculator;
@@ -49,6 +50,7 @@ namespace Cashlog.Application.Selfhost
             ContainerBuilder builder = new ContainerBuilder();
             builder.RegisterInstance(settingsService);
             builder.RegisterInstance(logger);
+            builder.RegisterType<FnsService>().As<IFnsService>().SingleInstance().AutoActivate();
             builder.RegisterType<DatabaseContextProvider>().As<IDatabaseContextProvider>().SingleInstance().AutoActivate();
             builder.RegisterType<TelegramMessenger>().As<IMessenger>().SingleInstance().AutoActivate();
             builder.RegisterType<MessagesHandler>().As<IMessagesHandler>().SingleInstance().AutoActivate();

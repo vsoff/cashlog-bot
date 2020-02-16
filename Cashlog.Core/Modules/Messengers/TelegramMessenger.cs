@@ -81,6 +81,7 @@ namespace Cashlog.Core.Modules.Messengers
             // Пробуем начать работу с последним работающим прокси.
             if (!string.IsNullOrEmpty(settings.ProxyAddress))
             {
+                _logger.Trace($"Попытка подключения к последнему работающему прокси...");
                 var newClient = await TestProxy(settings, new WebProxy(settings.ProxyAddress));
                 if (newClient != null)
                 {
@@ -344,7 +345,7 @@ namespace Cashlog.Core.Modules.Messengers
                     {
                         //e.Message.ReplyToMessage.MessageId
                         Token = e.Message.MessageId.ToString(),
-                        QrCode = null,
+                        ReceiptInfo = null,
                         Text = e.Message.Text,
                     }
                 };
@@ -366,9 +367,9 @@ namespace Cashlog.Core.Modules.Messengers
                             // Получаем изображение из потока.
                             Bitmap returnImage = (Bitmap) Image.FromStream(clientStream);
                             var data = _receiptHandleService.ParsePhoto(returnImage);
-                            _logger.Trace(data == null ? "Не удалось распознать QR код на чеке" : $"Данные с QR кода чека {data.Data}");
+                            _logger.Trace(data == null ? "Не удалось распознать QR код на чеке" : $"Данные с QR кода чека {data.RawData}");
 
-                            userMessageInfo.Message.QrCode = data;
+                            userMessageInfo.Message.ReceiptInfo = data;
                             userMessageInfo.MessageType = Core.Models.MessageType.QrCode;
                         }
 

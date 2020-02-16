@@ -4,6 +4,6 @@
     {
         public string Token { get; set; }
         public string Text { get; set; }
-        public QrCodeData QrCode { get; set; }
+        public ReceiptMainInfo ReceiptInfo { get; set; }
     }
 }

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Cashlog.Core.Core.Models;
 using Cashlog.Core.Core.Providers;
 using Cashlog.Core.Core.Services.Abstract;
+using Cashlog.Core.Data.Mappers;
 using Cashlog.Core.Fns;
 using Cashlog.Core.Fns.Models;
 using ZXing;
@@ -19,13 +20,17 @@ namespace Cashlog.Core.Core.Services
     public class ReceiptHandleService : IReceiptHandleService
     {
         private readonly ICashlogSettingsService _cashlogSettingsService;
+        private readonly IFnsService _fnsService;
 
-        public ReceiptHandleService(ICashlogSettingsService cashlogSettingsService)
+        public ReceiptHandleService(
+            ICashlogSettingsService cashlogSettingsService,
+            IFnsService fnsService)
         {
             _cashlogSettingsService = cashlogSettingsService ?? throw new ArgumentNullException(nameof(cashlogSettingsService));
+            _fnsService = fnsService ?? throw new ArgumentNullException(nameof(fnsService));
         }
 
-        public QrCodeData ParsePhoto(Bitmap photo)
+        public ReceiptMainInfo ParsePhoto(Bitmap photo)
         {
             byte[] byteArray;
             using (MemoryStream bitmapStream = new MemoryStream())
@@ -56,9 +61,9 @@ namespace Cashlog.Core.Core.Services
                 if (!date.HasValue || !isAmountParsed)
                     return null;
 
-                return new QrCodeData
+                return new ReceiptMainInfo
                 {
-                    Data = decodeResult.Text,
+                    RawData = decodeResult.Text,
                     FiscalDocument = values["i"],
                     FiscalNumber = values["fn"],
                     FiscalSign = values["fp"],
@@ -70,39 +75,17 @@ namespace Cashlog.Core.Core.Services
             return null;
         }
 
-        public async Task<ReceiptInfo> GetReceiptInfoAsync(QrCodeData data)
+        public async Task<ReceiptInfo> GetReceiptInfoAsync(ReceiptMainInfo data)
         {
-            CheckFnsResult checkResult = await FnsManager.CheckAsync(data.FiscalNumber, data.FiscalDocument, data.FiscalSign, data.PurchaseTime, (decimal)data.TotalAmount);
+            if (data == null) throw new ArgumentNullException(nameof(data));
 
-            if (!checkResult.ReceiptExists)
+            bool receiptExists = await _fnsService.ReceiptExistsAsync(data);
+            if (!receiptExists)
                 return null;
 
             var settings = _cashlogSettingsService.ReadSettings();
-            ReceiptFnsResult fnsResult = await FnsManager.ReceiveAsync(data.FiscalNumber, data.FiscalDocument, data.FiscalSign, settings.FnsPhone, settings.FnsPassword);
-            if (fnsResult.StatusCode == HttpStatusCode.Accepted)
-                fnsResult = await FnsManager.ReceiveAsync(data.FiscalNumber, data.FiscalDocument, data.FiscalSign, settings.FnsPhone, settings.FnsPassword);
-
-            if (!fnsResult.IsSuccess || fnsResult.StatusCode == HttpStatusCode.Accepted)
-                return null;
-
-            return new ReceiptInfo
-            {
-                PurchaseTime = data.PurchaseTime,
-                FiscalSign = data.FiscalSign,
-                FiscalDocument = data.FiscalDocument,
-                FiscalNumber = data.FiscalNumber,
-                TotalAmount = (double)fnsResult.Document.Receipt.TotalSum / 100,
-                RetailAddress = fnsResult.Document.Receipt.RetailPlaceAddress,
-                RetailInn = fnsResult.Document.Receipt.RetailInn,
-                CompanyName = fnsResult.Document.Receipt.StoreName,
-                CashierName = fnsResult.Document.Receipt.Cashier,
-                Items = fnsResult.Document.Receipt.Items.Select(x => new ReceiptItem
-                {
-                    Name = x.Name,
-                    Price = (double)x.Price / 100,
-                    Quantity = x.Quantity
-                }).ToArray()
-            };
+            var detailInfo = await _fnsService.GetReceiptAsync(data, settings.FnsPhone, settings.FnsPassword);
+            return detailInfo?.ToCore(data);
         }
 
         /// <summary>

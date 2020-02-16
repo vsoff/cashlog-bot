@@ -244,7 +244,7 @@ namespace Cashlog.Core.Core
 
         private async Task HandlePhotoMessageAsync(UserMessageInfo userMessageInfo)
         {
-            QrCodeData data = userMessageInfo.Message.QrCode;
+            ReceiptMainInfo data = userMessageInfo.Message.ReceiptInfo;
 
             if (data == null)
             {

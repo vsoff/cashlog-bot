@@ -1,23 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Cashlog.Core.Common;
 using Cashlog.Core.Fns.Models;
+using Flurl;
+using Flurl.Http;
 using Newtonsoft.Json;
 
 namespace Cashlog.Core.Fns
 {
     /// <summary>
-    /// Класс для взаимодействия с ФНС
+    /// Сервис взаимодействия с API ФНС.
     /// </summary>
     /// <remarks>HABR https://habr.com/ru/post/358966/ </remarks>
-    public static class FnsManager
+    public interface IFnsService
     {
-        private static readonly HttpClient _client = new HttpClient();
+        /// <summary>
+        /// Возвращает true, если в ФНС есть информация по чеку.
+        /// </summary>
+        Task<bool> ReceiptExistsAsync(ReceiptMainInfo receiptInfo);
 
+        /// <summary>
+        /// Возвращает детальную информацию по чеку.
+        /// </summary>
+        Task<FnsReceiptDetailInfo> GetReceiptAsync(ReceiptMainInfo receiptInfo, string phone, string password);
+    }
+
+    public interface IFnsAccountService
+    {
         /// <summary>
         /// Регистрация нового пользователя. Необходима для получения детальной информации по чекам.
         /// </summary>
@@ -25,30 +40,7 @@ namespace Cashlog.Core.Fns
         /// <param name="name">Имя пользователя</param>
         /// <param name="phone">Номер телефона пользователя в формате +79991234567</param>
         /// <returns></returns>
-        public static async Task<FnsResult> RegistrationAsync(string email, string name, string phone)
-        {
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                throw new ArgumentException("Недопустимое значение параметра", nameof(email));
-            }
-
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Недопустимое значение параметра", nameof(name));
-            }
-
-            if (string.IsNullOrWhiteSpace(phone))
-            {
-                throw new ArgumentException("Недопустимое значение параметра", nameof(phone));
-            }
-
-            var requestContent = new StringContent(JsonConvert.SerializeObject(new {phone, email, name}));
-            requestContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-            var response = await _client.PostAsync(Urls.Registration, requestContent);
-
-            return await GetResultAsync(response);
-        }
+        Task<FnsResult> RegisterNewAsync(string email, string name, string phone);
 
         /// <summary>
         /// Аутентификация пользователя. Необходимости в ней нет, но раз ФНС предоставляет, как не воспользоваться.
@@ -56,35 +48,156 @@ namespace Cashlog.Core.Fns
         /// <param name="phone">Номер телефона пользователя в формате +79991234567</param>
         /// <param name="password">Пароль пользователя, который он получал из СМС при регистрации или восстановлении пароля</param>
         /// <returns>Возвращает адрес электронной почты и имя указанные при регистрации</returns>
-        public static async Task<FnsResult> LoginAsync(string phone, string password)
-        {
-            AddAuthorizationTokenToHeaders(phone, password);
-
-            var response = await _client.GetAsync(Urls.Login);
-
-            return await GetResultAsync(response);
-        }
+        Task<FnsResult> LoginAsync(string phone, string password);
 
         /// <summary>
         /// Восстановление пароля. Восстановленный пароль придет в СМС.
         /// </summary>
         /// <param name="phone">Номер телефона в формате +79991234567</param>
         /// <returns></returns>
-        public static async Task<FnsResult> RestorePasswordAsync(string phone)
+        Task<FnsResult> RestorePasswordAsync(string phone);
+    }
+
+    public class FnsRegistrationRequest
+    {
+        public string Phone { get; set; }
+        public string Email { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class FnsRestorePasswordRequest
+    {
+        public string Phone { get; set; }
+    }
+
+    public class FnsService : IFnsService, IFnsAccountService
+    {
+        private readonly ILogger _logger;
+        private IFlurlClient _client;
+
+        public FnsService(ILogger logger)
         {
-            if (string.IsNullOrWhiteSpace(phone))
-            {
-                throw new ArgumentException("Недопустимое значение параметра", nameof(phone));
-            }
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _client = new FlurlClient();
+        }
 
-            var requestContent = new StringContent(JsonConvert.SerializeObject(new {phone}));
-            requestContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        public async Task<FnsResult> RegisterNewAsync(string email, string name, string phone)
+        {
+            if (string.IsNullOrEmpty(email)) throw new ArgumentNullException(nameof(email));
+            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+            if (string.IsNullOrEmpty(phone)) throw new ArgumentNullException(nameof(phone));
 
-            var response = await _client.PostAsync(Urls.Restore, requestContent);
+            var response = await Urls.Registration
+                .WithClient(_client)
+                .PostJsonAsync(new FnsRegistrationRequest()
+                {
+                    Email = email,
+                    Name = name,
+                    Phone = phone
+                });
 
             return await GetResultAsync(response);
         }
 
+        public async Task<FnsResult> LoginAsync(string phone, string password)
+        {
+            if (string.IsNullOrEmpty(phone)) throw new ArgumentNullException(nameof(phone));
+            if (string.IsNullOrEmpty(password)) throw new ArgumentNullException(nameof(password));
+
+            IFlurlRequest request = Urls.Login.WithClient(_client);
+            request = AddAuthorizationHeaders(request, phone, password);
+
+            var response = await request.GetAsync();
+            return await GetResultAsync(response);
+        }
+
+        public async Task<FnsResult> RestorePasswordAsync(string phone)
+        {
+            if (string.IsNullOrEmpty(phone)) throw new ArgumentNullException(nameof(phone));
+
+            var response = await Urls.Restore
+                .WithClient(_client)
+                .PostJsonAsync(new FnsRestorePasswordRequest
+                {
+                    Phone = phone
+                });
+
+            return await GetResultAsync(response);
+        }
+
+        public async Task<bool> ReceiptExistsAsync(ReceiptMainInfo receiptInfo)
+        {
+            var url = Urls.GetCheckUrl(receiptInfo.FiscalNumber, receiptInfo.FiscalDocument, receiptInfo.FiscalSign, receiptInfo.PurchaseTime, (decimal) receiptInfo.TotalAmount);
+            var response = await url.WithClient(_client).GetAsync();
+            var result = new CheckFnsResult
+            {
+                IsSuccess = response.IsSuccessStatusCode,
+                Message = await response.Content.ReadAsStringAsync(),
+                ReceiptExists = response.IsSuccessStatusCode,
+                StatusCode = response.StatusCode
+            };
+            return result.ReceiptExists;
+        }
+
+        public async Task<FnsReceiptDetailInfo> GetReceiptAsync(ReceiptMainInfo receiptInfo, string phone, string password)
+        {
+            if (!await ReceiptExistsAsync(receiptInfo))
+                return null;
+
+            // Формируем запрос.
+            IFlurlRequest request = Urls.GetReceiveUrl(receiptInfo.FiscalNumber, receiptInfo.FiscalDocument, receiptInfo.FiscalSign).WithClient(_client);
+            request = AddRequiredHeaders(request);
+            request = AddAuthorizationHeaders(request, phone, password);
+
+            // Запрашиваем данные из ФНС.
+            HttpResponseMessage response = null;
+            const int retires = 4;
+            for (int i = 0; i < retires; i++)
+            {
+                try
+                {
+                    response = await request.GetAsync();
+                    if (response.StatusCode != HttpStatusCode.Accepted)
+                        break;
+
+                    await Task.Delay(TimeSpan.FromMilliseconds(500));
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"Во время выполнения запроса информации о чеке (попытка №{i}) произошло исключение", ex);
+                }
+            }
+
+            if (response == null || response.StatusCode != HttpStatusCode.OK)
+                return null;
+
+            var result = new ReceiptFnsResult
+            {
+                IsSuccess = response.IsSuccessStatusCode,
+                StatusCode = response.StatusCode,
+            };
+
+            // Десериализуем ответ.
+            try
+            {
+                string json = await response.Content.ReadAsStringAsync();
+                if (!string.IsNullOrEmpty(json))
+                    result.Document = JsonConvert.DeserializeObject<RootObject>(json).Document;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Во время десериализации информации о чеке произошло исключение", ex);
+            }
+
+            if (result.Document?.ReceiptInfo == null)
+                return null;
+
+            return result.Document?.ReceiptInfo;
+        }
+
+        /// <summary>
+        /// Преобразует HttpResponseMessage в FnsResult.
+        /// </summary>
         private static async Task<FnsResult> GetResultAsync(HttpResponseMessage response) => new FnsResult
         {
             IsSuccess = response.IsSuccessStatusCode,
@@ -93,104 +206,21 @@ namespace Cashlog.Core.Fns
         };
 
         /// <summary>
-        /// Проверить поступил ли чек в ФНС
-        /// </summary>
-        /// <param name="fiscalNumber">Фискальный номер, также известный как ФН. Номер состоит из 16 цифр.</param>
-        /// <param name="fiscalDocument">Номер фискального документа, также известный как ФД. Состоит максимум из 10 цифр.</param>
-        /// <param name="fiscalSign">Фискальный признак документа, также известный как ФП, ФПД. Состоит максимум из 10 цифр.</param>
-        /// <param name="date">Дата, указанная в чеке. Секунды не обязательные.</param>
-        /// <param name="sum">Сумма, указанная в чеке. Включая копейки.</param>
-        /// <returns></returns>
-        public static async Task<CheckFnsResult> CheckAsync(string fiscalNumber, string fiscalDocument, string fiscalSign,
-            DateTime date, decimal sum)
-        {
-            var response =
-                await _client.GetAsync(Urls.GetCheckUrl(fiscalNumber, fiscalDocument, fiscalSign, date, sum));
-            var result = new CheckFnsResult
-            {
-                IsSuccess = response.IsSuccessStatusCode,
-                Message = await response.Content.ReadAsStringAsync(),
-                ReceiptExists = response.IsSuccessStatusCode,
-                StatusCode = response.StatusCode
-            };
-
-            return result;
-        }
-
-        /// <summary>
-        /// Получить детальную информацию по чеку. Если перед этим не проверялось поступил ли он в ФНС, 
-        /// то при первом обращении данный метод вернет лишь 202 Accepted(Это не правда. Он возвращает ошибку,
-        /// и чтобы всё хорошо работало мне приходится сначала через телефон активировать) и никакой информации по чеку.
-        /// При повторном будет вся необходимая информация.
-        /// </summary>
-        /// <param name="fiscalNumber">Фискальный номер, также известный как ФН. Номер состоит из 16 цифр.</param>
-        /// <param name="fiscalDocument">Номер фискального документа, также известный как ФД. Состоит максимум из 10 цифр.</param>
-        /// <param name="fiscalSign">Фискальный признак документа, также известный как ФП, ФПД. Состоит максимум из 10 цифр.</param>
-        /// <param name="phone">Номер телефона в формате +79991234567, использованный при регистрации</param>
-        /// <param name="password">Пароль пользователя, полученный в СМС</param>
-        /// <returns>Возвращает информацию по чеку</returns>
-        public static async Task<ReceiptFnsResult> ReceiveAsync(string fiscalNumber, string fiscalDocument,
-            string fiscalSign, string phone, string password)
-        {
-            AddAuthorizationTokenToHeaders(phone, password);
-            AddRequiredHeaders();
-
-            var response = await _client.GetAsync(Urls.GetReceiveUrl(fiscalNumber, fiscalDocument, fiscalSign));
-            var result = new ReceiptFnsResult
-            {
-                IsSuccess = response.IsSuccessStatusCode,
-                StatusCode = response.StatusCode,
-            };
-            Debug.WriteLine($"STATUS CODE ::: {response.StatusCode}");
-
-            try
-            {
-                string json = await response.Content.ReadAsStringAsync();
-                Debug.WriteLine($"JSON ::: {json}");
-                result.Document = JsonConvert.DeserializeObject<RootObject>(json).Document;
-            }
-            catch
-            {
-                result.Message = await response.Content.ReadAsStringAsync();
-            }
-
-            return result;
-        }
-
-        /// <summary>
         /// Некоторые методы требуют специальных заголовков. Данный метод добавляет их.
         /// </summary>
-        private static void AddRequiredHeaders()
+        private static IFlurlRequest AddRequiredHeaders(IFlurlRequest request)
         {
-            if (!_client.DefaultRequestHeaders.Contains("Device-Id"))
-            {
-                _client.DefaultRequestHeaders.Add("Device-Id", string.Empty);
-                _client.DefaultRequestHeaders.Add("Device-OS", string.Empty);
-            }
+            return request.WithHeader("Device-Id", string.Empty)
+                .WithHeader("Device-OS", string.Empty);
         }
 
         /// <summary>
         /// Некоторые методы требуют авторизации. Данный метод добавляет эту авторизацию.
         /// </summary>
-        /// <param name="phone">Номер телефона для авторизации</param>
-        /// <param name="password">Пароль пользователя для авторизации</param>
-        private static void AddAuthorizationTokenToHeaders(string phone, string password)
+        private static IFlurlRequest AddAuthorizationHeaders(IFlurlRequest request, string phone, string password)
         {
-            if (string.IsNullOrWhiteSpace(phone))
-            {
-                throw new ArgumentException("Недопустимое значение параметра", nameof(phone));
-            }
-
-            if (string.IsNullOrWhiteSpace(password))
-            {
-                throw new ArgumentException("Недопустимое значение параметра", nameof(password));
-            }
-
-            if (!_client.DefaultRequestHeaders.Contains("Authorization"))
-            {
-                var credentialBuffer = new UTF8Encoding().GetBytes($"{phone}:{password}");
-                _client.DefaultRequestHeaders.Add("Authorization", $"Basic {Convert.ToBase64String(credentialBuffer)}");
-            }
+            var credentialBuffer = new UTF8Encoding().GetBytes($"{phone}:{password}");
+            return request.WithHeader("Authorization", $"Basic {Convert.ToBase64String(credentialBuffer)}");
         }
     }
 }

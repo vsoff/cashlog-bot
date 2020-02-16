@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace Cashlog.Core.Fns.Models
 {
@@ -36,14 +37,15 @@ namespace Cashlog.Core.Fns.Models
         /// Внутренняя информация о чеке
         /// </summary>
         [DataMember]
-        public Receipt Receipt { get; internal set; }
+        [JsonProperty("receipt")]
+        public FnsReceiptDetailInfo ReceiptInfo { get; internal set; }
     }
 
     /// <summary>
     /// Непосредственно сам чек. В разных чеках по разному заполнены параметры.
     /// </summary>
     [DataContract]
-    public class Receipt
+    public class FnsReceiptDetailInfo
     {
         #region Money
 

@@ -9,11 +9,11 @@ namespace Cashlog.Core.Core.Services
         /// <summary>
         /// Парсит данные из QR код на фотографии и возвращает их. Если QR код не удалось распознать, тогда возвращает null.
         /// </summary>
-        QrCodeData ParsePhoto(Bitmap photo);
+        ReceiptMainInfo ParsePhoto(Bitmap photo);
 
         /// <summary>
         /// Возвращает подробную информацию о чеке, по данным из QR кода. 
         /// </summary>
-        Task<ReceiptInfo> GetReceiptInfoAsync(QrCodeData data);
+        Task<ReceiptInfo> GetReceiptInfoAsync(ReceiptMainInfo data);
     }
 }
