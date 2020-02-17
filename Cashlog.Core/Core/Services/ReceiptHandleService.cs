@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -56,7 +57,7 @@ namespace Cashlog.Core.Core.Services
                 DateTime? date = ParseReceiptDateTime(values["t"]);
 
                 // Получаем стоимость.
-                var isAmountParsed = double.TryParse(values["s"].Replace('.', ','), out var amount);
+                var isAmountParsed = double.TryParse(values["s"].Replace(",", "."), NumberStyles.Any, CultureInfo.InvariantCulture, out double amount);
 
                 if (!date.HasValue || !isAmountParsed)
                     return null;
