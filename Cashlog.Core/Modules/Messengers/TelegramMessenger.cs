@@ -360,18 +360,34 @@ namespace Cashlog.Core.Modules.Messengers
 
                         File file = await _client.GetFileAsync(photoSize.FileId);
 
-                        using (MemoryStream clientStream = new MemoryStream())
+                        await using MemoryStream clientStream = new MemoryStream();
+                        
+                        // Скачиваем изображение.
+                        try
                         {
                             await _client.DownloadFileAsync(file.FilePath, clientStream);
-
-                            // Получаем изображение из потока.
-                            Bitmap returnImage = (Bitmap) Image.FromStream(clientStream);
-                            var data = _receiptHandleService.ParsePhoto(returnImage);
-                            _logger.Trace(data == null ? "Не удалось распознать QR код на чеке" : $"Данные с QR кода чека {data.RawData}");
-
-                            userMessageInfo.Message.ReceiptInfo = data;
-                            userMessageInfo.MessageType = Core.Models.MessageType.QrCode;
                         }
+                        catch (Exception ex)
+                        {
+                            throw new Exception("Ошибка во время скачки изображения с чеком из telegram", ex);
+                        }
+
+                        // Получаем изображение из потока.
+                        Bitmap returnImage;
+                        try
+                        {
+                            returnImage = (Bitmap) Image.FromStream(clientStream);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception("Ошибка во время получения изображения из потока", ex);
+                        }
+
+                        var data = _receiptHandleService.ParsePhoto(returnImage);
+                        _logger.Trace(data == null ? "Не удалось распознать QR код на чеке" : $"Данные с QR кода чека {data.RawData}");
+
+                        userMessageInfo.Message.ReceiptInfo = data;
+                        userMessageInfo.MessageType = Core.Models.MessageType.QrCode;
 
                         break;
                     }

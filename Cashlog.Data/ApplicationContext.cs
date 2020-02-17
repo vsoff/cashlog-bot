@@ -29,7 +29,10 @@ namespace Cashlog.Data
                     break;
 
                 case DataProviderType.MySql:
-                    optionsBuilder.UseMySql(_connectionString);
+                    optionsBuilder.UseMySql(_connectionString, builder =>
+                    {
+                        builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
+                    });
                     break;
 
                 default: throw new InvalidOperationException($"Неизвестный провайдер данных {_providerType}");
