@@ -27,7 +27,7 @@ namespace Cashlog.Application.Selfhost
         {
             lock (_locker)
             {
-                Console.ForegroundColor = ConsoleColor.White;
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
                 Console.WriteLine($"{GetUtcNowShortString()} [Info]: {text}");
                 Console.ForegroundColor = ConsoleColor.Gray;
             }
@@ -37,7 +37,7 @@ namespace Cashlog.Application.Selfhost
         {
             lock (_locker)
             {
-                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine($"{GetUtcNowShortString()} [Trace]: {text}");
                 Console.ForegroundColor = ConsoleColor.Gray;
             }

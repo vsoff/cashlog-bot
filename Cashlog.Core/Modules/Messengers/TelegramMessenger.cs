@@ -360,22 +360,26 @@ namespace Cashlog.Core.Modules.Messengers
 
                         File file = await _client.GetFileAsync(photoSize.FileId);
 
-                        await using MemoryStream clientStream = new MemoryStream();
-                        
                         // Скачиваем изображение.
+                        byte[] imageBytes;
                         try
                         {
+                            await using MemoryStream clientStream = new MemoryStream();
                             await _client.DownloadFileAsync(file.FilePath, clientStream);
+                            imageBytes = clientStream.ToArray();
                         }
                         catch (Exception ex)
                         {
                             throw new Exception("Ошибка во время скачки изображения с чеком из telegram", ex);
                         }
 
+                        _logger.Trace($"Получено изображение из потока размером {imageBytes.Length} байт");
+
                         // Получаем изображение из потока.
                         Bitmap returnImage;
                         try
                         {
+                            await using MemoryStream clientStream = new MemoryStream(imageBytes);
                             returnImage = (Bitmap) Image.FromStream(clientStream);
                         }
                         catch (Exception ex)
