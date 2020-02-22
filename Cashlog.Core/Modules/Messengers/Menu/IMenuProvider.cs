@@ -1,6 +1,6 @@
-﻿using Cashlog.Core.Core.Models;
+﻿using Cashlog.Core.Models;
 
-namespace Cashlog.Core.Messengers.Menu
+namespace Cashlog.Core.Modules.Messengers.Menu
 {
     public interface IMenuProvider
     {

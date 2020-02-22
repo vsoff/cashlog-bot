@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Cashlog.Core.Core;
+using Cashlog.Core;
 using Cashlog.Data;
 using Cashlog.Data.Entities;
 using Cashlog.Data.UoW;

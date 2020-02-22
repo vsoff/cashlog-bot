@@ -1,5 +1,4 @@
 ﻿using System;
-using Cashlog.Core.Messengers;
 using ProtoBuf.Meta;
 
 namespace Cashlog.Core.Common

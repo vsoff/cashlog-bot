@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Cashlog.Core.Core.Models;
-using Cashlog.Core.Core.Services;
+using Cashlog.Core.Models;
+using Cashlog.Core.Models.Main;
 
 namespace Cashlog.Core.Modules.Calculator
 {

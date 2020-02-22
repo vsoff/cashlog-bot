@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Cashlog.Core.Core.Models;
-using Cashlog.Core.Messengers.Menu;
+using Cashlog.Core.Models;
+using Cashlog.Core.Modules.Messengers.Menu;
 
-namespace Cashlog.Core.Messengers
+namespace Cashlog.Core.Modules.Messengers
 {
     public interface IMessenger
     {

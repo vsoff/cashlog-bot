@@ -1,18 +1,16 @@
 ﻿using System;
 using System.IO;
 using Autofac;
-using Cashlog.Core.Core;
-using Cashlog.Core.Core.Providers;
-using Cashlog.Core.Core.Providers.Abstract;
-using Cashlog.Core.Core.Services;
-using Cashlog.Core.Core.Services.Abstract;
-using Cashlog.Core.Core.Services.Main;
-using Cashlog.Core.Fns;
-using Cashlog.Core.Messengers;
-using Cashlog.Core.Messengers.Menu;
+using Cashlog.Core;
 using Cashlog.Core.Modules.Calculator;
+using Cashlog.Core.Modules.Fns;
 using Cashlog.Core.Modules.Messengers;
-using Newtonsoft.Json;
+using Cashlog.Core.Modules.Messengers.Menu;
+using Cashlog.Core.Providers;
+using Cashlog.Core.Providers.Abstract;
+using Cashlog.Core.Services;
+using Cashlog.Core.Services.Abstract;
+using Cashlog.Core.Services.Main;
 using Serilog;
 using ILogger = Cashlog.Core.Common.ILogger;
 
@@ -44,36 +42,37 @@ namespace Cashlog.Application.Selfhost
             if (string.IsNullOrEmpty(config.TelegramBotToken))
             {
                 logger.Error($"Поле `{nameof(config.TelegramBotToken)}` в конфиге пустое. Дальнейшее выполнение программы невозможно.");
-                return;
             }
-
-            ContainerBuilder builder = new ContainerBuilder();
-            builder.RegisterInstance(settingsService);
-            builder.RegisterInstance(logger);
-            builder.RegisterType<FnsService>().As<IFnsService>().SingleInstance().AutoActivate();
-            builder.RegisterType<DatabaseContextProvider>().As<IDatabaseContextProvider>().SingleInstance().AutoActivate();
-            builder.RegisterType<TelegramMessenger>().As<IMessenger>().SingleInstance().AutoActivate();
-            builder.RegisterType<MessagesHandler>().As<IMessagesHandler>().SingleInstance().AutoActivate();
-            builder.RegisterType<ProxyProvider>().As<IProxyProvider>().SingleInstance();
-            builder.RegisterType<QueryDataSerializer>().As<IQueryDataSerializer>().SingleInstance();
-            builder.RegisterType<ReceiptHandleService>().As<IReceiptHandleService>().SingleInstance();
-            builder.RegisterType<DebtsCalculator>().As<IDebtsCalculator>().SingleInstance();
-            builder.RegisterType<MainLogicService>().As<IMainLogicService>().SingleInstance();
-            builder.RegisterType<BillingPeriodService>().As<IBillingPeriodService>().SingleInstance();
-            builder.RegisterType<MoneyOperationService>().As<IMoneyOperationService>().SingleInstance();
-            builder.RegisterType<CustomerService>().As<ICustomerService>().SingleInstance();
-            builder.RegisterType<ReceiptService>().As<IReceiptService>().SingleInstance();
-            builder.RegisterType<TelegramMenuProvider>().As<IMenuProvider>().SingleInstance();
-            builder.RegisterType<GroupService>().As<IGroupService>().SingleInstance();
-
-            try
+            else
             {
-                _container = builder.Build();
-            }
-            catch (Exception ex)
-            {
-                logger.Error("Произошла ошибка во время построения IoC контейнера", ex);
-                throw;
+                ContainerBuilder builder = new ContainerBuilder();
+                builder.RegisterInstance(settingsService);
+                builder.RegisterInstance(logger);
+                builder.RegisterType<FnsService>().As<IFnsService>().SingleInstance().AutoActivate();
+                builder.RegisterType<DatabaseContextProvider>().As<IDatabaseContextProvider>().SingleInstance().AutoActivate();
+                builder.RegisterType<TelegramMessenger>().As<IMessenger>().SingleInstance().AutoActivate();
+                builder.RegisterType<MessagesHandler>().As<IMessagesHandler>().SingleInstance().AutoActivate();
+                builder.RegisterType<ProxyProvider>().As<IProxyProvider>().SingleInstance();
+                builder.RegisterType<QueryDataSerializer>().As<IQueryDataSerializer>().SingleInstance();
+                builder.RegisterType<ReceiptHandleService>().As<IReceiptHandleService>().SingleInstance();
+                builder.RegisterType<DebtsCalculator>().As<IDebtsCalculator>().SingleInstance();
+                builder.RegisterType<MainLogicService>().As<IMainLogicService>().SingleInstance();
+                builder.RegisterType<BillingPeriodService>().As<IBillingPeriodService>().SingleInstance();
+                builder.RegisterType<MoneyOperationService>().As<IMoneyOperationService>().SingleInstance();
+                builder.RegisterType<CustomerService>().As<ICustomerService>().SingleInstance();
+                builder.RegisterType<ReceiptService>().As<IReceiptService>().SingleInstance();
+                builder.RegisterType<TelegramMenuProvider>().As<IMenuProvider>().SingleInstance();
+                builder.RegisterType<GroupService>().As<IGroupService>().SingleInstance();
+
+                try
+                {
+                    _container = builder.Build();
+                }
+                catch (Exception ex)
+                {
+                    logger.Error("Произошла ошибка во время построения IoC контейнера", ex);
+                    throw;
+                }
             }
 
             Console.ReadLine();

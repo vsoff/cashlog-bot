@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
-using Cashlog.Core.Core.Models;
+using Cashlog.Core.Models;
+using Cashlog.Core.Models.Main;
 using Cashlog.Core.Modules.Calculator;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

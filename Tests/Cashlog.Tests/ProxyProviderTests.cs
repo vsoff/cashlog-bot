@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Cashlog.Core.Common;
-using Cashlog.Core.Core.Providers;
-using Cashlog.Core.Core.Providers.Abstract;
+using Cashlog.Core.Providers;
+using Cashlog.Core.Providers.Abstract;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 

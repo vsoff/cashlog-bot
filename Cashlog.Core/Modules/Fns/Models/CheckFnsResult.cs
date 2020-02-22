@@ -1,4 +1,4 @@
-﻿namespace Cashlog.Core.Fns.Models
+﻿namespace Cashlog.Core.Modules.Fns.Models
 {
     /// <summary>
     /// Класс, представляющий ответ, полученный в результате проверки существования чека

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
-namespace Cashlog.Core.Fns.Models
+namespace Cashlog.Core.Modules.Fns.Models
 {
     /// <summary>
     /// Класс, описывающий информацию, получаемую в результате запроса от ФНС детальной информации по чеку

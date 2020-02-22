@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Cashlog.Data.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +27,7 @@ namespace Cashlog.Data.UoW
             => Context.Set<T>().AnyAsync();
 
         public async Task<T> AddAsync(T item)
-            => (await AddRangeAsync(new[] { item })).First();
+            => (await AddRangeAsync(new[] {item})).First();
 
         public async Task<T[]> AddRangeAsync(IEnumerable<T> items)
         {
@@ -54,6 +55,9 @@ namespace Cashlog.Data.UoW
 
         public Task<T> GetAsync(long id)
             => Context.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
+
+        public async Task<ICollection<T>> GetAsync(Expression<Func<T, bool>> whereExpression)
+            => await Context.Set<T>().Where(whereExpression).ToListAsync();
 
         public async Task<T> UpdateAsync(T item)
         {

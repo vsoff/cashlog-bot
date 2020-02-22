@@ -1,6 +1,6 @@
 ﻿using Telegram.Bot.Types.ReplyMarkups;
 
-namespace Cashlog.Core.Messengers.Menu
+namespace Cashlog.Core.Modules.Messengers.Menu
 {
     public class TelegramMenu : IMenu
     {

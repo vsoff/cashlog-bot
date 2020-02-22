@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Cashlog.Core.Fns.Models
+namespace Cashlog.Core.Modules.Fns.Models
 {
     internal static class Urls
     {

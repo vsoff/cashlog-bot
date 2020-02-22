@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Cashlog.Core.Messengers.Menu
+﻿namespace Cashlog.Core.Modules.Messengers.Menu
 {
     public interface IMenu
     {

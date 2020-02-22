@@ -1,18 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Cashlog.Core.Common;
-using Cashlog.Core.Fns.Models;
-using Flurl;
+using Cashlog.Core.Modules.Fns.Models;
 using Flurl.Http;
 using Newtonsoft.Json;
 
-namespace Cashlog.Core.Fns
+namespace Cashlog.Core.Modules.Fns
 {
     /// <summary>
     /// Сервис взаимодействия с API ФНС.

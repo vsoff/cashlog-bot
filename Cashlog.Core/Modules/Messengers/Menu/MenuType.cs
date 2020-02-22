@@ -1,4 +1,4 @@
-﻿namespace Cashlog.Core.Messengers.Menu
+﻿namespace Cashlog.Core.Modules.Messengers.Menu
 {
     public enum MenuType
     {

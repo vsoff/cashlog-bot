@@ -2,7 +2,7 @@
 using System.IO;
 using ProtoBuf.Meta;
 
-namespace Cashlog.Core.Messengers
+namespace Cashlog.Core.Common
 {
     public static class ProtoSerializerHelper
     {

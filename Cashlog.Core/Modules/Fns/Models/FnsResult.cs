@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Cashlog.Core.Fns.Models
+namespace Cashlog.Core.Modules.Fns.Models
 {
     /// <summary>
     /// Класс, используемый для представления ответа, полученного от ФНС

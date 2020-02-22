@@ -1,4 +1,4 @@
-﻿using Cashlog.Core.Core.Models;
+﻿using Cashlog.Core.Models;
 
 namespace Cashlog.Core.Modules.Calculator
 {

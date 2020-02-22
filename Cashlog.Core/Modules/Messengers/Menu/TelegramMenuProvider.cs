@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Cashlog.Core.Core.Models;
+using Cashlog.Core.Models;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace Cashlog.Core.Messengers.Menu
+namespace Cashlog.Core.Modules.Messengers.Menu
 {
     public class TelegramMenuProvider : IMenuProvider
     {

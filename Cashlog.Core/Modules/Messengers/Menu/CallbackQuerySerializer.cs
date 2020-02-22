@@ -4,7 +4,7 @@ using Cashlog.Core.Common;
 using ProtoBuf;
 using ProtoBuf.Meta;
 
-namespace Cashlog.Core.Messengers.Menu
+namespace Cashlog.Core.Modules.Messengers.Menu
 {
     public interface IQueryDataSerializer
     {
