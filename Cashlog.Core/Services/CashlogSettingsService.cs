@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Reflection;
 using Cashlog.Core.Services.Abstract;
 using Newtonsoft.Json;
 
@@ -23,8 +25,11 @@ namespace Cashlog.Core.Services
                 return settings;
             }
 
+            var executingPath = AppDomain.CurrentDomain.BaseDirectory;
+            var fullPath = Path.Combine(executingPath, BotConfigFileName);
+
             if (_jsonSettingsCache == null)
-                _jsonSettingsCache = File.ReadAllText(BotConfigFileName);
+                _jsonSettingsCache = File.ReadAllText(fullPath);
 
             return JsonConvert.DeserializeObject<CashlogSettings>(_jsonSettingsCache);
         }

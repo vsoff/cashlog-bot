@@ -80,9 +80,11 @@ namespace Cashlog.Application.Selfhost
 
         private static ILogger GetLogger()
         {
+            var executingPath = AppDomain.CurrentDomain.BaseDirectory;
+            var fullPathFormat = Path.Combine(executingPath, @"logs\Main_{Date}.txt");
             var serilogLogger = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
-                .WriteTo.RollingFile(@"logs\Main_{Date}.txt", outputTemplate: "{Timestamp:HH:mm:ss.fff zzz} [{Level}]: {Message}{NewLine}{Exception}")
+                .WriteTo.RollingFile(fullPathFormat, outputTemplate: "{Timestamp:HH:mm:ss.fff zzz} [{Level}]: {Message}{NewLine}{Exception}")
                 .CreateLogger();
 
             return new SerilogLogger(serilogLogger);

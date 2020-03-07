@@ -131,10 +131,11 @@ namespace Cashlog.Core
                         receipt.CustomerId = data.SelectedCustomerId;
                         await _receiptService.SetCustomersToReceiptAsync(receipt.Id, data.SelectedConsumerIds);
                         await _receiptService.UpdateAsync(receipt);
+
+                        await _messenger.EditMessageAsync(userMessageInfo, $"Чек готов!\nОплатил: {customerText}\nСумма: {receipt.TotalAmount} руб.\nДелится на: {string.Join(", ", consumerTexts)}");
+                        _logger.Info($"Добавлен новый чек. Оплатил: {customerText}; Сумма: {receipt.TotalAmount} руб.; Делится на: {string.Join(", ", consumerTexts)}");
                     }
 
-                    await _messenger.EditMessageAsync(userMessageInfo, $"Чек готов!\nОплатил: {customerText}\nСумма: {receipt.TotalAmount} руб.\nДелится на: {string.Join(", ", consumerTexts)}");
-                    _logger.Info($"Добавлен новый чек. Оплатил: {customerText}; Сумма: {receipt.TotalAmount} руб.; Делится на: {string.Join(", ", consumerTexts)}");
                     break;
                 }
                 case MenuType.NewReceiptCancel:

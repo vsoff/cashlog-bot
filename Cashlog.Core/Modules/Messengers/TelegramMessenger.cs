@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Cashlog.Core.Common;
 using Cashlog.Core.Models;
@@ -99,6 +100,7 @@ namespace Cashlog.Core.Modules.Messengers
                     // Перезаписываем прокси в настройках.
                     settings.ProxyAddress = proxy.Address.ToString();
                     _cashlogSettingsService.WriteSettings(settings);
+                    break;
                 }
             }
 
@@ -121,14 +123,20 @@ namespace Cashlog.Core.Modules.Messengers
         /// <summary>
         /// Проверяет прокси и возвращает TelegramBotClient, если соединение прошло проверку.
         /// </summary>
-        private TelegramBotClient TestProxy(CashlogSettings cashlogSettings, WebProxy proxy)
+        private static TelegramBotClient TestProxy(CashlogSettings cashlogSettings, WebProxy proxy)
         {
-            _client = new TelegramBotClient(cashlogSettings.TelegramBotToken, proxy);
+            var client = new TelegramBotClient(cashlogSettings.TelegramBotToken, proxy);
 
             try
             {
-                bool isSuccess = _client.GetMeAsync().Wait(TimeSpan.FromSeconds(5));
-                return isSuccess ? _client : null;
+                var cts = new CancellationTokenSource();
+                cts.CancelAfter(TimeSpan.FromSeconds(5));
+                client.GetMeAsync(cts.Token).GetAwaiter().GetResult();
+                return client;
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
             }
             catch (Exception)
             {
