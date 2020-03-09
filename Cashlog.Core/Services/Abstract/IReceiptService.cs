@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cashlog.Core.Models.Main;
 
@@ -9,6 +10,7 @@ namespace Cashlog.Core.Services.Abstract
     /// </summary>
     public interface IReceiptService
     {
+        Task<ICollection<Receipt>> GetReceiptsInPeriodAsync(DateTime periodFrom, DateTime periodTo);
         Task<bool> IsReceiptExists(Receipt receipt);
         Task<Receipt> AddAsync(Receipt receipt);
         Task<Receipt> GetAsync(long receiptId);

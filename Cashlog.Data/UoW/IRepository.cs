@@ -13,8 +13,9 @@ namespace Cashlog.Data.UoW
     public interface IRepository<T> : IRepository where T : Entity
     {
         Task<T> GetAsync(long id);
-        Task<ICollection<T>> GetAsync(Expression<Func<T, bool>> whereExpression);
+        Task<T> GetAsync(Expression<Func<T, bool>> whereExpression);
         Task<T[]> GetListAsync(long[] ids);
+        Task<ICollection<T>> GetListAsync(Expression<Func<T, bool>> whereExpression);
         Task<T> AddAsync(T item);
         Task<T[]> AddRangeAsync(IEnumerable<T> items);
         Task<T> UpdateAsync(T item);

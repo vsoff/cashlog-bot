@@ -41,7 +41,7 @@ namespace Cashlog.Core.Modules.Messengers.Menu
                 var customer = userMessageInfo.Customers[i];
                 string query = _queryDataSerializer.EncodeBase64(new AddReceiptQueryData
                 {
-                    Version = AddReceiptQueryData.CurrentServerVersion,
+                    Version = AddReceiptQueryData.ServerVersion,
                     ChatToken = userMessageInfo.Group.ChatToken,
                     ReceiptId = data.ReceiptId,
                     MenuType = MenuType.NewReceiptSelectCustomer,
@@ -59,7 +59,7 @@ namespace Cashlog.Core.Modules.Messengers.Menu
             {
                 builder.AddButton("Применить", _queryDataSerializer.EncodeBase64(new AddReceiptQueryData
                 {
-                    Version = AddReceiptQueryData.CurrentServerVersion,
+                    Version = AddReceiptQueryData.ServerVersion,
                     ChatToken = userMessageInfo.Group.ChatToken,
                     ReceiptId = data.ReceiptId,
                     MenuType = MenuType.NewReceiptSelectConsumers,
@@ -71,7 +71,7 @@ namespace Cashlog.Core.Modules.Messengers.Menu
 
             builder.AddButton("Отменить", _queryDataSerializer.EncodeBase64(new AddReceiptQueryData
             {
-                Version = AddReceiptQueryData.CurrentServerVersion,
+                Version = AddReceiptQueryData.ServerVersion,
                 ChatToken = userMessageInfo.Group.ChatToken,
                 ReceiptId = data.ReceiptId,
                 MenuType = MenuType.NewReceiptCancel
@@ -103,7 +103,7 @@ namespace Cashlog.Core.Modules.Messengers.Menu
 
                 string query = _queryDataSerializer.EncodeBase64(new AddReceiptQueryData
                 {
-                    Version = AddReceiptQueryData.CurrentServerVersion,
+                    Version = AddReceiptQueryData.ServerVersion,
                     ChatToken = userMessageInfo.Group.ChatToken,
                     ReceiptId = data.ReceiptId,
                     MenuType = data.MenuType,
@@ -121,7 +121,7 @@ namespace Cashlog.Core.Modules.Messengers.Menu
             {
                 builder.AddButton("Применить", _queryDataSerializer.EncodeBase64(new AddReceiptQueryData
                 {
-                    Version = AddReceiptQueryData.CurrentServerVersion,
+                    Version = AddReceiptQueryData.ServerVersion,
                     ChatToken = userMessageInfo.Group.ChatToken,
                     ReceiptId = data.ReceiptId,
                     MenuType = MenuType.NewReceiptAdd,
@@ -133,7 +133,7 @@ namespace Cashlog.Core.Modules.Messengers.Menu
 
             builder.AddButton("Отменить", _queryDataSerializer.EncodeBase64(new AddReceiptQueryData
             {
-                Version = AddReceiptQueryData.CurrentServerVersion,
+                Version = AddReceiptQueryData.ServerVersion,
                 ChatToken = userMessageInfo.Group.ChatToken,
                 ReceiptId = data.ReceiptId,
                 MenuType = MenuType.NewReceiptCancel
@@ -161,7 +161,7 @@ namespace Cashlog.Core.Modules.Messengers.Menu
 
                 string query = _queryDataSerializer.EncodeBase64(new MoneyTransferQueryData
                 {
-                    Version = MoneyTransferQueryData.CurrentServerVersion,
+                    Version = MoneyTransferQueryData.ServerVersion,
                     Amount = data.Amount,
                     Caption = data.Caption,
                     ChatToken = data.ChatToken,
@@ -180,7 +180,7 @@ namespace Cashlog.Core.Modules.Messengers.Menu
             {
                 builder.AddButton("Применить", _queryDataSerializer.EncodeBase64(new MoneyTransferQueryData
                 {
-                    Version = MoneyTransferQueryData.CurrentServerVersion,
+                    Version = MoneyTransferQueryData.ServerVersion,
                     Amount = data.Amount,
                     Caption = data.Caption,
                     ChatToken = data.ChatToken,
@@ -193,7 +193,7 @@ namespace Cashlog.Core.Modules.Messengers.Menu
 
             builder.AddButton("Отменить", _queryDataSerializer.EncodeBase64(new MoneyTransferQueryData
             {
-                Version = MoneyTransferQueryData.CurrentServerVersion,
+                Version = MoneyTransferQueryData.ServerVersion,
                 ChatToken = data.ChatToken,
                 MenuType = MenuType.MoneyTransferCancel
             }, MenuType.MoneyTransferSelectFrom));
@@ -224,7 +224,7 @@ namespace Cashlog.Core.Modules.Messengers.Menu
 
                 string query = _queryDataSerializer.EncodeBase64(new MoneyTransferQueryData
                 {
-                    Version = MoneyTransferQueryData.CurrentServerVersion,
+                    Version = MoneyTransferQueryData.ServerVersion,
                     Amount = data.Amount,
                     Caption = data.Caption,
                     ChatToken = data.ChatToken,
@@ -243,7 +243,7 @@ namespace Cashlog.Core.Modules.Messengers.Menu
             {
                 builder.AddButton("Применить", _queryDataSerializer.EncodeBase64(new MoneyTransferQueryData
                 {
-                    Version = MoneyTransferQueryData.CurrentServerVersion,
+                    Version = MoneyTransferQueryData.ServerVersion,
                     Amount = data.Amount,
                     Caption = data.Caption,
                     ChatToken = data.ChatToken,
@@ -256,7 +256,7 @@ namespace Cashlog.Core.Modules.Messengers.Menu
 
             builder.AddButton("Отменить", _queryDataSerializer.EncodeBase64(new MoneyTransferQueryData
             {
-                Version = MoneyTransferQueryData.CurrentServerVersion,
+                Version = MoneyTransferQueryData.ServerVersion,
                 ChatToken = data.ChatToken,
                 MenuType = MenuType.MoneyTransferCancel
             }, MenuType.MoneyTransferSelectTo));

@@ -129,6 +129,7 @@ namespace Cashlog.Core
                     {
                         receipt.Status = receipt.Status == ReceiptStatus.New ? ReceiptStatus.Filled : ReceiptStatus.Manual;
                         receipt.CustomerId = data.SelectedCustomerId;
+                        receipt.PurchaseTime = DateTime.Now;
                         await _receiptService.SetCustomersToReceiptAsync(receipt.Id, data.SelectedConsumerIds);
                         await _receiptService.UpdateAsync(receipt);
 
@@ -214,6 +215,35 @@ namespace Cashlog.Core
 
             switch (cmd)
             {
+                case "report":
+                {
+                    if (args.Length != 2)
+                    {
+                        await _messenger.SendMessageAsync(userMessageInfo, "Неверное кол-во параметров для команды", true);
+                        return;
+                    }
+
+                    if (!DateTime.TryParse(args[0], out var periodFrom) || !DateTime.TryParse(args[1], out var periodTo))
+                    {
+                        await _messenger.SendMessageAsync(userMessageInfo, "Первый и второй аргумент должны быть датами", true);
+                        return;
+                    }
+
+                    if (periodTo - periodFrom < TimeSpan.FromDays(1))
+                    {
+                        await _messenger.SendMessageAsync(userMessageInfo, "Период дней не должен быть меньше дня", true);
+                        return;
+                    }
+
+                    var receipts = await _receiptService.GetReceiptsInPeriodAsync(periodFrom, periodTo);
+                    var summary = receipts.Sum(x => x.TotalAmount);
+
+                    string[] receiptLines = receipts.Select(x => $"ID {x.Id}: [{x.TotalAmount}р.] {x.Comment ?? "(Нет описания)"}").ToArray();
+
+                    await _messenger.SendMessageAsync(userMessageInfo, $"Траты за период с {periodFrom.ToShortDateString()} по {periodTo.ToShortDateString()}" +
+                                                                       $" составляют: {summary:F2}р.\nПодробности:\n\n{string.Join(";\n", receiptLines)}.", true);
+                    return;
+                }
                 case "debts":
                 {
                     if (args.Length != 0)
@@ -303,7 +333,7 @@ namespace Cashlog.Core
 
                     IMenu menu = _menuProvider.GetMenu(userMessageInfo, new MoneyTransferQueryData
                     {
-                        Version = MoneyTransferQueryData.CurrentServerVersion,
+                        Version = MoneyTransferQueryData.ServerVersion,
                         Amount = money,
                         Caption = caption,
                         ChatToken = userMessageInfo.Group.ChatToken,
@@ -317,7 +347,8 @@ namespace Cashlog.Core
                 }
                 case "receipt":
                 {
-                    if (args.Length <= 1)
+                    const int argsCount = 1;
+                    if (args.Length <= argsCount)
                     {
                         await _messenger.SendMessageAsync(userMessageInfo, "Неверное кол-во параметров для команды", true);
                         return;
@@ -329,11 +360,11 @@ namespace Cashlog.Core
                         return;
                     }
 
-                    var caption = string.Join(" ", args.Skip(1));
+                    var caption = string.Join(" ", args.Skip(argsCount));
 
-                    if (caption.Length > 50 || caption.Length < 3)
+                    if (caption.Length > 50 || caption.Length < 2)
                     {
-                        await _messenger.SendMessageAsync(userMessageInfo, "Комментарий должен быть от 3 до 50 символов", true);
+                        await _messenger.SendMessageAsync(userMessageInfo, "Комментарий должен быть от 2 до 50 символов", true);
                         return;
                     }
 
@@ -349,6 +380,7 @@ namespace Cashlog.Core
                         BillingPeriodId = lastBillingPeriod.Id,
                         TotalAmount = money,
                         Status = ReceiptStatus.NewManual,
+                        Comment = caption
                     });
 
                     IMenu menu = _menuProvider.GetMenu(userMessageInfo, new AddReceiptQueryData
@@ -358,7 +390,7 @@ namespace Cashlog.Core
                         SelectedCustomerId = null,
                         SelectedConsumerIds = new long[0],
                         TargetId = null,
-                        Version = AddReceiptQueryData.CurrentServerVersion,
+                        Version = AddReceiptQueryData.ServerVersion,
                     });
                     await _messenger.SendMessageAsync(userMessageInfo, "_Кто оплатил чек?", true, menu);
                     return;
@@ -399,6 +431,7 @@ namespace Cashlog.Core
                 FiscalNumber = data.FiscalNumber,
                 PurchaseTime = data.PurchaseTime,
                 Status = ReceiptStatus.New,
+                Comment = "Чек",
             };
 
             if (await _receiptService.IsReceiptExists(receipt))
@@ -416,7 +449,7 @@ namespace Cashlog.Core
                 SelectedCustomerId = null,
                 SelectedConsumerIds = new long[0],
                 TargetId = null,
-                Version = AddReceiptQueryData.CurrentServerVersion,
+                Version = AddReceiptQueryData.ServerVersion,
             });
             await _messenger.SendMessageAsync(userMessageInfo, "_Кто оплатил чек?", true, menu);
         }

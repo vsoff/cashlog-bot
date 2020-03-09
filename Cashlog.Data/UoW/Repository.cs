@@ -17,8 +17,17 @@ namespace Cashlog.Data.UoW
             Context = context;
         }
 
+        public Task<T> GetAsync(long id)
+            => Context.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
+
+        public Task<T> GetAsync(Expression<Func<T, bool>> whereExpression)
+            => Context.Set<T>().FirstOrDefaultAsync(whereExpression);
+
         public Task<T[]> GetListAsync(long[] ids)
             => Context.Set<T>().Where(x => ids.Contains(x.Id)).ToArrayAsync();
+
+        public async Task<ICollection<T>> GetListAsync(Expression<Func<T, bool>> whereExpression)
+            => await Context.Set<T>().Where(whereExpression).ToListAsync();
 
         public Task<T[]> GetAllAsync()
             => Context.Set<T>().ToArrayAsync();
@@ -52,12 +61,6 @@ namespace Cashlog.Data.UoW
             Context.Entry(item).State = EntityState.Deleted;
             return item;
         }
-
-        public Task<T> GetAsync(long id)
-            => Context.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
-
-        public async Task<ICollection<T>> GetAsync(Expression<Func<T, bool>> whereExpression)
-            => await Context.Set<T>().Where(whereExpression).ToListAsync();
 
         public async Task<T> UpdateAsync(T item)
         {

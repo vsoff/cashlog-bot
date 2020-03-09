@@ -5,6 +5,7 @@ namespace Cashlog.Core.Models.Main
     public class Receipt 
     {
         public long Id { get; set; }
+        public string Comment { get; set; }
         public DateTime PurchaseTime { get; set; }
         public double TotalAmount { get; set; }
         public string FiscalDocument { get; set; }

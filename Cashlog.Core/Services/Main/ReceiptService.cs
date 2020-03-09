@@ -20,6 +20,15 @@ namespace Cashlog.Core.Services.Main
             _databaseContextProvider = databaseContextProvider ?? throw new ArgumentNullException(nameof(databaseContextProvider));
         }
 
+        public async Task<ICollection<Receipt>> GetReceiptsInPeriodAsync(DateTime periodFrom, DateTime periodTo)
+        {
+            using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
+            {
+                var receipts = await uow.Receipts.GetListAsync(x => x.PurchaseTime >= periodFrom && x.PurchaseTime < periodTo);
+                return receipts.Select(x => x.ToCore()).ToList();
+            }
+        }
+
         public async Task<bool> IsReceiptExists(Receipt receipt)
         {
             using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
@@ -32,7 +41,7 @@ namespace Cashlog.Core.Services.Main
         {
             using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
             {
-                ICollection<ReceiptDto> existsReceipts = await uow.Receipts.GetAsync(x => x.FiscalDocument == receipt.FiscalDocument);
+                ICollection<ReceiptDto> existsReceipts = await uow.Receipts.GetListAsync(x => x.FiscalDocument == receipt.FiscalDocument);
                 if (await IsReceiptExistsInternal(uow, receipt))
                     throw new InvalidOperationException("Такой чек уже есть в БД");
 
@@ -100,7 +109,7 @@ namespace Cashlog.Core.Services.Main
             if (string.IsNullOrEmpty(receipt.FiscalDocument))
                 return false;
 
-            ICollection<ReceiptDto> existsReceipts = await uow.Receipts.GetAsync(x => x.FiscalDocument == receipt.FiscalDocument);
+            ICollection<ReceiptDto> existsReceipts = await uow.Receipts.GetListAsync(x => x.FiscalDocument == receipt.FiscalDocument);
             return existsReceipts.Count > 0;
         }
     }

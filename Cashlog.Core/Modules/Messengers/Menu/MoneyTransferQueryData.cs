@@ -8,7 +8,7 @@ namespace Cashlog.Core.Modules.Messengers.Menu
     [ProtoContract]
     public class MoneyTransferQueryData : IQueryData
     {
-        public const int CurrentServerVersion = 1;
+        public const int ServerVersion = 1;
 
         [ProtoMember(1)]
         public int Version { get; set; }

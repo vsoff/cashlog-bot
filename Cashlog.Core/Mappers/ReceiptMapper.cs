@@ -44,6 +44,7 @@ namespace Cashlog.Core.Mappers
             return new Receipt
             {
                 Id = obj.Id,
+                Comment = obj.Comment,
                 BillingPeriodId = obj.BillingPeriodId,
                 PurchaseTime = obj.PurchaseTime,
                 TotalAmount = obj.TotalAmount,
@@ -65,6 +66,7 @@ namespace Cashlog.Core.Mappers
             return new ReceiptDto
             {
                 Id = obj.Id,
+                Comment = obj.Comment,
                 BillingPeriodId = obj.BillingPeriodId,
                 PurchaseTime = obj.PurchaseTime,
                 TotalAmount = obj.TotalAmount,

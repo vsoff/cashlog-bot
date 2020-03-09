@@ -4,6 +4,7 @@ namespace Cashlog.Data.Entities
 {
     public class ReceiptDto : Entity
     {
+        public string Comment { get; set; }
         public DateTime PurchaseTime { get; set; }
         public double TotalAmount { get; set; }
         public string FiscalDocument { get; set; }
