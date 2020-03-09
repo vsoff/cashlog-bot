@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Autofac;
 using Cashlog.Core;
 using Cashlog.Core.Modules.Calculator;
@@ -23,6 +25,7 @@ namespace Cashlog.Application.Selfhost
         /// </summary>
         private const string BotConfigFileName = "botconfig.json";
 
+        private static ManualResetEvent _resetEvent;
         private static IContainer _container;
 
         static void Main(string[] args)
@@ -75,8 +78,12 @@ namespace Cashlog.Application.Selfhost
                 }
             }
 
-            Console.ReadLine();
+            _resetEvent = new ManualResetEvent(false);
+            _resetEvent.WaitOne();
+
+            logger.Info("Приложение завершило свою работу");
         }
+
 
         private static ILogger GetLogger()
         {
