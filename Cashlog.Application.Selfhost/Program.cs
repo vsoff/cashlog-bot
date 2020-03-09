@@ -31,7 +31,7 @@ namespace Cashlog.Application.Selfhost
 
             logger.Info("Приложение запущено!");
 
-            if (!File.Exists(BotConfigFileName))
+            if (!File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, BotConfigFileName)))
             {
                 logger.Error($"Файл конфига {BotConfigFileName} не найден!");
                 return;
@@ -80,8 +80,7 @@ namespace Cashlog.Application.Selfhost
 
         private static ILogger GetLogger()
         {
-            var executingPath = AppDomain.CurrentDomain.BaseDirectory;
-            var fullPathFormat = Path.Combine(executingPath, @"logs\Main_{Date}.txt");
+            var fullPathFormat = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "Main_{Date}.txt");
             var serilogLogger = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
                 .WriteTo.RollingFile(fullPathFormat, outputTemplate: "{Timestamp:HH:mm:ss.fff zzz} [{Level}]: {Message}{NewLine}{Exception}")

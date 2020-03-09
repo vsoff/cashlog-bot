@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
 using Cashlog.Core.Services.Abstract;
 using Newtonsoft.Json;
 
@@ -16,20 +15,22 @@ namespace Cashlog.Core.Services
             _jsonSettingsCache = null;
         }
 
+        /// <summary>
+        /// Возвращает полный путь до файла конфига.
+        /// </summary>
+        private string GetSettingsFullPath() => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, BotConfigFileName);
+
         public CashlogSettings ReadSettings()
         {
-            if (!File.Exists(BotConfigFileName))
+            if (!File.Exists(GetSettingsFullPath()))
             {
                 var settings = new CashlogSettings();
                 WriteSettings(settings);
                 return settings;
             }
 
-            var executingPath = AppDomain.CurrentDomain.BaseDirectory;
-            var fullPath = Path.Combine(executingPath, BotConfigFileName);
-
             if (_jsonSettingsCache == null)
-                _jsonSettingsCache = File.ReadAllText(fullPath);
+                _jsonSettingsCache = File.ReadAllText(GetSettingsFullPath());
 
             return JsonConvert.DeserializeObject<CashlogSettings>(_jsonSettingsCache);
         }
@@ -37,7 +38,7 @@ namespace Cashlog.Core.Services
         public void WriteSettings(CashlogSettings settings)
         {
             var configJson = JsonConvert.SerializeObject(settings, Formatting.Indented);
-            File.WriteAllText(BotConfigFileName, configJson);
+            File.WriteAllText(GetSettingsFullPath(), configJson);
         }
     }
 }
