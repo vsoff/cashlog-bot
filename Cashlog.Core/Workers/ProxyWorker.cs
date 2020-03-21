@@ -36,6 +36,11 @@ namespace Cashlog.Core.Workers
         /// </summary>
         private readonly IWorker _worker;
 
+        /// <summary>
+        /// Адрес последнего работающего прокси-сервер.
+        /// </summary>
+        private WebProxy _lastWorkingWebProxy;
+
         public ProxyWorker(
             ICashlogSettingsService cashlogSettingsService,
             IWorkerController workerController,
@@ -48,6 +53,7 @@ namespace Cashlog.Core.Workers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _proxyConsumers = proxyConsumers ?? throw new ArgumentNullException(nameof(proxyConsumers));
             _cachedProxies = new Queue<WebProxy>();
+            _lastWorkingWebProxy = null;
 
             _worker = workerController.CreateWorker(() => RevalidateProxy().GetAwaiter().GetResult(), _proxyRevalidateInterval, true);
         }
@@ -63,7 +69,7 @@ namespace Cashlog.Core.Workers
             if (IsProxyWorks(currentProxy, client))
             {
                 _logger.Trace($"{GetType().Name}: Текущий прокси-сервер работает!");
-                SetNewProxy(currentProxy, null);
+                SetNewProxy(currentProxy, _lastWorkingWebProxy);
                 return;
             }
 
@@ -155,6 +161,7 @@ namespace Cashlog.Core.Workers
             var settings = _cashlogSettingsService.ReadSettings();
             settings.ProxyAddress = newProxy?.Address?.ToString();
             _cashlogSettingsService.WriteSettings(settings);
+            _lastWorkingWebProxy = newProxy;
 
             foreach (var proxyConsumer in _proxyConsumers)
                 proxyConsumer.OnProxyChanged(newProxy);
