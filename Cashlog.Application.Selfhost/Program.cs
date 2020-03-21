@@ -1,9 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
+using Autofac.Core;
 using Cashlog.Core;
+using Cashlog.Core.Common.Workers;
 using Cashlog.Core.Modules.Calculator;
 using Cashlog.Core.Modules.Fns;
 using Cashlog.Core.Modules.Messengers;
@@ -13,6 +16,7 @@ using Cashlog.Core.Providers.Abstract;
 using Cashlog.Core.Services;
 using Cashlog.Core.Services.Abstract;
 using Cashlog.Core.Services.Main;
+using Cashlog.Core.Workers;
 using Serilog;
 using ILogger = Cashlog.Core.Common.ILogger;
 
@@ -52,8 +56,8 @@ namespace Cashlog.Application.Selfhost
                 builder.RegisterInstance(settingsService);
                 builder.RegisterInstance(logger);
                 builder.RegisterType<FnsService>().As<IFnsService>().SingleInstance().AutoActivate();
-                builder.RegisterType<DatabaseContextProvider>().As<IDatabaseContextProvider>().SingleInstance().AutoActivate();
-                builder.RegisterType<TelegramMessenger>().As<IMessenger>().SingleInstance().AutoActivate();
+                builder.RegisterType<DatabaseContextProvider>().As<IDatabaseContextProvider>().SingleInstance();
+                builder.RegisterType<TelegramMessenger>().As<IMessenger>().As<IProxyConsumer>().SingleInstance().AutoActivate();
                 builder.RegisterType<MessagesHandler>().As<IMessagesHandler>().SingleInstance().AutoActivate();
                 builder.RegisterType<ProxyProvider>().As<IProxyProvider>().SingleInstance();
                 builder.RegisterType<QueryDataSerializer>().As<IQueryDataSerializer>().SingleInstance();
@@ -66,10 +70,17 @@ namespace Cashlog.Application.Selfhost
                 builder.RegisterType<ReceiptService>().As<IReceiptService>().SingleInstance();
                 builder.RegisterType<TelegramMenuProvider>().As<IMenuProvider>().SingleInstance();
                 builder.RegisterType<GroupService>().As<IGroupService>().SingleInstance();
+                builder.RegisterType<DefaultWorkerController>().As<IWorkerController>().SingleInstance();
+                builder.RegisterType<ProxyWorker>().As<IWorker>().SingleInstance();
 
                 try
                 {
                     _container = builder.Build();
+
+                    // Запускаем все воркеры.
+                    var workers = _container.Resolve<IWorker[]>();
+                    foreach (var worker in workers)
+                        worker.Start();
                 }
                 catch (Exception ex)
                 {

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -13,6 +10,7 @@ using Cashlog.Core.Models.Main;
 using Cashlog.Core.Modules.Messengers.Menu;
 using Cashlog.Core.Providers.Abstract;
 using Cashlog.Core.Services.Abstract;
+using Cashlog.Core.Workers;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -27,13 +25,12 @@ namespace Cashlog.Core.Modules.Messengers
     /// </summary>
     /// <remarks>В данный момент тут основная бизнес-логика, в последующем её необходимо вынести
     /// в отдельный класс, чтобы можно было независимо менять мессенджеры.</remarks>
-    public class TelegramMessenger : IMessenger
+    public class TelegramMessenger : IMessenger, IProxyConsumer
     {
         private readonly ICashlogSettingsService _cashlogSettingsService;
         private readonly IReceiptHandleService _receiptHandleService;
         private readonly IQueryDataSerializer _queryDataSerializer;
         private readonly ICustomerService _customerService;
-        private readonly IProxyProvider _proxyProvider;
         private readonly IGroupService _groupService;
         private readonly ILogger _logger;
 
@@ -44,7 +41,6 @@ namespace Cashlog.Core.Modules.Messengers
             IReceiptHandleService receiptHandleService,
             IQueryDataSerializer queryDataSerializer,
             ICustomerService customerService,
-            IProxyProvider proxyProvider,
             IGroupService groupService,
             ILogger logger)
         {
@@ -52,96 +48,8 @@ namespace Cashlog.Core.Modules.Messengers
             _receiptHandleService = receiptHandleService ?? throw new ArgumentNullException(nameof(receiptHandleService));
             _queryDataSerializer = queryDataSerializer ?? throw new ArgumentNullException(nameof(queryDataSerializer));
             _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
-            _proxyProvider = proxyProvider ?? throw new ArgumentNullException(nameof(proxyProvider));
             _groupService = groupService ?? throw new ArgumentNullException(nameof(groupService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-            StartBotAsync().GetAwaiter().GetResult();
-        }
-
-        private async Task StartBotAsync()
-        {
-            var settings = _cashlogSettingsService.ReadSettings();
-
-            // Пробуем начать работу с последним работающим прокси.
-            if (!string.IsNullOrEmpty(settings.ProxyAddress))
-            {
-                _logger.Trace($"Попытка подключения к последнему работающему прокси...");
-                var newClient = TestProxy(settings, new WebProxy(settings.ProxyAddress));
-                if (newClient != null)
-                {
-                    _client = newClient;
-                }
-            }
-
-            // Если предыдущий прокси не работает, то находим новый.
-            if (_client == null)
-            {
-                var proxies = await _proxyProvider.GetProxiesAsync();
-                if (proxies == null || proxies.Count == 0)
-                    throw new InvalidOperationException("Не было получено ни одного прокси от провайдера");
-
-                _logger.Trace($"Было получено {proxies.Count} различных прокси.");
-
-                foreach (var proxy in proxies)
-                {
-                    _logger.Trace($"Проверка прокси `{proxy.Address}`...");
-
-                    var newClient = TestProxy(settings, proxy);
-                    if (newClient == null)
-                    {
-                        _logger.Trace($"Прокси `{proxy.Address}` не работает.");
-                        continue;
-                    }
-
-                    _logger.Trace($"Прокси `{proxy.Address}` работает. Бот продолжает свою работу.");
-                    _client = newClient;
-
-                    // Перезаписываем прокси в настройках.
-                    settings.ProxyAddress = proxy.Address.ToString();
-                    _cashlogSettingsService.WriteSettings(settings);
-                    break;
-                }
-            }
-
-            // Если удалось подключиться с прокси - продолжаем работу.
-            if (_client != null)
-            {
-                await _client.SendTextMessageAsync(settings.AdminChatToken, "Бот запущен!");
-
-                _logger.Info($"Был установлен прокси-сервер `{settings.ProxyAddress}`.");
-
-                _client.OnMessage += OnMessageReceived;
-                _client.OnCallbackQuery += OnCallbackQuery;
-                _client.StartReceiving();
-                return;
-            }
-
-            throw new InvalidOperationException("Ни один из полученных от провайдера прокси серверов не отработал");
-        }
-
-        /// <summary>
-        /// Проверяет прокси и возвращает TelegramBotClient, если соединение прошло проверку.
-        /// </summary>
-        private static TelegramBotClient TestProxy(CashlogSettings cashlogSettings, WebProxy proxy)
-        {
-            var client = new TelegramBotClient(cashlogSettings.TelegramBotToken, proxy);
-
-            try
-            {
-                var cts = new CancellationTokenSource();
-                cts.CancelAfter(TimeSpan.FromSeconds(5));
-                client.GetMeAsync(cts.Token).GetAwaiter().GetResult();
-                return client;
-            }
-            catch (OperationCanceledException)
-            {
-                return null;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
         }
 
         private async void OnCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
@@ -172,7 +80,7 @@ namespace Cashlog.Core.Modules.Messengers
             }
             catch (Exception ex)
             {
-                _logger.Error("Произошла ошибка во время обработки query запроса ", ex);
+                _logger.Error($"{GetType().Name}: Произошла ошибка во время обработки query запроса ", ex);
             }
         }
 
@@ -193,7 +101,7 @@ namespace Cashlog.Core.Modules.Messengers
                 var settings = _cashlogSettingsService.ReadSettings();
                 if (chatId.ToString() != settings.AdminChatToken)
                 {
-                    _logger.Info($"Произведена попытка использования бота в группе `{e.Message.Chat.Title}` ({chatId})");
+                    _logger.Info($"{GetType().Name}: Произведена попытка использования бота в группе `{e.Message.Chat.Title}` ({chatId})");
                     await _client.SendTextMessageAsync(chatId, "Чтобы бот мог работать в этой группе обратитесь к @vsoff");
                     return;
                 }
@@ -241,7 +149,7 @@ namespace Cashlog.Core.Modules.Messengers
                     case MessageType.Photo:
                     {
                         PhotoSize photoSize = e.Message.Photo.OrderByDescending(x => x.Width).First();
-                        _logger.Trace($"Получено фото чека с разрешением W:{photoSize.Width} H:{photoSize.Height}");
+                        _logger.Trace($"{GetType().Name}: Получено фото чека с разрешением W:{photoSize.Width} H:{photoSize.Height}");
 
                         File file = await _client.GetFileAsync(photoSize.FileId);
 
@@ -258,10 +166,10 @@ namespace Cashlog.Core.Modules.Messengers
                             throw new Exception("Ошибка во время скачки изображения с чеком из telegram", ex);
                         }
 
-                        _logger.Trace($"Получено изображение из потока размером {imageBytes.Length} байт");
+                        _logger.Trace($"{GetType().Name}: Получено изображение из потока размером {imageBytes.Length} байт");
 
                         var data = _receiptHandleService.ParsePhoto(imageBytes);
-                        _logger.Trace(data == null ? "Не удалось распознать QR код на чеке" : $"Данные с QR кода чека {data.RawData}");
+                        _logger.Trace(data == null ? $"{GetType().Name}: Не удалось распознать QR код на чеке" : $"{GetType().Name}: Данные с QR кода чека {data.RawData}");
 
                         userMessageInfo.Message.ReceiptInfo = data;
                         userMessageInfo.MessageType = Core.Models.MessageType.QrCode;
@@ -296,6 +204,35 @@ namespace Cashlog.Core.Modules.Messengers
 
             var telegramMenu = menu as TelegramMenu;
             await _client.SendTextMessageAsync(userMessageInfo.Group.ChatToken, text, replyToMessageId: replyToMessageId, replyMarkup: telegramMenu?.Markup);
+        }
+
+        public void OnProxyChanged(WebProxy proxy)
+        {
+            // Удаляем старый клиент.
+            var oldClient = _client;
+            if (oldClient != null)
+            {
+                oldClient.StopReceiving();
+                oldClient.OnMessage -= OnMessageReceived;
+                oldClient.OnCallbackQuery -= OnCallbackQuery;
+            }
+
+            if (proxy == null)
+            {
+                _logger.Info($"{GetType().Name}: Бот выключен, так как не был получен новый прокси-сервер");
+                return;
+            }
+
+            // Создаём новый клиент.
+            var settings = _cashlogSettingsService.ReadSettings();
+            var newClient = new TelegramBotClient(settings.TelegramBotToken, proxy);
+            newClient.OnMessage += OnMessageReceived;
+            newClient.OnCallbackQuery += OnCallbackQuery;
+            newClient.StartReceiving();
+            newClient.SendTextMessageAsync(settings.AdminChatToken, "Бот запущен под новым прокси-сервером!").GetAwaiter().GetResult();
+            _client = newClient;
+
+            _logger.Info($"{GetType().Name}: Telegram бот начал работать на прокси-сервере `{proxy.Address}`");
         }
     }
 }

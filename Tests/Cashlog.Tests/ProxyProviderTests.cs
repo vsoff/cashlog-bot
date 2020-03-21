@@ -11,7 +11,7 @@ namespace Cashlog.Tests
     public class ProxyProviderTests
     {
         [TestMethod]
-        public async Task TestMethod1()
+        public async Task GetProxiesTest()
         {
             IProxyProvider proxyProvider = new ProxyProvider(Mock.Of<ILogger>());
             var proxies = await proxyProvider.GetProxiesAsync();

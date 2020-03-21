@@ -14,6 +14,7 @@ namespace Cashlog.Core.Providers
 {
     public class ProxyProvider : IProxyProvider
     {
+        // TODO Вынести в конфиг.
         private static string _userAgent = @"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36 OPR/60.0.3255.151 (Edition Yx)";
         private static readonly string _proxyListUrl = @"https://proxy-list.org/russian/search.php?search=ssl-yes&country=any&type=any&port=any&ssl=yes";
         private readonly ILogger _logger;
@@ -25,7 +26,7 @@ namespace Cashlog.Core.Providers
 
         public async Task<ICollection<WebProxy>> GetProxiesAsync()
         {
-            var response = await _proxyListUrl.WithHeaders(new { Accept = "text/plain", User_Agent = _userAgent }).GetAsync();
+            var response = await _proxyListUrl.WithHeaders(new {Accept = "text/plain", User_Agent = _userAgent}).GetAsync();
             var html = await response.Content.ReadAsStringAsync();
 
             HtmlDocument doc = new HtmlDocument();
