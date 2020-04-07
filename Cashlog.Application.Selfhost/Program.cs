@@ -57,7 +57,9 @@ namespace Cashlog.Application.Selfhost
                 builder.RegisterInstance(logger);
                 builder.RegisterType<FnsService>().As<IFnsService>().SingleInstance().AutoActivate();
                 builder.RegisterType<DatabaseContextProvider>().As<IDatabaseContextProvider>().SingleInstance();
-                builder.RegisterType<TelegramMessenger>().As<IMessenger>().As<IProxyConsumer>().SingleInstance().AutoActivate();
+                builder.RegisterType<TelegramMessenger>().As<IMessenger>().As<IProxyConsumer>().SingleInstance().AutoActivate()
+                    .OnActivated(x => x.Instance.StartReceiving())
+                    .OnRelease(x => x.StopReceiving());
                 builder.RegisterType<MessagesHandler>().As<IMessagesHandler>().SingleInstance().AutoActivate();
                 builder.RegisterType<ProxyProvider>().As<IProxyProvider>().SingleInstance();
                 builder.RegisterType<QueryDataSerializer>().As<IQueryDataSerializer>().SingleInstance();

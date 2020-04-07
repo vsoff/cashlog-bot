@@ -27,6 +27,8 @@ namespace Cashlog.Core.Modules.Messengers
     /// в отдельный класс, чтобы можно было независимо менять мессенджеры.</remarks>
     public class TelegramMessenger : IMessenger, IProxyConsumer
     {
+        public event EventHandler<UserMessageInfo> OnMessage;
+
         private readonly ICashlogSettingsService _cashlogSettingsService;
         private readonly IReceiptHandleService _receiptHandleService;
         private readonly IQueryDataSerializer _queryDataSerializer;
@@ -34,6 +36,7 @@ namespace Cashlog.Core.Modules.Messengers
         private readonly IGroupService _groupService;
         private readonly ILogger _logger;
 
+        private readonly WebProxy _clientProxy;
         private TelegramBotClient _client;
 
         public TelegramMessenger(
@@ -50,6 +53,8 @@ namespace Cashlog.Core.Modules.Messengers
             _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
             _groupService = groupService ?? throw new ArgumentNullException(nameof(groupService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            _clientProxy = new WebProxy();
         }
 
         private async void OnCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
@@ -193,7 +198,26 @@ namespace Cashlog.Core.Modules.Messengers
             }
         }
 
-        public event EventHandler<UserMessageInfo> OnMessage;
+        public void StartReceiving()
+        {
+            if (_client == null)
+            {
+                var botToken = _cashlogSettingsService.ReadSettings()?.TelegramBotToken;
+                if (string.IsNullOrEmpty(botToken))
+                    throw new InvalidOperationException("Telegram токен не должен быть пустым");
+
+                _client = new TelegramBotClient(botToken, _clientProxy);
+                _client.OnMessage += OnMessageReceived;
+                _client.OnCallbackQuery += OnCallbackQuery;
+            }
+
+            _client.StartReceiving();
+        }
+
+        public void StopReceiving()
+        {
+            _client.StopReceiving();
+        }
 
         public async Task SendMessageAsync(UserMessageInfo userMessageInfo, string text, bool isReply = false, IMenu menu = null)
         {
@@ -208,29 +232,18 @@ namespace Cashlog.Core.Modules.Messengers
 
         public void OnProxyChanged(WebProxy proxy)
         {
-            // Удаляем старый клиент.
-            var oldClient = _client;
-            if (oldClient != null)
-            {
-                oldClient.StopReceiving();
-                oldClient.OnMessage -= OnMessageReceived;
-                oldClient.OnCallbackQuery -= OnCallbackQuery;
-            }
-
             if (proxy == null)
             {
                 _logger.Info($"{GetType().Name}: Бот выключен, так как не был получен новый прокси-сервер");
                 return;
             }
 
-            // Создаём новый клиент.
             var settings = _cashlogSettingsService.ReadSettings();
-            var newClient = new TelegramBotClient(settings.TelegramBotToken, proxy);
-            newClient.OnMessage += OnMessageReceived;
-            newClient.OnCallbackQuery += OnCallbackQuery;
-            newClient.StartReceiving();
-            newClient.SendTextMessageAsync(settings.AdminChatToken, "Бот запущен под новым прокси-сервером!").GetAwaiter().GetResult();
-            _client = newClient;
+
+            // Заменяем адрес прокси на новый.
+            _clientProxy.Address = proxy.Address;
+            // TODO Удалить это сообщение, когда станет понятно что бот нормально переподключается к новым прокси.
+            _client.SendTextMessageAsync(settings.AdminChatToken, "Бот запущен под новым прокси-сервером!").GetAwaiter().GetResult();
 
             _logger.Info($"{GetType().Name}: Telegram бот начал работать на прокси-сервере `{proxy.Address}`");
         }
