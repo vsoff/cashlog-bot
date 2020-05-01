@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Cashlog.Common;
 using Cashlog.Core.Models;
 using Cashlog.Core.Models.Main;
 using Cashlog.Core.Modules.Calculator;

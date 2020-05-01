@@ -1,4 +1,5 @@
 ﻿using System;
+using Cashlog.Common;
 
 namespace Cashlog.Core.Models.Main
 {

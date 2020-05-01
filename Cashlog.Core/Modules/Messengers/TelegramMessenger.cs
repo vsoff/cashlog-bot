@@ -9,6 +9,7 @@ using Cashlog.Core.Models;
 using Cashlog.Core.Models.Main;
 using Cashlog.Core.Modules.Messengers.Menu;
 using Cashlog.Core.Providers.Abstract;
+using Cashlog.Core.Services;
 using Cashlog.Core.Services.Abstract;
 using Cashlog.Core.Workers;
 using Telegram.Bot;
@@ -29,7 +30,7 @@ namespace Cashlog.Core.Modules.Messengers
     {
         public event EventHandler<UserMessageInfo> OnMessage;
 
-        private readonly ICashlogSettingsService _cashlogSettingsService;
+        private readonly ISettingsService<CashlogSettings> _cashlogSettingsService;
         private readonly IReceiptHandleService _receiptHandleService;
         private readonly IQueryDataSerializer _queryDataSerializer;
         private readonly ICustomerService _customerService;
@@ -40,7 +41,7 @@ namespace Cashlog.Core.Modules.Messengers
         private TelegramBotClient _client;
 
         public TelegramMessenger(
-            ICashlogSettingsService cashlogSettingsService,
+            ISettingsService<CashlogSettings> cashlogSettingsService,
             IReceiptHandleService receiptHandleService,
             IQueryDataSerializer queryDataSerializer,
             ICustomerService customerService,

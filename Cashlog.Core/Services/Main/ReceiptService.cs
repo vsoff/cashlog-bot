@@ -6,6 +6,7 @@ using Cashlog.Core.Mappers;
 using Cashlog.Core.Models.Main;
 using Cashlog.Core.Providers.Abstract;
 using Cashlog.Core.Services.Abstract;
+using Cashlog.Data;
 using Cashlog.Data.Entities;
 using Cashlog.Data.UoW;
 
@@ -48,6 +49,14 @@ namespace Cashlog.Core.Services.Main
                 ReceiptDto newReceipt = await uow.Receipts.AddAsync(receipt.ToData());
                 await uow.SaveChangesAsync();
                 return newReceipt.ToCore();
+            }
+        }
+
+        public async Task<Receipt[]> GetListAsync(PartitionRequest partitionRequest)
+        {
+            using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
+            {
+                return (await uow.Receipts.GetListAsync(partitionRequest)).Select(x => x.ToCore()).ToArray();
             }
         }
 

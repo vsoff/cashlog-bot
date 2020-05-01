@@ -10,6 +10,8 @@ namespace Cashlog.Data.UoW
 {
     public class Repository<T> : IRepository<T> where T : Entity
     {
+        private readonly Expression<Func<T, bool>> _defaultExpression = x => true;
+
         protected readonly ApplicationContext Context;
 
         public Repository(ApplicationContext context)
@@ -20,12 +22,16 @@ namespace Cashlog.Data.UoW
         public Task<T> GetAsync(long id)
             => Context.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
 
-        public Task<T> GetAsync(Expression<Func<T, bool>> whereExpression)
-            => Context.Set<T>().FirstOrDefaultAsync(whereExpression);
+        public Task<T> GetAsync(Expression<Func<T, bool>> whereExpression = null)
+            => Context.Set<T>().FirstOrDefaultAsync(whereExpression ?? _defaultExpression);
 
         public Task<T[]> GetListAsync(long[] ids)
             => Context.Set<T>().Where(x => ids.Contains(x.Id)).ToArrayAsync();
 
+        public Task<T[]> GetListAsync(PartitionRequest partitionRequest, Expression<Func<T, bool>> whereExpression = null)
+            => Context.Set<T>().Where(whereExpression ?? _defaultExpression).Skip(partitionRequest.Skip).Take(partitionRequest.Take).ToArrayAsync();
+
+        [Obsolete("Использовать другую перегрузку метода")]
         public async Task<ICollection<T>> GetListAsync(Expression<Func<T, bool>> whereExpression)
             => await Context.Set<T>().Where(whereExpression).ToListAsync();
 
@@ -64,7 +70,7 @@ namespace Cashlog.Data.UoW
 
         public async Task<T> UpdateAsync(T item)
         {
-            var oldObj = Context.Set<T>().FirstOrDefault(x => item.Id == x.Id);
+            var oldObj = await Context.Set<T>().FirstOrDefaultAsync(x => item.Id == x.Id);
             if (oldObj == null)
                 throw new NullReferenceException("Невозможно обновить объект, которого нету в БД");
 

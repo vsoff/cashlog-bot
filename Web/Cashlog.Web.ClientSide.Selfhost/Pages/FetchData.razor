@@ -1,0 +1,59 @@
+﻿@page "/fetchdata"
+@using Cashlog.Web.Client.Core.ViewModels
+@using Cashlog.Web.Shared.Contracts
+@inject HttpClient Http
+@inject FetchDataViewModel Vm
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (_receipts == null)
+{
+    <p>
+        <em>Loading receipts...</em>
+    </p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>BillingPeriodId</th>
+            <th>Date</th>
+            <th>Comment</th>
+            <th>Amount</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var receipt in _receipts)
+        {
+            <tr>
+                <td>@receipt.Id</td>
+                <td>@receipt.BillingPeriodId</td>
+                <td>@receipt.PurchaseTime.ToString("yyyy.MM.dd HH:mm:ss")</td>
+                <td>@receipt.Comment</td>
+                <td>@receipt.TotalAmount</td>
+                <td>@receipt.Status</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <input type="number" @bind-value="@Vm.Val" @bind-value:event="oninput"/>
+    <input type="number" @bind-value="@Vm.Val" @bind-value:event="oninput"/>
+    <input type="number" @bind="@Vm.Val"/>
+}
+<Component1></Component1>
+
+@code {
+    private ReceiptWebModel[] _receipts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine("test");
+        _receipts = await Vm.GetReceipts();
+    }
+
+}

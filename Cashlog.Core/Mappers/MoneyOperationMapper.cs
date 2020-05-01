@@ -1,4 +1,5 @@
-﻿using Cashlog.Core.Models;
+﻿using Cashlog.Common;
+using Cashlog.Core.Models;
 using Cashlog.Core.Models.Main;
 using Cashlog.Data.Entities;
 
@@ -14,7 +15,7 @@ namespace Cashlog.Core.Mappers
                 BillingPeriodId = obj.BillingPeriodId,
                 Comment = obj.Comment,
                 Id = obj.Id,
-                OperationType = (MoneyOperationTypeDto) obj.OperationType,
+                OperationType = obj.OperationType,
                 CustomerFromId = obj.CustomerFromId,
                 CustomerToId = obj.CustomerToId
             };
@@ -28,7 +29,7 @@ namespace Cashlog.Core.Mappers
                 BillingPeriodId = obj.BillingPeriodId,
                 Comment = obj.Comment,
                 Id = obj.Id,
-                OperationType = (MoneyOperationType) obj.OperationType,
+                OperationType = obj.OperationType,
                 CustomerFromId = obj.CustomerFromId,
                 CustomerToId = obj.CustomerToId
             };

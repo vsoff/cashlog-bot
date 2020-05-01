@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Cashlog.Common;
 using Cashlog.Core.Common;
 using Cashlog.Core.Extensions;
 using Cashlog.Core.Models;

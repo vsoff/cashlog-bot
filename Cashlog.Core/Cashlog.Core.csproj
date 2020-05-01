@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Cashlog.Common\Cashlog.Common.csproj" />
     <ProjectReference Include="..\Cashlog.Data\Cashlog.Data.csproj" />
   </ItemGroup>
 

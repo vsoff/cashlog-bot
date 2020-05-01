@@ -17,11 +17,11 @@ namespace Cashlog.Core.Services
 {
     public class ReceiptHandleService : IReceiptHandleService
     {
-        private readonly ICashlogSettingsService _cashlogSettingsService;
+        private readonly ISettingsService<CashlogSettings> _cashlogSettingsService;
         private readonly IFnsService _fnsService;
 
         public ReceiptHandleService(
-            ICashlogSettingsService cashlogSettingsService,
+            ISettingsService<CashlogSettings> cashlogSettingsService,
             IFnsService fnsService)
         {
             _cashlogSettingsService = cashlogSettingsService ?? throw new ArgumentNullException(nameof(cashlogSettingsService));

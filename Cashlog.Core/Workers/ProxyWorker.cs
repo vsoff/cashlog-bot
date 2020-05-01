@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Cashlog.Core.Common;
 using Cashlog.Core.Common.Workers;
 using Cashlog.Core.Providers.Abstract;
+using Cashlog.Core.Services;
 using Cashlog.Core.Services.Abstract;
 
 namespace Cashlog.Core.Workers
@@ -21,7 +22,7 @@ namespace Cashlog.Core.Workers
 
         private readonly TimeSpan _proxyRevalidateInterval = TimeSpan.FromMinutes(5);
 
-        private readonly ICashlogSettingsService _cashlogSettingsService;
+        private readonly ISettingsService<CashlogSettings> _cashlogSettingsService;
         private readonly IProxyProvider _proxyProvider;
         private readonly ILogger _logger;
         private readonly IProxyConsumer[] _proxyConsumers;
@@ -42,7 +43,7 @@ namespace Cashlog.Core.Workers
         private WebProxy _lastWorkingWebProxy;
 
         public ProxyWorker(
-            ICashlogSettingsService cashlogSettingsService,
+            ISettingsService<CashlogSettings> cashlogSettingsService,
             IWorkerController workerController,
             IProxyProvider proxyProvider,
             ILogger logger,

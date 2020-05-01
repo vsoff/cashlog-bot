@@ -44,7 +44,7 @@ namespace Cashlog.Application.Selfhost
                 return;
             }
 
-            ICashlogSettingsService settingsService = new CashlogSettingsService();
+            ISettingsService<CashlogSettings> settingsService = new CashlogSettingsService();
             var config = settingsService.ReadSettings();
             if (string.IsNullOrEmpty(config.TelegramBotToken))
             {
@@ -56,7 +56,7 @@ namespace Cashlog.Application.Selfhost
                 builder.RegisterInstance(settingsService);
                 builder.RegisterInstance(logger);
                 builder.RegisterType<FnsService>().As<IFnsService>().SingleInstance().AutoActivate();
-                builder.RegisterType<DatabaseContextProvider>().As<IDatabaseContextProvider>().SingleInstance();
+                builder.RegisterType<BotDatabaseContextProvider>().As<IDatabaseContextProvider>().SingleInstance();
                 builder.RegisterType<TelegramMessenger>().As<IMessenger>().As<IProxyConsumer>().SingleInstance().AutoActivate()
                     .OnActivated(x => x.Instance.StartReceiving())
                     .OnRelease(x => x.StopReceiving());

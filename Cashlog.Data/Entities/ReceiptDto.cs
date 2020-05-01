@@ -1,4 +1,5 @@
 ﻿using System;
+using Cashlog.Common;
 
 namespace Cashlog.Data.Entities
 {
@@ -10,7 +11,7 @@ namespace Cashlog.Data.Entities
         public string FiscalDocument { get; set; }
         public string FiscalNumber { get; set; }
         public string FiscalSign { get; set; }
-        public ReceiptStatusDto Status { get; set; }
+        public ReceiptStatus Status { get; set; }
 
         public long? CustomerId { get; set; }
         public long BillingPeriodId { get; set; }

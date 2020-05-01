@@ -1,4 +1,5 @@
-﻿using Cashlog.Core.Models;
+﻿using Cashlog.Common;
+using Cashlog.Core.Models;
 
 namespace Cashlog.Core.Modules.Calculator
 {

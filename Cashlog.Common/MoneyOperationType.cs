@@ -1,4 +1,4 @@
-﻿namespace Cashlog.Core.Models
+﻿namespace Cashlog.Common
 {
     public enum MoneyOperationType
     {

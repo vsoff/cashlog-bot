@@ -1,15 +1,15 @@
 ﻿using System;
 using Cashlog.Core.Providers.Abstract;
-using Cashlog.Core.Services.Abstract;
+using Cashlog.Core.Services;
 using Cashlog.Data;
 
 namespace Cashlog.Core.Providers
 {
-    public class DatabaseContextProvider : IDatabaseContextProvider
+    public class BotDatabaseContextProvider : IDatabaseContextProvider
     {
-        private readonly ICashlogSettingsService _cashlogSettingsService;
+        private readonly ISettingsService<CashlogSettings> _cashlogSettingsService;
 
-        public DatabaseContextProvider(ICashlogSettingsService cashlogSettingsService)
+        public BotDatabaseContextProvider(ISettingsService<CashlogSettings> cashlogSettingsService)
         {
             _cashlogSettingsService = cashlogSettingsService ?? throw new ArgumentNullException(nameof(cashlogSettingsService));
         }

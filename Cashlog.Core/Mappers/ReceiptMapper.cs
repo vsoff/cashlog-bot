@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Cashlog.Common;
 using Cashlog.Core.Models;
 using Cashlog.Core.Models.Main;
 using Cashlog.Core.Modules.Fns.Models;
@@ -51,7 +52,7 @@ namespace Cashlog.Core.Mappers
                 FiscalDocument = obj.FiscalDocument,
                 FiscalNumber = obj.FiscalNumber,
                 FiscalSign = obj.FiscalSign,
-                Status = (ReceiptStatus) obj.Status,
+                Status = obj.Status,
                 CustomerId = obj.CustomerId,
                 RetailAddress = obj.RetailAddress,
                 RetailInn = obj.RetailInn,
@@ -73,7 +74,7 @@ namespace Cashlog.Core.Mappers
                 FiscalDocument = obj.FiscalDocument,
                 FiscalNumber = obj.FiscalNumber,
                 FiscalSign = obj.FiscalSign,
-                Status = (ReceiptStatusDto) obj.Status,
+                Status = obj.Status,
                 CustomerId = obj.CustomerId,
                 RetailAddress = obj.RetailAddress,
                 RetailInn = obj.RetailInn,

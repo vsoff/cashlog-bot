@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cashlog.Core.Models.Main;
+using Cashlog.Data;
 
 namespace Cashlog.Core.Services.Abstract
 {
@@ -15,6 +16,7 @@ namespace Cashlog.Core.Services.Abstract
         Task<Receipt> AddAsync(Receipt receipt);
         Task<Receipt> GetAsync(long receiptId);
         Task<Receipt> UpdateAsync(Receipt receipt);
+        Task<Receipt[]> GetListAsync(PartitionRequest partitionRequest);
         Task<Receipt[]> GetByBillingPeriodIdAsync(long billingPeriodId);
         Task SetCustomersToReceiptAsync(long receiptId, long[] consumerIds);
         Task<Dictionary<long, long[]>> GetConsumerIdsByReceiptIdsMapAsync(long[] receiptIds);

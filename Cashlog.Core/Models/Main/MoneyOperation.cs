@@ -1,4 +1,6 @@
-﻿namespace Cashlog.Core.Models.Main
+﻿using Cashlog.Common;
+
+namespace Cashlog.Core.Models.Main
 {
     public class MoneyOperation
     {

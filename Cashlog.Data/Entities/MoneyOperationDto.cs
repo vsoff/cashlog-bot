@@ -1,4 +1,6 @@
-﻿namespace Cashlog.Data.Entities
+﻿using Cashlog.Common;
+
+namespace Cashlog.Data.Entities
 {
     public class MoneyOperationDto : Entity
     {
@@ -25,7 +27,7 @@
         /// <summary>
         /// Тип операции с деньгами.
         /// </summary>
-        public MoneyOperationTypeDto OperationType { get; set; }
+        public MoneyOperationType OperationType { get; set; }
 
         /// <summary>
         /// Комментарий операции.
