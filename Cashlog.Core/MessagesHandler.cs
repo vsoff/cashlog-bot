@@ -239,10 +239,26 @@ namespace Cashlog.Core
                     var receipts = await _receiptService.GetReceiptsInPeriodAsync(periodFrom, periodTo);
                     var summary = receipts.Sum(x => x.TotalAmount);
 
-                    string[] receiptLines = receipts.Select(x => $"ID {x.Id}: [{x.TotalAmount}р.] {x.Comment ?? "(Нет описания)"}").ToArray();
+                    // Формируем сообщение.
+                    var customersMap = receipts
+                        .Where(x => x.CustomerId.HasValue)
+                        .GroupBy(x => x.CustomerId.Value)
+                        .ToDictionary(x => x.Key, x => x.ToArray());
+                    var customersNameMap = (await _customerService.GetListAsync(customersMap.Keys.ToArray()))
+                        .ToDictionary(x => x.Id, x => x.Caption);
+                    string[] receiptLines = receipts.Select(x => $"ID {x.Id}: [{x.TotalAmount}р.] {x.Comment ?? "(Нет описания)"} ({customersNameMap[x.CustomerId.Value]})").ToArray();
 
-                    await _messenger.SendMessageAsync(userMessageInfo, $"Траты за период с {periodFrom.ToShortDateString()} по {periodTo.ToShortDateString()}" +
-                                                                       $" составляют: {summary:F2}р.\nПодробности:\n\n{string.Join(";\n", receiptLines)}.", true);
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine($"Траты за период с {periodFrom.ToShortDateString()} по {periodTo.ToShortDateString()} составляют: {summary:F2}р.");
+                    sb.AppendLine();
+                    sb.AppendLine("Список участников:");
+                    foreach (var customerKvp in customersMap)
+                        sb.AppendLine($"* {customersNameMap[customerKvp.Key]} потратил {customerKvp.Value.Sum(x => x.TotalAmount):F2}р.");
+                    sb.AppendLine();
+                    sb.AppendLine("Список чеков:");
+                    sb.AppendLine($"{string.Join(";\n", receiptLines)}.");
+
+                    await _messenger.SendMessageAsync(userMessageInfo, sb.ToString(), true);
                     return;
                 }
                 case "debts":
