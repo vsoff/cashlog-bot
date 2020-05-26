@@ -12,15 +12,15 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "report",
+      "launchUrl": "receipt?page=1&take=10",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "Cashlog.Web.Server.Selfhost": {
       "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": "report",
+      "launchBrowser": false,
+      "launchUrl": "receipt?page=1&take=10",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

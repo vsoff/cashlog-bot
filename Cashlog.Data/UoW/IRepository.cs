@@ -6,6 +6,11 @@ using Cashlog.Data.Entities;
 
 namespace Cashlog.Data.UoW
 {
+    //public class Entity
+    //{
+    //    public Guid Id { get; set; }
+    //}
+
     public interface IRepository
     {
     }
@@ -21,6 +26,6 @@ namespace Cashlog.Data.UoW
         Task<T> UpdateAsync(T item);
         Task<T> DeleteAsync(long id);
         Task<T[]> GetAllAsync();
-        Task<bool> AnyAsync();
+        Task<bool> AnyAsync(Expression<Func<T, bool>> whereExpression = null);
     }
 }

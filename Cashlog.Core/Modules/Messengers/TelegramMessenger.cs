@@ -64,7 +64,7 @@ namespace Cashlog.Core.Modules.Messengers
             {
                 IQueryData queryData = _queryDataSerializer.DecodeBase64(e.CallbackQuery.Data);
                 Group group = await _groupService.GetByChatTokenAsync(queryData.ChatToken);
-                Customer[] customers = await _customerService.GetByGroupIdAsync(group.Id);
+                Customer[] customers = await _customerService.GetListAsync(group.Id);
 
                 // Собираем всю информацию о пользователе и сообщении.
                 UserMessageInfo userMessageInfo = new UserMessageInfo
@@ -130,7 +130,7 @@ namespace Cashlog.Core.Modules.Messengers
                     group = await _groupService.AddAsync(e.Message.Chat.Id.ToString(), creator.User.Id.ToString(), e.Message.Chat.Title ?? "Default chat name");
                 }
 
-                Customer[] customers = await _customerService.GetByGroupIdAsync(group.Id);
+                Customer[] customers = await _customerService.GetListAsync(group.Id);
 
                 // Собираем всю информацию о пользователе и сообщении.
                 UserMessageInfo userMessageInfo = new UserMessageInfo

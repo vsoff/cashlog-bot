@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
-using Cashlog.Common;
 using Cashlog.Core.Services.Abstract;
 using Cashlog.Data;
 using Cashlog.Web.Server.Core.Mappers;
@@ -23,9 +23,35 @@ namespace Cashlog.Web.Server.Core.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<ReceiptWebModel>> GetAsync()
+        public async Task<IEnumerable<ReceiptWebModel>> GetAsync(int? page, int? take = 50)
         {
-            var receipts = await _receiptService.GetListAsync(new PartitionRequest(400, 1));
+            if (page == null) throw new ArgumentNullException(nameof(page));
+            if (take == null) throw new ArgumentNullException(nameof(take));
+
+            var receipts = await _receiptService.GetListAsync(new PartitionRequest(take.Value, page.Value));
+            return receipts.Select(x => x.ToModel());
+        }
+    }
+
+    [ApiController]
+    [Route("[controller]")]
+    public class CustomerController : ControllerBase
+    {
+        private readonly ICustomerService _customerService;
+
+        public CustomerController(ICustomerService customerService)
+        {
+            _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
+        }
+
+        [HttpPost]
+        [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
+        public async Task<IEnumerable<CustomerWebModel>> GetAsync(IEnumerable<long> customerIds)
+        {
+            if (customerIds == null) throw new ArgumentNullException(nameof(customerIds));
+            if (!customerIds.Any()) throw new ArgumentOutOfRangeException(nameof(customerIds));
+
+            var receipts = await _customerService.GetListAsync(customerIds.ToArray());
             return receipts.Select(x => x.ToModel());
         }
     }

@@ -15,6 +15,8 @@ namespace Cashlog.Web.Server.Selfhost
 {
     public class Startup
     {
+        readonly string AllowedSpecificOrigins = "AllowedSpecificOrigins";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -25,6 +27,16 @@ namespace Cashlog.Web.Server.Selfhost
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy(AllowedSpecificOrigins, builder =>
+                {
+                    builder.WithOrigins("https://localhost:5001")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
+
             services.AddControllers();
         }
 
@@ -38,14 +50,13 @@ namespace Cashlog.Web.Server.Selfhost
 
             app.UseHttpsRedirection();
 
+            app.UseCors(AllowedSpecificOrigins);
+
             app.UseRouting();
 
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }
 }

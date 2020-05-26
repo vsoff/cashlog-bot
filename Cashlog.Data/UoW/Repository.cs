@@ -31,15 +31,15 @@ namespace Cashlog.Data.UoW
         public Task<T[]> GetListAsync(PartitionRequest partitionRequest, Expression<Func<T, bool>> whereExpression = null)
             => Context.Set<T>().Where(whereExpression ?? _defaultExpression).Skip(partitionRequest.Skip).Take(partitionRequest.Take).ToArrayAsync();
 
-        [Obsolete("Использовать другую перегрузку метода")]
-        public async Task<ICollection<T>> GetListAsync(Expression<Func<T, bool>> whereExpression)
-            => await Context.Set<T>().Where(whereExpression).ToListAsync();
+        public async Task<ICollection<T>> GetListAsync(Expression<Func<T, bool>> whereExpression = null)
+            => await Context.Set<T>().Where(whereExpression ?? _defaultExpression).ToListAsync();
 
+        [Obsolete("Можно использовать GetListAsync(null) вместо этого метода")]
         public Task<T[]> GetAllAsync()
             => Context.Set<T>().ToArrayAsync();
 
-        public Task<bool> AnyAsync()
-            => Context.Set<T>().AnyAsync();
+        public Task<bool> AnyAsync(Expression<Func<T, bool>> whereExpression = null)
+            => Context.Set<T>().AnyAsync(whereExpression ?? _defaultExpression);
 
         public async Task<T> AddAsync(T item)
             => (await AddRangeAsync(new[] {item})).First();

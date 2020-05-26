@@ -20,6 +20,7 @@ namespace Cashlog.Data.UoW
             ReceiptConsumerMaps = new ReceiptConsumerMapRepository(_context);
         }
 
+        // TODO Выкинуть все эти репозитории, использовать исключительно IRepository<> и Repository. Кастомная логика решаться должна в сервисе.
         public GroupRepository Groups { get; }
         public ReceiptRepository Receipts { get; }
         public CustomerRepository Customers { get; }

@@ -21,28 +21,28 @@ namespace Cashlog.Core.Services.Main
 
         public async Task<Customer> AddAsync(Customer customer)
         {
-            using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
-            {
-                CustomerDto newCustomer = await uow.Customers.AddAsync(customer.ToData());
-                await uow.SaveChangesAsync();
-                return newCustomer.ToCore();
-            }
+            using var uow = new UnitOfWork(_databaseContextProvider.Create());
+            CustomerDto newCustomer = await uow.Customers.AddAsync(customer.ToData());
+            await uow.SaveChangesAsync();
+            return newCustomer.ToCore();
         }
 
         public async Task<Customer> GetAsync(long customerId)
         {
-            using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
-            {
-                return (await uow.Customers.GetAsync(customerId))?.ToCore();
-            }
+            using var uow = new UnitOfWork(_databaseContextProvider.Create());
+            return (await uow.Customers.GetAsync(customerId))?.ToCore();
         }
 
-        public async Task<Customer[]> GetByGroupIdAsync(long groupId)
+        public async Task<Customer[]> GetListAsync(long[] customerIds)
         {
-            using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
-            {
-                return (await uow.Customers.GetByGroupId(groupId))?.Select(x => x.ToCore()).ToArray();
-            }
+            using var uow = new UnitOfWork(_databaseContextProvider.Create());
+            return (await uow.Customers.GetListAsync(customerIds))?.Select(x => x.ToCore()).ToArray();
+        }
+
+        public async Task<Customer[]> GetListAsync(long groupId)
+        {
+            using var uow = new UnitOfWork(_databaseContextProvider.Create());
+            return (await uow.Customers.GetByGroupId(groupId))?.Select(x => x.ToCore()).ToArray();
         }
     }
 }

@@ -8,7 +8,7 @@ namespace Cashlog.Web.ClientSide.Selfhost
     {
         public static void RegisterAllServices(this IServiceCollection services)
         {
-            services.AddTransient<FetchDataViewModel>();
+            services.AddTransient<ReceiptsListViewModel>();
         }
     }
 }

@@ -10,6 +10,7 @@ namespace Cashlog.Core.Services.Abstract
     {
         Task<Customer> AddAsync(Customer customer);
         Task<Customer> GetAsync(long customerId);
-        Task<Customer[]> GetByGroupIdAsync(long groupId);
+        Task<Customer[]> GetListAsync(long[] customerIds);
+        Task<Customer[]> GetListAsync(long groupId);
     }
 }

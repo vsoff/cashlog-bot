@@ -13,6 +13,7 @@ namespace Cashlog.Web.Server.Core
     {
         protected override void Load(ContainerBuilder builder)
         {
+            builder.RegisterType<CustomerService>().As<ICustomerService>().SingleInstance();
             builder.RegisterType<ReceiptService>().As<IReceiptService>().SingleInstance();
             builder.RegisterType<WebServerDatabaseContextProvider>().As<IDatabaseContextProvider>().SingleInstance();
             builder.RegisterType<WebServerSettingsService>().As<ISettingsService<WebServerSettings>>().SingleInstance();

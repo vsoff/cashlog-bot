@@ -1,14 +1,13 @@
 ﻿@page "/fetchdata"
 @using Cashlog.Web.Client.Core.ViewModels
-@using Cashlog.Web.Shared.Contracts
 @inject HttpClient Http
-@inject FetchDataViewModel Vm
+@inject ReceiptsListViewModel Vm
 
 <h1>Weather forecast</h1>
 
 <p>This component demonstrates fetching data from the server.</p>
 
-@if (_receipts == null)
+@if (Vm.Receipts == null)
 {
     <p>
         <em>Loading receipts...</em>
@@ -16,44 +15,61 @@
 }
 else
 {
+    <p>
+        <input type="button" @onclick="@Vm.PrevPage" disabled="@Vm.IsPrevButtonDisabled" value="<<"/>
+        <input type="button" @onclick="@Vm.NextPage" value=">>"/>
+    </p>
     <table class="table">
         <thead>
         <tr>
             <th>Id</th>
             <th>BillingPeriodId</th>
             <th>Date</th>
-            <th>Comment</th>
             <th>Amount</th>
+            <th>Comment</th>
+            <th>FiscalDocument</th>
+            <th>FiscalNumber</th>
+            <th>FiscalSign</th>
             <th>Status</th>
+            <th>CustomerId</th>
         </tr>
         </thead>
         <tbody>
-        @foreach (var receipt in _receipts)
+        @foreach (var receipt in Vm.Receipts)
         {
             <tr>
-                <td>@receipt.Id</td>
-                <td>@receipt.BillingPeriodId</td>
-                <td>@receipt.PurchaseTime.ToString("yyyy.MM.dd HH:mm:ss")</td>
-                <td>@receipt.Comment</td>
-                <td>@receipt.TotalAmount</td>
-                <td>@receipt.Status</td>
+                <td>@receipt.Receipt.Id</td>
+                <td>@receipt.Receipt.BillingPeriodId</td>
+                <td>@receipt.Receipt.PurchaseTime.ToString("yyyy.MM.dd HH:mm:ss")</td>
+                <td>@receipt.Receipt.TotalAmount р.</td>
+                <td>@receipt.Receipt.Comment</td>
+                <td>@receipt.Receipt.FiscalDocument</td>
+                <td>@receipt.Receipt.FiscalNumber</td>
+                <td>@receipt.Receipt.FiscalSign</td>
+                <td>@receipt.Receipt.Status</td>
+                <td>@receipt.CustomerCaption</td>
             </tr>
         }
         </tbody>
     </table>
+    <p>
+        <input type="button" @onclick="@Vm.PrevPage" disabled="@Vm.IsPrevButtonDisabled" value="<<"/>
+        <input type="button" @onclick="@Vm.NextPage" value=">>"/>
+    </p>
+}
+<Component1></Component1>
+<p>
     <input type="number" @bind-value="@Vm.Val" @bind-value:event="oninput"/>
     <input type="number" @bind-value="@Vm.Val" @bind-value:event="oninput"/>
     <input type="number" @bind="@Vm.Val"/>
-}
-<Component1></Component1>
+</p>
 
 @code {
-    private ReceiptWebModel[] _receipts;
 
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine("test");
-        _receipts = await Vm.GetReceipts();
+        Console.WriteLine($"{GetType().Name}: method {nameof(OnInitializedAsync)} executed");
+        await Vm.UpdateReceiptsList();
     }
 
 }

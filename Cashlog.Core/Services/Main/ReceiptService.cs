@@ -23,103 +23,81 @@ namespace Cashlog.Core.Services.Main
 
         public async Task<ICollection<Receipt>> GetReceiptsInPeriodAsync(DateTime periodFrom, DateTime periodTo)
         {
-            using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
-            {
-                var receipts = await uow.Receipts.GetListAsync(x => x.PurchaseTime >= periodFrom && x.PurchaseTime < periodTo);
-                return receipts.Select(x => x.ToCore()).ToList();
-            }
+            using var uow = new UnitOfWork(_databaseContextProvider.Create());
+            var receipts = await uow.Receipts.GetListAsync(x => x.PurchaseTime >= periodFrom && x.PurchaseTime < periodTo);
+            return receipts.Select(x => x.ToCore()).ToList();
         }
 
         public async Task<bool> IsReceiptExists(Receipt receipt)
         {
-            using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
-            {
-                return await IsReceiptExistsInternal(uow, receipt);
-            }
+            using var uow = new UnitOfWork(_databaseContextProvider.Create());
+            return await IsReceiptExistsInternal(uow, receipt);
         }
 
         public async Task<Receipt> AddAsync(Receipt receipt)
         {
-            using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
-            {
-                ICollection<ReceiptDto> existsReceipts = await uow.Receipts.GetListAsync(x => x.FiscalDocument == receipt.FiscalDocument);
-                if (await IsReceiptExistsInternal(uow, receipt))
-                    throw new InvalidOperationException("Такой чек уже есть в БД");
+            using var uow = new UnitOfWork(_databaseContextProvider.Create());
+            if (await IsReceiptExistsInternal(uow, receipt))
+                throw new InvalidOperationException("Такой чек уже есть в БД");
 
-                ReceiptDto newReceipt = await uow.Receipts.AddAsync(receipt.ToData());
-                await uow.SaveChangesAsync();
-                return newReceipt.ToCore();
-            }
+            ReceiptDto newReceipt = await uow.Receipts.AddAsync(receipt.ToData());
+            await uow.SaveChangesAsync();
+            return newReceipt.ToCore();
         }
 
         public async Task<Receipt[]> GetListAsync(PartitionRequest partitionRequest)
         {
-            using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
-            {
-                return (await uow.Receipts.GetListAsync(partitionRequest)).Select(x => x.ToCore()).ToArray();
-            }
+            using var uow = new UnitOfWork(_databaseContextProvider.Create());
+            return (await uow.Receipts.GetListAsync(partitionRequest)).Select(x => x.ToCore()).ToArray();
         }
 
         public async Task<Receipt> GetAsync(long receiptId)
         {
-            using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
-            {
-                return (await uow.Receipts.GetAsync(receiptId))?.ToCore();
-            }
+            using var uow = new UnitOfWork(_databaseContextProvider.Create());
+            return (await uow.Receipts.GetAsync(receiptId))?.ToCore();
         }
 
         public async Task<Receipt> UpdateAsync(Receipt receipt)
         {
-            using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
-            {
-                ReceiptDto newReceipt = await uow.Receipts.UpdateAsync(receipt.ToData());
-                await uow.SaveChangesAsync();
-                return newReceipt.ToCore();
-            }
+            using var uow = new UnitOfWork(_databaseContextProvider.Create());
+            ReceiptDto newReceipt = await uow.Receipts.UpdateAsync(receipt.ToData());
+            await uow.SaveChangesAsync();
+            return newReceipt.ToCore();
         }
 
         public async Task<Receipt[]> GetByBillingPeriodIdAsync(long billingPeriodId)
         {
-            using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
-            {
-                return (await uow.Receipts.GetByBillingPeriodIdAsync(billingPeriodId))?.Select(x => x.ToCore()).ToArray();
-            }
+            using var uow = new UnitOfWork(_databaseContextProvider.Create());
+            return (await uow.Receipts.GetByBillingPeriodIdAsync(billingPeriodId))?.Select(x => x.ToCore()).ToArray();
         }
 
         public async Task SetCustomersToReceiptAsync(long receiptId, long[] consumerIds)
         {
-            using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
+            using var uow = new UnitOfWork(_databaseContextProvider.Create());
+            await uow.ReceiptConsumerMaps.AddRangeAsync(consumerIds.Select(x => new ReceiptConsumerMapDto
             {
-                await uow.ReceiptConsumerMaps.AddRangeAsync(consumerIds.Select(x => new ReceiptConsumerMapDto
-                {
-                    ConsumerId = x,
-                    ReceiptId = receiptId
-                }));
-                await uow.SaveChangesAsync();
-            }
+                ConsumerId = x,
+                ReceiptId = receiptId
+            }));
+            await uow.SaveChangesAsync();
         }
 
         public async Task<Dictionary<long, long[]>> GetConsumerIdsByReceiptIdsMapAsync(long[] receiptIds)
         {
-            using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
-            {
-                return await uow.ReceiptConsumerMaps.GetConsumerIdsByReceiptIdsMapAsync(receiptIds);
-            }
+            using var uow = new UnitOfWork(_databaseContextProvider.Create());
+            return await uow.ReceiptConsumerMaps.GetConsumerIdsByReceiptIdsMapAsync(receiptIds);
         }
 
         /// <summary>
         /// Возвращает true, если такой чек уже присутствует в БД.
         /// </summary>
-        /// <param name="uow"></param>
-        /// <param name="receipt"></param>
-        /// <returns></returns>
         private async Task<bool> IsReceiptExistsInternal(UnitOfWork uow, Receipt receipt)
         {
             if (string.IsNullOrEmpty(receipt.FiscalDocument))
                 return false;
 
-            ICollection<ReceiptDto> existsReceipts = await uow.Receipts.GetListAsync(x => x.FiscalDocument == receipt.FiscalDocument);
-            return existsReceipts.Count > 0;
+            bool isExists = await uow.Receipts.AnyAsync(x => x.FiscalDocument == receipt.FiscalDocument);
+            return isExists;
         }
     }
 }
