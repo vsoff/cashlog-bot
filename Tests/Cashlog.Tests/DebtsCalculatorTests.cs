@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Cashlog.Common;
 using Cashlog.Core.Models;
@@ -60,6 +62,29 @@ namespace Cashlog.Tests
                 CreateReceipt(2, new long[] {1, 2, 3}, 600),
                 CreateReceipt(3, new long[] {1, 2, 3}, 600),
                 CreateReceipt(1, new long[] {1, 2, 3}, 1000),
+            };
+
+            MoneyOperationShortInfo[] debts = await _calculator.Calculate(operations, receipts);
+
+            Assert.IsNotNull(debts);
+            Assert.IsTrue(debts.Length > 0);
+        }
+
+        [TestMethod]
+        public async Task Test3()
+        {
+            MoneyOperation[] operations =
+            {
+                //CreateOperation(1, 2, 400, MoneyOperationType.Debt),
+                //CreateOperation(3, 1, 200, MoneyOperationType.Debt),
+                //CreateOperation(1, 2, 100, MoneyOperationType.Transfer),
+                //CreateOperation(1, 3, 300, MoneyOperationType.Transfer),
+                //CreateOperation(2, 3, 400, MoneyOperationType.Transfer),
+            };
+            ReceiptCalculatorInfo[] receipts =
+            {
+                CreateReceipt(1, new long[] {1, 2}, 300),
+                CreateReceipt(2, new long[] {2, 3}, 300),
             };
 
             MoneyOperationShortInfo[] debts = await _calculator.Calculate(operations, receipts);

@@ -26,8 +26,9 @@ namespace Cashlog.Core.Modules.Calculator
             // Переводим траты на чеки в операции.
             foreach (var receipt in receiptCalculatorInfos)
             {
-                double part = receipt.Amount / (receipt.ConsumerIds.Length + 1);
-                var receiptOperations = receipt.ConsumerIds.Where(x => x != receipt.CustomerId).Select(x => new MoneyOperationShortInfo
+                var consumerIds = receipt.ConsumerIds.Where(x => x != receipt.CustomerId).ToArray();
+                double part = receipt.Amount / (consumerIds.Length + 1);
+                var receiptOperations = consumerIds.Select(x => new MoneyOperationShortInfo
                 {
                     Amount = part,
                     FromId = x,
@@ -70,16 +71,23 @@ namespace Cashlog.Core.Modules.Calculator
             return result.ToArray();
         }
 
+        // TODO: Написать оптимизацию.
+        //private static IEnumerable<MoneyOperationShortInfo> OptimizeDebts(IEnumerable<MoneyOperationShortInfo> operations)
+        //{
+        //    var a = new MoneyOperationShortInfo[0];
+        //    return a;
+        //}
+
         /// <summary>
         /// Переводит операцию в тип `долг`, если она ещё не принадлежит этому типу.
         /// </summary>
-        private MoneyOperationShortInfo FixOperation(MoneyOperationShortInfo oper)
+        private static MoneyOperationShortInfo FixOperation(MoneyOperationShortInfo oper)
         {
             if (oper.FromId == oper.ToId)
-                throw new Exception($"{GetType().Name} sender and receiver ids are equals");
+                throw new Exception($"Sender and receiver ids are equals");
 
             if (oper.Type != MoneyOperationType.Transfer && oper.Type != MoneyOperationType.Debt)
-                throw new Exception($"{GetType().Name} cannot {nameof(FixOperation)} with type {oper.Type}");
+                throw new Exception($"Cannot {nameof(FixOperation)} with type {oper.Type}");
 
             if (oper.Type == MoneyOperationType.Debt)
                 return oper;

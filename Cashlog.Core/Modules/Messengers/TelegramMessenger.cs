@@ -26,7 +26,7 @@ namespace Cashlog.Core.Modules.Messengers
     /// </summary>
     /// <remarks>В данный момент тут основная бизнес-логика, в последующем её необходимо вынести
     /// в отдельный класс, чтобы можно было независимо менять мессенджеры.</remarks>
-    public class TelegramMessenger : IMessenger, IProxyConsumer
+    public class TelegramMessenger : IMessenger
     {
         public event EventHandler<UserMessageInfo> OnMessage;
 
@@ -37,7 +37,6 @@ namespace Cashlog.Core.Modules.Messengers
         private readonly IGroupService _groupService;
         private readonly ILogger _logger;
 
-        private readonly WebProxy _clientProxy;
         private TelegramBotClient _client;
 
         public TelegramMessenger(
@@ -54,8 +53,6 @@ namespace Cashlog.Core.Modules.Messengers
             _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
             _groupService = groupService ?? throw new ArgumentNullException(nameof(groupService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-            _clientProxy = new WebProxy();
         }
 
         private async void OnCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
@@ -105,12 +102,12 @@ namespace Cashlog.Core.Modules.Messengers
                 long chatId = e.Message.Chat.Id;
 
                 var settings = _cashlogSettingsService.ReadSettings();
-                if (chatId.ToString() != settings.AdminChatToken)
+                /*if (chatId.ToString() != settings.AdminChatToken)
                 {
                     _logger.Info($"{GetType().Name}: Произведена попытка использования бота в группе `{e.Message.Chat.Title}` ({chatId})");
                     await _client.SendTextMessageAsync(chatId, "Чтобы бот мог работать в этой группе обратитесь к @vsoff");
                     return;
-                }
+                }*/
 
                 // Получаем группу этого чата.
                 Group group = await _groupService.GetByChatTokenAsync(chatId.ToString());
@@ -201,18 +198,21 @@ namespace Cashlog.Core.Modules.Messengers
 
         public void StartReceiving()
         {
-            if (_client == null)
-            {
-                var botToken = _cashlogSettingsService.ReadSettings()?.TelegramBotToken;
-                if (string.IsNullOrEmpty(botToken))
-                    throw new InvalidOperationException("Telegram токен не должен быть пустым");
+            if (_client != null)
+                throw new InvalidOperationException("Бот уже запущен");
+             
+            var settings = _cashlogSettingsService.ReadSettings();
+            if (string.IsNullOrEmpty(settings?.TelegramBotToken))
+                throw new InvalidOperationException("Telegram токен не должен быть пустым");
 
-                _client = new TelegramBotClient(botToken, _clientProxy);
-                _client.OnMessage += OnMessageReceived;
-                _client.OnCallbackQuery += OnCallbackQuery;
-            }
+            _client = new TelegramBotClient(settings.TelegramBotToken);
+            _client.OnMessage += OnMessageReceived;
+            _client.OnCallbackQuery += OnCallbackQuery;
 
             _client.StartReceiving();
+
+            _client.SendTextMessageAsync(settings.AdminChatToken, "Бот запущен!").GetAwaiter().GetResult();
+            _logger.Info($"{GetType().Name}: Telegram бот начал работать");
         }
 
         public void StopReceiving()
@@ -229,24 +229,6 @@ namespace Cashlog.Core.Modules.Messengers
 
             var telegramMenu = menu as TelegramMenu;
             await _client.SendTextMessageAsync(userMessageInfo.Group.ChatToken, text, replyToMessageId: replyToMessageId, replyMarkup: telegramMenu?.Markup);
-        }
-
-        public void OnProxyChanged(WebProxy proxy)
-        {
-            if (proxy == null)
-            {
-                _logger.Info($"{GetType().Name}: Бот выключен, так как не был получен новый прокси-сервер");
-                return;
-            }
-
-            var settings = _cashlogSettingsService.ReadSettings();
-
-            // Заменяем адрес прокси на новый.
-            _clientProxy.Address = proxy.Address;
-            // TODO Удалить это сообщение, когда станет понятно что бот нормально переподключается к новым прокси.
-            _client.SendTextMessageAsync(settings.AdminChatToken, "Бот запущен под новым прокси-сервером!").GetAwaiter().GetResult();
-
-            _logger.Info($"{GetType().Name}: Telegram бот начал работать на прокси-сервере `{proxy.Address}`");
         }
     }
 }

@@ -15,6 +15,7 @@ namespace Cashlog.Core.Workers
     /// <summary>
     /// Воркер, который периодически проверяет работоспособность прокси и уведомляет об этом потребителей.
     /// </summary>
+    [Obsolete("После разблокировки telegram в РФ стало неактуально")]
     public class ProxyWorker : IWorker
     {
         // TODO Вынести в конфиг.
@@ -178,6 +179,7 @@ namespace Cashlog.Core.Workers
     /// <summary>
     /// Потребитель прокси-сервера.
     /// </summary>
+    [Obsolete("После разблокировки telegram в РФ стало неактуально")]
     public interface IProxyConsumer
     {
         public void OnProxyChanged(WebProxy proxy);

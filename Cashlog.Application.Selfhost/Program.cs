@@ -58,11 +58,11 @@ namespace Cashlog.Application.Selfhost
                 builder.RegisterInstance(logger);
                 builder.RegisterType<FnsService>().As<IFnsService>().SingleInstance().AutoActivate();
                 builder.RegisterType<BotDatabaseContextProvider>().As<IDatabaseContextProvider>().SingleInstance();
-                builder.RegisterType<TelegramMessenger>().As<IMessenger>().As<IProxyConsumer>().SingleInstance().AutoActivate()
+                builder.RegisterType<TelegramMessenger>().As<IMessenger>().SingleInstance().AutoActivate()
                     .OnActivated(x => x.Instance.StartReceiving())
                     .OnRelease(x => x.StopReceiving());
                 builder.RegisterType<MessagesMainHandler>().AsSelf().SingleInstance().AutoActivate();
-                builder.RegisterType<ProxyProvider>().As<IProxyProvider>().SingleInstance();
+                //builder.RegisterType<ProxyProvider>().As<IProxyProvider>().SingleInstance();
                 builder.RegisterType<QueryDataSerializer>().As<IQueryDataSerializer>().SingleInstance();
                 builder.RegisterType<ReceiptHandleService>().As<IReceiptHandleService>().SingleInstance();
                 builder.RegisterType<DebtsCalculator>().As<IDebtsCalculator>().SingleInstance();
@@ -74,7 +74,7 @@ namespace Cashlog.Application.Selfhost
                 builder.RegisterType<TelegramMenuProvider>().As<IMenuProvider>().SingleInstance();
                 builder.RegisterType<GroupService>().As<IGroupService>().SingleInstance();
                 builder.RegisterType<DefaultWorkerController>().As<IWorkerController>().SingleInstance();
-                builder.RegisterType<ProxyWorker>().As<IWorker>().SingleInstance();
+                //builder.RegisterType<ProxyWorker>().As<IWorker>().SingleInstance();
 
                 // Регистрируем хендлеры текстовых команд.
                 builder.RegisterType<SendMoneyMessagesHandler>().As<IMessageHandler>().Named<SendMoneyMessagesHandler>(nameof(SendMoneyMessagesHandler)).SingleInstance();

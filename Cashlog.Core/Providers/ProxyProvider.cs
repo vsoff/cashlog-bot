@@ -12,6 +12,7 @@ using HtmlAgilityPack;
 
 namespace Cashlog.Core.Providers
 {
+    [Obsolete("После разблокировки telegram в РФ стало неактуально")]
     public class ProxyProvider : IProxyProvider
     {
         // TODO Вынести в конфиг.
