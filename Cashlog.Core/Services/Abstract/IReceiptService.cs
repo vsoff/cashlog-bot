@@ -11,7 +11,7 @@ namespace Cashlog.Core.Services.Abstract
     /// </summary>
     public interface IReceiptService
     {
-        Task<ICollection<Receipt>> GetReceiptsInPeriodAsync(DateTime periodFrom, DateTime periodTo);
+        Task<ICollection<Receipt>> GetReceiptsInPeriodAsync(DateTime periodFrom, DateTime periodTo, long groupId);
         Task<bool> IsReceiptExists(Receipt receipt);
         Task<Receipt> AddAsync(Receipt receipt);
         Task<Receipt> GetAsync(long receiptId);

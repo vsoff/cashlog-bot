@@ -1,10 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Cashlog.Common;
+using Cashlog.Core;
 using Cashlog.Core.Models;
 using Cashlog.Core.Models.Main;
 using Cashlog.Core.Modules.Calculator;
+using Cashlog.Core.Providers;
+using Cashlog.Core.Services;
+using Cashlog.Core.Services.Main;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Cashlog.Tests
@@ -68,6 +73,26 @@ namespace Cashlog.Tests
 
             Assert.IsNotNull(debts);
             Assert.IsTrue(debts.Length > 0);
+        }
+        
+
+        [TestMethod]
+        public async Task TestSS() 
+        {
+            var settingsService = new CashlogSettingsService();
+            var providedr = new BotDatabaseContextProvider(settingsService);
+            var receiptService = new ReceiptService(providedr);
+            var customerService = new CustomerService(providedr);
+            BillingPeriodService service = new BillingPeriodService(providedr);
+            var period = await service.GetLastByGroupIdAsync(5);
+            var periodReceipts = await receiptService.GetByBillingPeriodIdAsync(period.Id);
+
+            Dictionary<long, long[]> consumerMap = await receiptService.GetConsumerIdsByReceiptIdsMapAsync(periodReceipts.Select(x => x.Id).ToArray());
+            var customerNamesMap = (await customerService.GetListAsync(5)).ToDictionary(x=>x.Id,x=>x.Caption);
+
+            var gg = periodReceipts.Select(x => $"Id{x.Id}: `{x.Comment}`; сумма: {x.TotalAmount}р.; купил: {customerNamesMap[x.CustomerId.Value]}");
+            var gg2 = string.Join("\n", gg);
+            var all = periodReceipts.Sum(x => x.TotalAmount);
         }
 
         [TestMethod]

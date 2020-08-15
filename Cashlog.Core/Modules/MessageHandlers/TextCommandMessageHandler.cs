@@ -348,7 +348,7 @@ namespace Cashlog.Core.Modules.MessageHandlers
                 return;
             }
 
-            var receipts = await _receiptService.GetReceiptsInPeriodAsync(periodBegin, periodEnd);
+            var receipts = await _receiptService.GetReceiptsInPeriodAsync(periodBegin, periodEnd, userMessageInfo.Group.Id);
             var summary = receipts.Sum(x => x.TotalAmount);
 
             // Формируем сообщение.

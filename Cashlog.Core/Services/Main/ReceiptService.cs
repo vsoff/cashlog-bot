@@ -21,10 +21,10 @@ namespace Cashlog.Core.Services.Main
             _databaseContextProvider = databaseContextProvider ?? throw new ArgumentNullException(nameof(databaseContextProvider));
         }
 
-        public async Task<ICollection<Receipt>> GetReceiptsInPeriodAsync(DateTime periodFrom, DateTime periodTo)
+        public async Task<ICollection<Receipt>> GetReceiptsInPeriodAsync(DateTime periodFrom, DateTime periodTo, long groupId)
         {
             using var uow = new UnitOfWork(_databaseContextProvider.Create());
-            var receipts = await uow.Receipts.GetListAsync(x => x.PurchaseTime >= periodFrom && x.PurchaseTime < periodTo);
+            var receipts = await uow.Receipts.GetListAsync(x => x.PurchaseTime >= periodFrom && x.PurchaseTime < periodTo && x.Group.Id == groupId);
             return receipts.Select(x => x.ToCore()).ToList();
         }
 

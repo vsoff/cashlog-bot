@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using Cashlog.Common;
 
 namespace Cashlog.Data.Entities
