@@ -24,7 +24,10 @@ namespace Cashlog.Core.Services.Main
         public async Task<ICollection<Receipt>> GetReceiptsInPeriodAsync(DateTime periodFrom, DateTime periodTo, long groupId)
         {
             using var uow = new UnitOfWork(_databaseContextProvider.Create());
-            var receipts = await uow.Receipts.GetListAsync(x => x.PurchaseTime >= periodFrom && x.PurchaseTime < periodTo && x.Group.Id == groupId);
+            var billingPeriods = await uow.BillingPeriods.GetListAsync(x => x.GroupId == groupId);
+            var billingPeriodsIds = billingPeriods.Select(x => x.Id).ToHashSet();
+            var receipts = await uow.Receipts.GetListAsync(x =>
+                x.PurchaseTime >= periodFrom && x.PurchaseTime < periodTo && billingPeriodsIds.Contains(x.BillingPeriodId));
             return receipts.Select(x => x.ToCore()).ToList();
         }
 

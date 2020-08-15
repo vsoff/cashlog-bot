@@ -1,10 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Cashlog.Common;
-using Cashlog.Core;
-using Cashlog.Core.Models;
 using Cashlog.Core.Models.Main;
 using Cashlog.Core.Modules.Calculator;
 using Cashlog.Core.Providers;
@@ -74,21 +71,22 @@ namespace Cashlog.Tests
             Assert.IsNotNull(debts);
             Assert.IsTrue(debts.Length > 0);
         }
-        
 
+        // TODO: Вынести в integration tests.
+        [Ignore]
         [TestMethod]
-        public async Task TestSS() 
+        public async Task CalculateTusaMrazeiTest()
         {
             var settingsService = new CashlogSettingsService();
-            var providedr = new BotDatabaseContextProvider(settingsService);
-            var receiptService = new ReceiptService(providedr);
-            var customerService = new CustomerService(providedr);
-            BillingPeriodService service = new BillingPeriodService(providedr);
+            var provider = new BotDatabaseContextProvider(settingsService);
+            BillingPeriodService service = new BillingPeriodService(provider);
+            var receiptService = new ReceiptService(provider);
+            var customerService = new CustomerService(provider);
             var period = await service.GetLastByGroupIdAsync(5);
             var periodReceipts = await receiptService.GetByBillingPeriodIdAsync(period.Id);
 
             Dictionary<long, long[]> consumerMap = await receiptService.GetConsumerIdsByReceiptIdsMapAsync(periodReceipts.Select(x => x.Id).ToArray());
-            var customerNamesMap = (await customerService.GetListAsync(5)).ToDictionary(x=>x.Id,x=>x.Caption);
+            var customerNamesMap = (await customerService.GetListAsync(5)).ToDictionary(x => x.Id, x => x.Caption);
 
             var gg = periodReceipts.Select(x => $"Id{x.Id}: `{x.Comment}`; сумма: {x.TotalAmount}р.; купил: {customerNamesMap[x.CustomerId.Value]}");
             var gg2 = string.Join("\n", gg);
@@ -118,25 +116,19 @@ namespace Cashlog.Tests
             Assert.IsTrue(debts.Length > 0);
         }
 
-        private static MoneyOperation CreateOperation(long fromId, long toId, int amount, MoneyOperationType type)
+        private static MoneyOperation CreateOperation(long fromId, long toId, int amount, MoneyOperationType type) => new MoneyOperation
         {
-            return new MoneyOperation
-            {
-                Amount = amount,
-                CustomerFromId = fromId,
-                CustomerToId = toId,
-                OperationType = type
-            };
-        }
+            Amount = amount,
+            CustomerFromId = fromId,
+            CustomerToId = toId,
+            OperationType = type
+        };
 
-        private static ReceiptCalculatorInfo CreateReceipt(long customerId, long[] consumerIds, int amount)
+        private static ReceiptCalculatorInfo CreateReceipt(long customerId, long[] consumerIds, int amount) => new ReceiptCalculatorInfo
         {
-            return new ReceiptCalculatorInfo
-            {
-                Amount = amount,
-                CustomerId = customerId,
-                ConsumerIds = consumerIds,
-            };
-        }
+            Amount = amount,
+            CustomerId = customerId,
+            ConsumerIds = consumerIds,
+        };
     }
 }
