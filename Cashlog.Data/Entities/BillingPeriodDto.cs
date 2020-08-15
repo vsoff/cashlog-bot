@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Cashlog.Data.Entities
 {
@@ -17,7 +18,7 @@ namespace Cashlog.Data.Entities
         public DateTime? PeriodEnd { get; set; }
 
         public virtual GroupDto Group { get; set; }
-        public virtual ReceiptDto[] Receipts { get; set; }
-        public virtual MoneyOperationDto[] MoneyOperations { get; set; }
+        public virtual ICollection<ReceiptDto> Receipts { get; set; }
+        public virtual ICollection<MoneyOperationDto> MoneyOperations { get; set; }
     }
 }

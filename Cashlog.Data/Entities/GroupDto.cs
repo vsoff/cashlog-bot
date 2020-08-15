@@ -1,4 +1,6 @@
-﻿namespace Cashlog.Data.Entities
+﻿using System.Collections.Generic;
+
+namespace Cashlog.Data.Entities
 {
     public class GroupDto : Entity
     {
@@ -6,8 +8,8 @@
         public string ChatToken { get; set; }
         public string AdminToken { get; set; }
 
-        public virtual ReceiptDto[] Receipts { get; set; }
-        public virtual CustomerDto[] Customers { get; set; }
-        public virtual BillingPeriodDto[] BillingPeriods { get; set; }
+        public virtual ICollection<ReceiptDto> Receipts { get; set; }
+        public virtual ICollection<CustomerDto> Customers { get; set; }
+        public virtual ICollection<BillingPeriodDto> BillingPeriods { get; set; }
     }
 }

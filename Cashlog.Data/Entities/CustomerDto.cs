@@ -1,4 +1,5 @@
-﻿using Cashlog.Data.Entities;
+﻿using System.Collections.Generic;
+using Cashlog.Data.Entities;
 
 namespace Cashlog.Data.Entities
 {
@@ -8,8 +9,8 @@ namespace Cashlog.Data.Entities
         public string Caption { get; set; }
         public bool IsDeleted { get; set; }
 
-        public virtual ReceiptDto[] CustomerReceipts { get; set; }
-        public virtual ReceiptConsumerMapDto[] ConsumerReceiptMaps { get; set; }
+        public virtual ICollection<ReceiptDto> CustomerReceipts { get; set; }
+        public virtual ICollection<ReceiptConsumerMapDto> ConsumerReceiptMaps { get; set; }
         public virtual GroupDto Group { get; set; }
     }
 }

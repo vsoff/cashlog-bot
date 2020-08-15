@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using Cashlog.Common;
 
@@ -23,7 +24,7 @@ namespace Cashlog.Data.Entities
         public string CashierName { get; set; }
         public string ReceiptItemsJson { get; set; }
 
-        public virtual ReceiptConsumerMapDto[] ConsumerMaps { get; set; }
+        public virtual ICollection<ReceiptConsumerMapDto> ConsumerMaps { get; set; }
         public virtual BillingPeriodDto BillingPeriod { get; set; }
         public virtual CustomerDto Customer { get; set; }
         public virtual GroupDto Group { get; set; }
