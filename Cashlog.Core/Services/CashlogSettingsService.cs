@@ -2,7 +2,7 @@
 
 namespace Cashlog.Core.Services
 {
-    public class CashlogSettingsService : SettingsService<CashlogSettings>
+    public class CashlogSettingsService : FileSettingsService<CashlogSettings>
     {
         protected override string ConfigFileName => "botconfig.json";
     }

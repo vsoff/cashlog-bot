@@ -4,12 +4,12 @@ using Newtonsoft.Json;
 
 namespace Cashlog.Core.Services
 {
-    public abstract class SettingsService<T> : ISettingsService<T> where T : new()
+    public abstract class FileSettingsService<T> : ISettingsService<T> where T : new()
     {
         protected abstract string ConfigFileName { get; }
         private string _jsonSettingsCache;
 
-        protected SettingsService()
+        protected FileSettingsService()
         {
             _jsonSettingsCache = null;
         }
@@ -21,15 +21,20 @@ namespace Cashlog.Core.Services
 
         public T ReadSettings()
         {
-            if (!File.Exists(GetSettingsFullPath()))
+            if (_jsonSettingsCache == null)
+            {
+                if (!File.Exists(GetSettingsFullPath()))
+                    throw new InvalidOperationException($"Не удалось прочитать конфиг из файла `{ConfigFileName}`");
+
+                _jsonSettingsCache = File.ReadAllText(GetSettingsFullPath());
+            }
+
+            if (_jsonSettingsCache == null)
             {
                 var settings = new T();
                 WriteSettings(settings);
                 return settings;
             }
-
-            if (_jsonSettingsCache == null)
-                _jsonSettingsCache = File.ReadAllText(GetSettingsFullPath());
 
             return JsonConvert.DeserializeObject<T>(_jsonSettingsCache);
         }

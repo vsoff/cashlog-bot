@@ -2,7 +2,7 @@
 
 namespace Cashlog.Web.Server.Core
 {
-    public class WebServerSettingsService : SettingsService<WebServerSettings>
+    public class WebServerSettingsService : FileSettingsService<WebServerSettings>
     {
         protected override string ConfigFileName => "WebServerConfig.json";
     }

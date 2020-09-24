@@ -1,7 +1,7 @@
 ﻿using Cashlog.Core.Common;
 using System;
 
-namespace Cashlog.Application.Selfhost
+namespace Cashlog.Core.Ioc
 {
     public class ConsoleLogger : ILogger
     {
