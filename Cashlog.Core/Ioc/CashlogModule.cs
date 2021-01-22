@@ -3,6 +3,7 @@ using Cashlog.Core.Common.Workers;
 using Cashlog.Core.Modules.Calculator;
 using Cashlog.Core.Modules.Fns;
 using Cashlog.Core.Modules.MessageHandlers;
+using Cashlog.Core.Modules.MessageHandlers.Handlers;
 using Cashlog.Core.Modules.Messengers;
 using Cashlog.Core.Modules.Messengers.Menu;
 using Cashlog.Core.Providers;

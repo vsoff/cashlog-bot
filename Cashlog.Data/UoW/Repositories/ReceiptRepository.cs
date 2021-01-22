@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Cashlog.Data.Entities;
+﻿using Cashlog.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;

@@ -1,9 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Cashlog.Core.Common;
+﻿using System.Threading.Tasks;
 using Cashlog.Core.Models;
-using Cashlog.Core.Modules.Messengers;
 
 namespace Cashlog.Core.Modules.MessageHandlers
 {

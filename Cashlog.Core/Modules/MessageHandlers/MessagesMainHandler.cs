@@ -2,14 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Cashlog.Common;
 using Cashlog.Core.Common;
-using Cashlog.Core.Extensions;
 using Cashlog.Core.Models;
 using Cashlog.Core.Models.Main;
-using Cashlog.Core.Modules.Calculator;
 using Cashlog.Core.Modules.Messengers;
 using Cashlog.Core.Modules.Messengers.Menu;
 using Cashlog.Core.Services.Abstract;
@@ -69,7 +66,7 @@ namespace Cashlog.Core.Modules.MessageHandlers
                         await HandleCommandMessageAsync(e);
                         break;
                     default:
-                        await _messenger.SendMessageAsync(e, "Неподдерживаемый тип сообщения", true);
+                        await _messenger.SendMessageAsync(e, Resources.UnknownMessageType, true);
                         break;
                 }
             }
@@ -97,13 +94,13 @@ namespace Cashlog.Core.Modules.MessageHandlers
                     data.SelectedCustomerId = data.TargetId;
 
                     IMenu menu = _menuProvider.GetMenu(userMessageInfo, data);
-                    await _messenger.EditMessageAsync(userMessageInfo, "Кто оплатил чек?", menu);
+                    await _messenger.EditMessageAsync(userMessageInfo, Resources.SelectCustomer, menu);
                     break;
                 }
                 case MenuType.NewReceiptSelectConsumers:
                 {
                     var data = (AddReceiptQueryData) userMessageInfo.Message.QueryData;
-                    var selectedConsumers = new List<long>(data.SelectedConsumerIds ?? new long[0]);
+                    var selectedConsumers = new HashSet<long>(data.SelectedConsumerIds ?? new long[0]);
                     if (data.TargetId != null)
                     {
                         if (selectedConsumers.Contains(data.TargetId.Value))
@@ -112,32 +109,36 @@ namespace Cashlog.Core.Modules.MessageHandlers
                             selectedConsumers.Add(data.TargetId.Value);
                     }
 
-                    selectedConsumers = selectedConsumers.Distinct().ToList();
+                    selectedConsumers = new HashSet<long>(selectedConsumers.Distinct());
                     data.SelectedConsumerIds = selectedConsumers.ToArray();
 
                     IMenu menu = _menuProvider.GetMenu(userMessageInfo, data);
-                    await _messenger.EditMessageAsync(userMessageInfo, "На кого делится чек?", menu);
+                    await _messenger.EditMessageAsync(userMessageInfo, Resources.SelectConsumers, menu);
                     break;
                 }
                 case MenuType.NewReceiptAdd:
                 {
                     var data = (AddReceiptQueryData) userMessageInfo.Message.QueryData;
-                    string customerText = userMessageInfo.Customers.FirstOrDefault(x => data.SelectedCustomerId.Value == x.Id).Caption;
+                    string customerText = userMessageInfo.Customers
+                        .FirstOrDefault(x => data.SelectedCustomerId.Value == x.Id).Caption;
                     string[] consumerTexts = userMessageInfo.Customers
                         .Where(x => data.SelectedCustomerId.Value == x.Id || data.SelectedConsumerIds.Contains(x.Id))
                         .Select(x => x.Caption).ToArray();
                     Receipt receipt = await _receiptService.GetAsync(data.ReceiptId);
-                    await _messenger.EditMessageAsync(userMessageInfo, $"Обработка...");
+                    await _messenger.EditMessageAsync(userMessageInfo, Resources.InProgress);
                     if (receipt.Status == ReceiptStatus.New || receipt.Status == ReceiptStatus.NewManual)
                     {
-                        receipt.Status = receipt.Status == ReceiptStatus.New ? ReceiptStatus.Filled : ReceiptStatus.Manual;
+                        receipt.Status = receipt.Status == ReceiptStatus.New
+                            ? ReceiptStatus.Filled
+                            : ReceiptStatus.Manual;
                         receipt.CustomerId = data.SelectedCustomerId;
                         receipt.PurchaseTime = DateTime.Now;
                         await _receiptService.SetCustomersToReceiptAsync(receipt.Id, data.SelectedConsumerIds);
                         await _receiptService.UpdateAsync(receipt);
 
-                        await _messenger.EditMessageAsync(userMessageInfo, $"Чек готов!\nОплатил: {customerText}\nСумма: {receipt.TotalAmount} руб.\nДелится на: {string.Join(", ", consumerTexts)}");
-                        _logger.Info($"Добавлен новый чек. Оплатил: {customerText}; Сумма: {receipt.TotalAmount} руб.; Делится на: {string.Join(", ", consumerTexts)}");
+                        var msgText = string.Format(Resources.NewReceiptAddedInfo, customerText, receipt.TotalAmount, string.Join(", ", consumerTexts));
+                        await _messenger.EditMessageAsync(userMessageInfo, msgText);
+                        _logger.Info(msgText);
                     }
 
                     break;
@@ -145,7 +146,7 @@ namespace Cashlog.Core.Modules.MessageHandlers
                 case MenuType.NewReceiptCancel:
                 {
                     var data = (AddReceiptQueryData) userMessageInfo.Message.QueryData;
-                    await _messenger.EditMessageAsync(userMessageInfo, "Добавление чека было отменено");
+                    await _messenger.EditMessageAsync(userMessageInfo, Resources.NewReceiptCancel);
                     Receipt receipt = await _receiptService.GetAsync(data.ReceiptId);
                     receipt.Status = ReceiptStatus.Deleted;
                     await _receiptService.UpdateAsync(receipt);
@@ -155,14 +156,14 @@ namespace Cashlog.Core.Modules.MessageHandlers
                 {
                     var data = (MoneyTransferQueryData) userMessageInfo.Message.QueryData;
                     IMenu menu = _menuProvider.GetMenu(userMessageInfo, data);
-                    await _messenger.EditMessageAsync(userMessageInfo, "Кто переводит?", menu);
+                    await _messenger.EditMessageAsync(userMessageInfo, Resources.MoneyTransferSelectFrom, menu);
                     break;
                 }
                 case MenuType.MoneyTransferSelectTo:
                 {
                     var data = (MoneyTransferQueryData) userMessageInfo.Message.QueryData;
                     IMenu menu = _menuProvider.GetMenu(userMessageInfo, data);
-                    await _messenger.EditMessageAsync(userMessageInfo, "Кому переводит?", menu);
+                    await _messenger.EditMessageAsync(userMessageInfo, Resources.MoneyTransferSelectTo, menu);
                     break;
                 }
                 case MenuType.MoneyTransferAdd:
@@ -170,12 +171,12 @@ namespace Cashlog.Core.Modules.MessageHandlers
                     var data = (MoneyTransferQueryData) userMessageInfo.Message.QueryData;
                     string customerFrom = userMessageInfo.Customers.FirstOrDefault(x => data.CustomerFromId == x.Id)?.Caption ?? $"Id: {data.CustomerFromId}";
                     string customerTo = userMessageInfo.Customers.FirstOrDefault(x => data.CustomerToId == x.Id)?.Caption ?? $"Id: {data.CustomerToId}";
-                    await _messenger.EditMessageAsync(userMessageInfo, $"Обработка...");
+                    await _messenger.EditMessageAsync(userMessageInfo, Resources.InProgress);
 
                     var lastBillingPeriod = await _billingPeriodService.GetLastByGroupIdAsync(userMessageInfo.Group.Id);
                     if (lastBillingPeriod == null)
                     {
-                        await _messenger.EditMessageAsync(userMessageInfo, "Нельзя добавить перевод денег, если не начат расчётный период");
+                        await _messenger.EditMessageAsync(userMessageInfo, Resources.BillingPeriodNotCreated);
                         break;
                     }
 
@@ -188,13 +189,15 @@ namespace Cashlog.Core.Modules.MessageHandlers
                         OperationType = MoneyOperationType.Transfer,
                         BillingPeriodId = lastBillingPeriod.Id
                     });
-                    await _messenger.EditMessageAsync(userMessageInfo, $"Добавление перевода было успешно совершено.\nПеревёл: {customerFrom}\nКому: {customerTo}\nСумма: {data.Amount} руб.");
-                    _logger.Info($"Был добавлен новый перевод. Перевёл: {customerFrom}; Кому: {customerTo}; Сумма: {data.Amount} руб.");
+
+                    var msgText = string.Format(Resources.MoneyTransferSuccess, customerFrom, customerTo, data.Amount);
+                    await _messenger.EditMessageAsync(userMessageInfo, msgText);
+                    _logger.Info(msgText.Replace("\n", ""));
                     break;
                 }
                 case MenuType.MoneyTransferCancel:
                 {
-                    await _messenger.EditMessageAsync(userMessageInfo, "Добавление перевода было отменено");
+                    await _messenger.EditMessageAsync(userMessageInfo, Resources.MoneyTransferCanceled);
                     break;
                 }
             }
@@ -215,7 +218,7 @@ namespace Cashlog.Core.Modules.MessageHandlers
             string text = userMessageInfo.Message.Text;
             if (!text.StartsWith("/"))
             {
-                await _messenger.SendMessageAsync(userMessageInfo, "Я не читаю сообщения, попробуй прислать мне фото или используй команду /help", true);
+                await _messenger.SendMessageAsync(userMessageInfo, Resources.UnknownMessageFormat, true);
                 return;
             }
 
@@ -226,7 +229,7 @@ namespace Cashlog.Core.Modules.MessageHandlers
 
             if (handler == null)
             {
-                await _messenger.SendMessageAsync(userMessageInfo, "Неизвестная команда, попробуй команду /help", true);
+                await _messenger.SendMessageAsync(userMessageInfo, Resources.UnknownCommandType, true);
                 return;
             }
 
@@ -246,9 +249,6 @@ namespace Cashlog.Core.Modules.MessageHandlers
             await handler.HandleAsync(userMessageInfo);
         }
 
-        public void Dispose()
-        {
-            _messenger.OnMessage -= OnMessage;
-        }
+        public void Dispose() => _messenger.OnMessage -= OnMessage;
     }
 }

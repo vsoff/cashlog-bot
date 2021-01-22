@@ -1,4 +1,4 @@
-﻿namespace Cashlog.Core.Services
+﻿namespace Cashlog.Core.Services.Abstract
 {
     /// <summary>
     /// Сервис управления настройками.

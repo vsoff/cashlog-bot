@@ -6,11 +6,6 @@ using Cashlog.Data.Entities;
 
 namespace Cashlog.Data.UoW
 {
-    //public class Entity
-    //{
-    //    public Guid Id { get; set; }
-    //}
-
     public interface IRepository
     {
     }

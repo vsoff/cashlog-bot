@@ -2,6 +2,7 @@
 using Serilog;
 using System;
 using System.IO;
+using Cashlog.Core.Logging;
 using ILogger = Cashlog.Core.Common.ILogger;
 
 namespace Cashlog.Core.Ioc

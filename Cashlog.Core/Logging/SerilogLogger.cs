@@ -2,7 +2,7 @@
 using Cashlog.Core.Common;
 using Serilog.Core;
 
-namespace Cashlog.Core.Ioc
+namespace Cashlog.Core.Logging
 {
     public class SerilogLogger : ILogger
     {

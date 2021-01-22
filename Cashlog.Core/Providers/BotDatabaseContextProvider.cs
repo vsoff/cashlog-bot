@@ -1,6 +1,7 @@
 ﻿using System;
 using Cashlog.Core.Providers.Abstract;
 using Cashlog.Core.Services;
+using Cashlog.Core.Services.Abstract;
 using Cashlog.Data;
 
 namespace Cashlog.Core.Providers

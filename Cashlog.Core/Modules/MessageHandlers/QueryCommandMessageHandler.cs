@@ -16,8 +16,8 @@ namespace Cashlog.Core.Modules.MessageHandlers
         public async Task HandleAsync(UserMessageInfo userMessageInfo)
         {
             if (userMessageInfo.Message.QueryData is TQueryData)
-                throw new ArgumentException($"{nameof(userMessageInfo.Message.QueryData)} должна быть типа" +
-                                            $" {typeof(TQueryData)}, а не {userMessageInfo.Message.QueryData.GetType()}");
+                throw new ArgumentException($"параметр должен быть типа {typeof(TQueryData)}, а не {userMessageInfo.Message.QueryData.GetType()}", 
+                    nameof(userMessageInfo.Message.QueryData));
 
             // ReSharper disable once PossibleInvalidCastException
             await HandleAsync(userMessageInfo, (TQueryData) userMessageInfo.Message.QueryData);

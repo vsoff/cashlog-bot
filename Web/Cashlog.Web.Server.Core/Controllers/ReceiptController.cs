@@ -46,13 +46,13 @@ namespace Cashlog.Web.Server.Core.Controllers
 
         [HttpPost]
         [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
-        public async Task<IEnumerable<CustomerWebModel>> GetAsync(IEnumerable<long> customerIds)
+        public async Task<ICollection<CustomerWebModel>> GetAsync(ICollection<long> customerIds)
         {
             if (customerIds == null) throw new ArgumentNullException(nameof(customerIds));
-            if (!customerIds.Any()) throw new ArgumentOutOfRangeException(nameof(customerIds));
+            if (customerIds.Count == 0) throw new ArgumentOutOfRangeException(nameof(customerIds));
 
             var receipts = await _customerService.GetListAsync(customerIds.ToArray());
-            return receipts.Select(x => x.ToModel());
+            return receipts.Select(x => x.ToModel()).ToArray();
         }
     }
 }

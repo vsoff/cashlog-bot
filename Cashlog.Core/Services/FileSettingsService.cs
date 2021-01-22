@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Cashlog.Core.Services.Abstract;
 using Newtonsoft.Json;
 
 namespace Cashlog.Core.Services

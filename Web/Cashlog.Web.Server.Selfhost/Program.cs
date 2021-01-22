@@ -26,4 +26,4 @@ namespace Cashlog.Web.Server.Selfhost
 
         // dotnet run --urls=https://localhost:6001;http://localhost:6000
     }
-}
+} 

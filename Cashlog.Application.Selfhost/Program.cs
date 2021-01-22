@@ -1,24 +1,11 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Autofac;
-using Autofac.Core;
 using Cashlog.Core;
 using Cashlog.Core.Common.Workers;
 using Cashlog.Core.Ioc;
-using Cashlog.Core.Modules.Calculator;
-using Cashlog.Core.Modules.Fns;
-using Cashlog.Core.Modules.MessageHandlers;
-using Cashlog.Core.Modules.Messengers;
-using Cashlog.Core.Modules.Messengers.Menu;
-using Cashlog.Core.Providers;
-using Cashlog.Core.Providers.Abstract;
 using Cashlog.Core.Services;
 using Cashlog.Core.Services.Abstract;
-using Cashlog.Core.Services.Main;
-using Serilog;
 using ILogger = Cashlog.Core.Common.ILogger;
 
 namespace Cashlog.Application.Selfhost

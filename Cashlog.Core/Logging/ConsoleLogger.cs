@@ -1,7 +1,7 @@
-﻿using Cashlog.Core.Common;
-using System;
+﻿using System;
+using Cashlog.Core.Common;
 
-namespace Cashlog.Core.Ioc
+namespace Cashlog.Core.Logging
 {
     public class ConsoleLogger : ILogger
     {

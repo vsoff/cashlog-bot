@@ -64,21 +64,24 @@ namespace Cashlog.Core.Modules.MessageHandlers
             const int argsCount = 1;
             if (args.Length <= argsCount)
             {
-                await _messenger.SendMessageAsync(userMessageInfo, "Неверное кол-во параметров для команды", true);
+                await _messenger.SendMessageAsync(userMessageInfo, Resources.CommandWrongArgsCount, true);
                 return;
             }
 
             if (!int.TryParse(args[0], out var money))
             {
-                await _messenger.SendMessageAsync(userMessageInfo, "Первый аргумент должен быть числом", true);
+                await _messenger.SendMessageAsync(userMessageInfo, Resources.CommandFirstArgMustBeANumber, true);
                 return;
             }
 
             var caption = string.Join(" ", args.Skip(argsCount));
 
-            if (caption.Length > 50 || caption.Length < 2)
+            const int commentMinLength = 2;
+            const int commentMaxLength = 50;
+            if (caption.Length < commentMinLength || caption.Length > commentMaxLength)
             {
-                await _messenger.SendMessageAsync(userMessageInfo, "Комментарий должен быть от 2 до 50 символов", true);
+                var msgText = string.Format(Resources.CommentLengthWrong, commentMinLength, commentMaxLength);
+                await _messenger.SendMessageAsync(userMessageInfo, msgText, true);
                 return;
             }
 
@@ -111,7 +114,7 @@ namespace Cashlog.Core.Modules.MessageHandlers
                 TargetId = null,
                 Version = AddReceiptQueryData.ServerVersion,
             });
-            await _messenger.SendMessageAsync(userMessageInfo, "_Кто оплатил чек?", true, menu);
+            await _messenger.SendMessageAsync(userMessageInfo, Resources.SelectCustomer, true, menu);
         }
     }
 
@@ -134,13 +137,13 @@ namespace Cashlog.Core.Modules.MessageHandlers
             string[] args = argument.Split(' ').ToArray();
             if (args.Length <= 1)
             {
-                await _messenger.SendMessageAsync(userMessageInfo, "Неверное кол-во параметров для команды", true);
+                await _messenger.SendMessageAsync(userMessageInfo, Resources.CommandWrongArgsCount, true);
                 return;
             }
 
             if (!int.TryParse(args[0], out var money))
             {
-                await _messenger.SendMessageAsync(userMessageInfo, "Первый аргумент должен быть числом", true);
+                await _messenger.SendMessageAsync(userMessageInfo, Resources.CommandFirstArgMustBeANumber, true);
                 return;
             }
 
@@ -151,9 +154,12 @@ namespace Cashlog.Core.Modules.MessageHandlers
                 return;
             }
 
-            if (caption.Length > 15 || caption.Length < 3)
+            const int commentMinLength = 2;
+            const int commentMaxLength = 15;
+            if (caption.Length < commentMinLength || caption.Length > commentMaxLength)
             {
-                await _messenger.SendMessageAsync(userMessageInfo, "Комментарий должен быть не больше 15 и не меньше 3 символов", true);
+                var msgText = string.Format(Resources.CommentLengthWrong, commentMinLength, commentMaxLength);
+                await _messenger.SendMessageAsync(userMessageInfo, msgText, true); 
                 return;
             }
 
@@ -173,7 +179,7 @@ namespace Cashlog.Core.Modules.MessageHandlers
                 MenuType = MenuType.MoneyTransferSelectFrom,
                 TargetId = null
             });
-            await _messenger.SendMessageAsync(userMessageInfo, "Кто переводит деньги?", true, menu);
+            await _messenger.SendMessageAsync(userMessageInfo, Resources.MoneyTransferSelectFrom, true, menu);
         }
     }
 
@@ -195,7 +201,7 @@ namespace Cashlog.Core.Modules.MessageHandlers
         {
             if (!string.IsNullOrEmpty(argument))
             {
-                await _messenger.SendMessageAsync(userMessageInfo, "Неверное кол-во параметров для команды", true);
+                await _messenger.SendMessageAsync(userMessageInfo, Resources.CommandWrongArgsCount, true);
                 return;
             }
 
@@ -221,24 +227,15 @@ namespace Cashlog.Core.Modules.MessageHandlers
 
     public class CustomerMessagesHandler : TextCommandMessageHandler
     {
-        private readonly IBillingPeriodService _billingPeriodService;
-        private readonly IMainLogicService _mainLogicService;
         private readonly ICustomerService _customerService;
-        private readonly IReceiptService _receiptService;
         private readonly IMessenger _messenger;
         public override string Command => "customer";
 
         public CustomerMessagesHandler(
-            IBillingPeriodService billingPeriodService,
-            IMainLogicService mainLogicService,
             ICustomerService customerService,
-            IReceiptService receiptService,
             IMessenger messenger)
         {
-            _billingPeriodService = billingPeriodService ?? throw new ArgumentNullException(nameof(billingPeriodService));
-            _mainLogicService = mainLogicService ?? throw new ArgumentNullException(nameof(mainLogicService));
             _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
-            _receiptService = receiptService ?? throw new ArgumentNullException(nameof(receiptService));
             _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
         }
 
@@ -282,7 +279,7 @@ namespace Cashlog.Core.Modules.MessageHandlers
         {
             if (!string.IsNullOrEmpty(argument))
             {
-                await _messenger.SendMessageAsync(userMessageInfo, "Неверное кол-во параметров для команды", true);
+                await _messenger.SendMessageAsync(userMessageInfo, Resources.CommandWrongArgsCount, true);
                 return;
             }
 
@@ -327,7 +324,7 @@ namespace Cashlog.Core.Modules.MessageHandlers
             string[] args = argument.Split(' ').ToArray();
             if (args.Length != 2)
             {
-                await _messenger.SendMessageAsync(userMessageInfo, "Неверное кол-во параметров для команды", true);
+                await _messenger.SendMessageAsync(userMessageInfo, Resources.CommandWrongArgsCount, true);
                 return;
             }
 
