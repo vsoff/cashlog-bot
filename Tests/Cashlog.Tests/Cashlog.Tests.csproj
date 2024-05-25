@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Cashlog.Core\Cashlog.Core.csproj" />
+    <ProjectReference Include="..\..\src\Cashlog.Core\Cashlog.Core.csproj" />
   </ItemGroup>
 
 </Project>
