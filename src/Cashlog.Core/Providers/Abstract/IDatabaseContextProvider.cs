@@ -1,9 +1,8 @@
 ﻿using Cashlog.Data;
 
-namespace Cashlog.Core.Providers.Abstract
+namespace Cashlog.Core.Providers.Abstract;
+
+public interface IDatabaseContextProvider
 {
-    public interface IDatabaseContextProvider
-    {
-        ApplicationContext Create();
-    }
+    ApplicationContext Create();
 }

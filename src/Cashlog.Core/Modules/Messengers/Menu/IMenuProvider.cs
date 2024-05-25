@@ -1,9 +1,8 @@
 ﻿using Cashlog.Core.Models;
 
-namespace Cashlog.Core.Modules.Messengers.Menu
+namespace Cashlog.Core.Modules.Messengers.Menu;
+
+public interface IMenuProvider
 {
-    public interface IMenuProvider
-    {
-        IMenu GetMenu(UserMessageInfo userMessageInfo, IQueryData data);
-    }
+    IMenu GetMenu(UserMessageInfo userMessageInfo, IQueryData data);
 }

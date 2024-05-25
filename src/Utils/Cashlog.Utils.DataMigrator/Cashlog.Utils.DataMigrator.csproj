@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Cashlog.Core\Cashlog.Core.csproj" />
-    <ProjectReference Include="..\..\Cashlog.Data\Cashlog.Data.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\Cashlog.Core\Cashlog.Core.csproj"/>
+        <ProjectReference Include="..\..\Cashlog.Data\Cashlog.Data.csproj"/>
+    </ItemGroup>
 
 </Project>

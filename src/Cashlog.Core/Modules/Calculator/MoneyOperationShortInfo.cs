@@ -1,13 +1,11 @@
 ﻿using Cashlog.Common;
-using Cashlog.Core.Models;
 
-namespace Cashlog.Core.Modules.Calculator
+namespace Cashlog.Core.Modules.Calculator;
+
+public class MoneyOperationShortInfo
 {
-    public class MoneyOperationShortInfo
-    {
-        public long FromId { get; set; }
-        public long ToId { get; set; }
-        public double Amount { get; set; }
-        public MoneyOperationType Type { get; set; }
-    }
+    public long FromId { get; set; }
+    public long ToId { get; set; }
+    public double Amount { get; set; }
+    public MoneyOperationType Type { get; set; }
 }

@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <PackageReference Include="Serilog" />
-    <PackageReference Include="Serilog.Sinks.RollingFile" />
-    <PackageReference Include="System.Drawing.Common" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Serilog"/>
+        <PackageReference Include="Serilog.Sinks.RollingFile"/>
+        <PackageReference Include="System.Drawing.Common"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Cashlog.Core\Cashlog.Core.csproj" />
-    <ProjectReference Include="..\Cashlog.Data\Cashlog.Data.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Cashlog.Core\Cashlog.Core.csproj"/>
+        <ProjectReference Include="..\Cashlog.Data\Cashlog.Data.csproj"/>
+    </ItemGroup>
 
 </Project>

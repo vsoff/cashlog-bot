@@ -1,9 +1,8 @@
-﻿namespace Cashlog.Core.Modules.Calculator
+﻿namespace Cashlog.Core.Modules.Calculator;
+
+public class ReceiptCalculatorInfo
 {
-    public class ReceiptCalculatorInfo
-    {
-        public double Amount { get; set; }
-        public long CustomerId { get; set; }
-        public long[] ConsumerIds { get; set; }
-    }
+    public double Amount { get; set; }
+    public long CustomerId { get; set; }
+    public long[] ConsumerIds { get; set; }
 }

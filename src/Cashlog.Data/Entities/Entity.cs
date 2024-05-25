@@ -1,14 +1,11 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace Cashlog.Data.Entities
+namespace Cashlog.Data.Entities;
+
+public class Entity
 {
-    public class Entity
-    {
-        [Key]
-        public long Id { get; set; }
+    [Key] public long Id { get; set; }
 
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
-    }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 }

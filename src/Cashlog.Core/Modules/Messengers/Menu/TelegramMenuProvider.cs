@@ -1,305 +1,300 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Cashlog.Core.Models;
+﻿using Cashlog.Core.Models;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace Cashlog.Core.Modules.Messengers.Menu
+namespace Cashlog.Core.Modules.Messengers.Menu;
+
+public class TelegramMenuProvider : IMenuProvider
 {
-    public class TelegramMenuProvider : IMenuProvider
+    private readonly IQueryDataSerializer _queryDataSerializer;
+
+    public TelegramMenuProvider(IQueryDataSerializer queryDataSerializer)
     {
-        private readonly IQueryDataSerializer _queryDataSerializer;
+        _queryDataSerializer = queryDataSerializer ?? throw new ArgumentNullException(nameof(queryDataSerializer));
+    }
 
-        public TelegramMenuProvider(IQueryDataSerializer queryDataSerializer)
+    public IMenu GetMenu(UserMessageInfo userMessageInfo, IQueryData data)
+    {
+        // Todo Проверка №2. Надо перенести в одно место.
+        switch (data.MenuType)
         {
-            _queryDataSerializer = queryDataSerializer ?? throw new ArgumentNullException(nameof(queryDataSerializer));
+            case MenuType.NewReceiptSelectCustomer:
+                return GetNewReceiptSelectCustomerMenu(userMessageInfo, (AddReceiptQueryData)data);
+            case MenuType.NewReceiptSelectConsumers:
+                return GetNewReceiptSelectConsumersMenu(userMessageInfo, (AddReceiptQueryData)data);
+            case MenuType.MoneyTransferSelectFrom:
+                return GetMoneyTransferSelectFromMenu(userMessageInfo, (MoneyTransferQueryData)data);
+            case MenuType.MoneyTransferSelectTo:
+                return GetMoneyTransferSelectToMenu(userMessageInfo, (MoneyTransferQueryData)data);
         }
 
-        public IMenu GetMenu(UserMessageInfo userMessageInfo, IQueryData data)
+        return null;
+    }
+
+    private IMenu GetNewReceiptSelectCustomerMenu(UserMessageInfo userMessageInfo, AddReceiptQueryData data)
+    {
+        var builder = new Builder();
+
+        for (var i = 0; i < userMessageInfo.Customers.Length; i++)
         {
-            // Todo Проверка №2. Надо перенести в одно место.
-            switch (data.MenuType)
-            {
-                case MenuType.NewReceiptSelectCustomer: return GetNewReceiptSelectCustomerMenu(userMessageInfo, (AddReceiptQueryData) data);
-                case MenuType.NewReceiptSelectConsumers: return GetNewReceiptSelectConsumersMenu(userMessageInfo, (AddReceiptQueryData) data);
-                case MenuType.MoneyTransferSelectFrom: return GetMoneyTransferSelectFromMenu(userMessageInfo, (MoneyTransferQueryData) data);
-                case MenuType.MoneyTransferSelectTo: return GetMoneyTransferSelectToMenu(userMessageInfo, (MoneyTransferQueryData) data);
-            }
+            if (i % 3 == 0)
+                builder.AddLine();
 
-            return null;
-        }
-
-        private IMenu GetNewReceiptSelectCustomerMenu(UserMessageInfo userMessageInfo, AddReceiptQueryData data)
-        {
-            Builder builder = new Builder();
-
-            for (int i = 0; i < userMessageInfo.Customers.Length; i++)
-            {
-                if (i % 3 == 0)
-                    builder.AddLine();
-
-                var customer = userMessageInfo.Customers[i];
-                string query = _queryDataSerializer.EncodeBase64(new AddReceiptQueryData
-                {
-                    Version = AddReceiptQueryData.ServerVersion,
-                    ChatToken = userMessageInfo.Group.ChatToken,
-                    ReceiptId = data.ReceiptId,
-                    MenuType = MenuType.NewReceiptSelectCustomer,
-                    SelectedConsumerIds = data.SelectedConsumerIds,
-                    SelectedCustomerId = data.TargetId,
-                    TargetId = customer.Id,
-                }, MenuType.NewReceiptSelectCustomer);
-
-                builder.AddButton(customer.Caption + (customer.Id == data.TargetId ? " ☑" : ""), query);
-            }
-
-            builder.AddLine();
-
-            if (data.TargetId.HasValue)
-            {
-                builder.AddButton("Применить", _queryDataSerializer.EncodeBase64(new AddReceiptQueryData
-                {
-                    Version = AddReceiptQueryData.ServerVersion,
-                    ChatToken = userMessageInfo.Group.ChatToken,
-                    ReceiptId = data.ReceiptId,
-                    MenuType = MenuType.NewReceiptSelectConsumers,
-                    SelectedConsumerIds = data.SelectedConsumerIds,
-                    SelectedCustomerId = data.SelectedCustomerId.Value,
-                    TargetId = null,
-                }, MenuType.NewReceiptSelectCustomer));
-            }
-
-            builder.AddButton("Отменить", _queryDataSerializer.EncodeBase64(new AddReceiptQueryData
+            var customer = userMessageInfo.Customers[i];
+            var query = _queryDataSerializer.EncodeBase64(new AddReceiptQueryData
             {
                 Version = AddReceiptQueryData.ServerVersion,
                 ChatToken = userMessageInfo.Group.ChatToken,
                 ReceiptId = data.ReceiptId,
-                MenuType = MenuType.NewReceiptCancel
+                MenuType = MenuType.NewReceiptSelectCustomer,
+                SelectedConsumerIds = data.SelectedConsumerIds,
+                SelectedCustomerId = data.TargetId,
+                TargetId = customer.Id
+            }, MenuType.NewReceiptSelectCustomer);
+
+            builder.AddButton(customer.Caption + (customer.Id == data.TargetId ? " ☑" : ""), query);
+        }
+
+        builder.AddLine();
+
+        if (data.TargetId.HasValue)
+            builder.AddButton("Применить", _queryDataSerializer.EncodeBase64(new AddReceiptQueryData
+            {
+                Version = AddReceiptQueryData.ServerVersion,
+                ChatToken = userMessageInfo.Group.ChatToken,
+                ReceiptId = data.ReceiptId,
+                MenuType = MenuType.NewReceiptSelectConsumers,
+                SelectedConsumerIds = data.SelectedConsumerIds,
+                SelectedCustomerId = data.SelectedCustomerId.Value,
+                TargetId = null
             }, MenuType.NewReceiptSelectCustomer));
 
-            var markUp = builder.Build();
-
-            return new TelegramMenu
-            {
-                MenuType = MenuType.NewReceiptSelectCustomer,
-                Markup = markUp,
-            };
-        }
-
-        private IMenu GetNewReceiptSelectConsumersMenu(UserMessageInfo userMessageInfo, AddReceiptQueryData data)
+        builder.AddButton("Отменить", _queryDataSerializer.EncodeBase64(new AddReceiptQueryData
         {
-            Builder builder = new Builder();
+            Version = AddReceiptQueryData.ServerVersion,
+            ChatToken = userMessageInfo.Group.ChatToken,
+            ReceiptId = data.ReceiptId,
+            MenuType = MenuType.NewReceiptCancel
+        }, MenuType.NewReceiptSelectCustomer));
 
-            for (int i = 0; i < userMessageInfo.Customers.Length; i++)
-            {
-                if (i % 3 == 0)
-                    builder.AddLine();
+        var markUp = builder.Build();
 
-                var customer = userMessageInfo.Customers[i];
+        return new TelegramMenu
+        {
+            MenuType = MenuType.NewReceiptSelectCustomer,
+            Markup = markUp
+        };
+    }
 
-                // Не отображаем того, кто покупал.
-                if (customer.Id == data.SelectedCustomerId)
-                    continue;
+    private IMenu GetNewReceiptSelectConsumersMenu(UserMessageInfo userMessageInfo, AddReceiptQueryData data)
+    {
+        var builder = new Builder();
 
-                string query = _queryDataSerializer.EncodeBase64(new AddReceiptQueryData
-                {
-                    Version = AddReceiptQueryData.ServerVersion,
-                    ChatToken = userMessageInfo.Group.ChatToken,
-                    ReceiptId = data.ReceiptId,
-                    MenuType = data.MenuType,
-                    SelectedConsumerIds = data.SelectedConsumerIds.ToArray(),
-                    SelectedCustomerId = data.SelectedCustomerId,
-                    TargetId = customer.Id,
-                }, MenuType.NewReceiptSelectConsumers);
+        for (var i = 0; i < userMessageInfo.Customers.Length; i++)
+        {
+            if (i % 3 == 0)
+                builder.AddLine();
 
-                builder.AddButton(customer.Caption + (data.SelectedConsumerIds.Contains(customer.Id) ? " ☑" : ""), query);
-            }
+            var customer = userMessageInfo.Customers[i];
 
-            builder.AddLine();
+            // Не отображаем того, кто покупал.
+            if (customer.Id == data.SelectedCustomerId)
+                continue;
 
-            if (data.SelectedConsumerIds.Any())
-            {
-                builder.AddButton("Применить", _queryDataSerializer.EncodeBase64(new AddReceiptQueryData
-                {
-                    Version = AddReceiptQueryData.ServerVersion,
-                    ChatToken = userMessageInfo.Group.ChatToken,
-                    ReceiptId = data.ReceiptId,
-                    MenuType = MenuType.NewReceiptAdd,
-                    SelectedConsumerIds = data.SelectedConsumerIds,
-                    SelectedCustomerId = data.SelectedCustomerId.Value,
-                    TargetId = null,
-                }, MenuType.NewReceiptSelectConsumers));
-            }
-
-            builder.AddButton("Отменить", _queryDataSerializer.EncodeBase64(new AddReceiptQueryData
+            var query = _queryDataSerializer.EncodeBase64(new AddReceiptQueryData
             {
                 Version = AddReceiptQueryData.ServerVersion,
                 ChatToken = userMessageInfo.Group.ChatToken,
                 ReceiptId = data.ReceiptId,
-                MenuType = MenuType.NewReceiptCancel
+                MenuType = data.MenuType,
+                SelectedConsumerIds = data.SelectedConsumerIds.ToArray(),
+                SelectedCustomerId = data.SelectedCustomerId,
+                TargetId = customer.Id
+            }, MenuType.NewReceiptSelectConsumers);
+
+            builder.AddButton(customer.Caption + (data.SelectedConsumerIds.Contains(customer.Id) ? " ☑" : ""), query);
+        }
+
+        builder.AddLine();
+
+        if (data.SelectedConsumerIds.Any())
+            builder.AddButton("Применить", _queryDataSerializer.EncodeBase64(new AddReceiptQueryData
+            {
+                Version = AddReceiptQueryData.ServerVersion,
+                ChatToken = userMessageInfo.Group.ChatToken,
+                ReceiptId = data.ReceiptId,
+                MenuType = MenuType.NewReceiptAdd,
+                SelectedConsumerIds = data.SelectedConsumerIds,
+                SelectedCustomerId = data.SelectedCustomerId.Value,
+                TargetId = null
             }, MenuType.NewReceiptSelectConsumers));
 
-            var markUp = builder.Build();
-
-            return new TelegramMenu
-            {
-                MenuType = MenuType.NewReceiptSelectCustomer,
-                Markup = markUp,
-            };
-        }
-
-        private IMenu GetMoneyTransferSelectFromMenu(UserMessageInfo userMessageInfo, MoneyTransferQueryData data)
+        builder.AddButton("Отменить", _queryDataSerializer.EncodeBase64(new AddReceiptQueryData
         {
-            Builder builder = new Builder();
+            Version = AddReceiptQueryData.ServerVersion,
+            ChatToken = userMessageInfo.Group.ChatToken,
+            ReceiptId = data.ReceiptId,
+            MenuType = MenuType.NewReceiptCancel
+        }, MenuType.NewReceiptSelectConsumers));
 
-            for (int i = 0; i < userMessageInfo.Customers.Length; i++)
-            {
-                if (i % 3 == 0)
-                    builder.AddLine();
+        var markUp = builder.Build();
 
-                var customer = userMessageInfo.Customers[i];
+        return new TelegramMenu
+        {
+            MenuType = MenuType.NewReceiptSelectCustomer,
+            Markup = markUp
+        };
+    }
 
-                string query = _queryDataSerializer.EncodeBase64(new MoneyTransferQueryData
-                {
-                    Version = MoneyTransferQueryData.ServerVersion,
-                    Amount = data.Amount,
-                    Caption = data.Caption,
-                    ChatToken = data.ChatToken,
-                    CustomerFromId = null,
-                    CustomerToId = null,
-                    TargetId = customer.Id,
-                    MenuType = MenuType.MoneyTransferSelectFrom
-                }, MenuType.MoneyTransferSelectFrom);
-                
-                builder.AddButton(customer.Caption + (customer.Id == data.TargetId ? " ☑" : ""), query);
-            }
+    private IMenu GetMoneyTransferSelectFromMenu(UserMessageInfo userMessageInfo, MoneyTransferQueryData data)
+    {
+        var builder = new Builder();
 
-            builder.AddLine();
+        for (var i = 0; i < userMessageInfo.Customers.Length; i++)
+        {
+            if (i % 3 == 0)
+                builder.AddLine();
 
-            if (data.TargetId.HasValue)
-            {
-                builder.AddButton("Применить", _queryDataSerializer.EncodeBase64(new MoneyTransferQueryData
-                {
-                    Version = MoneyTransferQueryData.ServerVersion,
-                    Amount = data.Amount,
-                    Caption = data.Caption,
-                    ChatToken = data.ChatToken,
-                    CustomerFromId = data.TargetId,
-                    CustomerToId = null,
-                    TargetId = null,
-                    MenuType = MenuType.MoneyTransferSelectTo
-                }, MenuType.MoneyTransferSelectFrom));
-            }
+            var customer = userMessageInfo.Customers[i];
 
-            builder.AddButton("Отменить", _queryDataSerializer.EncodeBase64(new MoneyTransferQueryData
+            var query = _queryDataSerializer.EncodeBase64(new MoneyTransferQueryData
             {
                 Version = MoneyTransferQueryData.ServerVersion,
+                Amount = data.Amount,
+                Caption = data.Caption,
                 ChatToken = data.ChatToken,
-                MenuType = MenuType.MoneyTransferCancel
+                CustomerFromId = null,
+                CustomerToId = null,
+                TargetId = customer.Id,
+                MenuType = MenuType.MoneyTransferSelectFrom
+            }, MenuType.MoneyTransferSelectFrom);
+
+            builder.AddButton(customer.Caption + (customer.Id == data.TargetId ? " ☑" : ""), query);
+        }
+
+        builder.AddLine();
+
+        if (data.TargetId.HasValue)
+            builder.AddButton("Применить", _queryDataSerializer.EncodeBase64(new MoneyTransferQueryData
+            {
+                Version = MoneyTransferQueryData.ServerVersion,
+                Amount = data.Amount,
+                Caption = data.Caption,
+                ChatToken = data.ChatToken,
+                CustomerFromId = data.TargetId,
+                CustomerToId = null,
+                TargetId = null,
+                MenuType = MenuType.MoneyTransferSelectTo
             }, MenuType.MoneyTransferSelectFrom));
 
-            var markUp = builder.Build();
-
-            return new TelegramMenu
-            {
-                MenuType = MenuType.MoneyTransferSelectFrom,
-                Markup = markUp,
-            };
-        }
-
-        private IMenu GetMoneyTransferSelectToMenu(UserMessageInfo userMessageInfo, MoneyTransferQueryData data)
+        builder.AddButton("Отменить", _queryDataSerializer.EncodeBase64(new MoneyTransferQueryData
         {
-            Builder builder = new Builder();
+            Version = MoneyTransferQueryData.ServerVersion,
+            ChatToken = data.ChatToken,
+            MenuType = MenuType.MoneyTransferCancel
+        }, MenuType.MoneyTransferSelectFrom));
 
-            for (int i = 0; i < userMessageInfo.Customers.Length; i++)
-            {
-                if (i % 3 == 0)
-                    builder.AddLine();
+        var markUp = builder.Build();
 
-                var customer = userMessageInfo.Customers[i];
+        return new TelegramMenu
+        {
+            MenuType = MenuType.MoneyTransferSelectFrom,
+            Markup = markUp
+        };
+    }
 
-                // Не отображаем того, кто посылал.
-                if (customer.Id == data.CustomerFromId)
-                    continue;
+    private IMenu GetMoneyTransferSelectToMenu(UserMessageInfo userMessageInfo, MoneyTransferQueryData data)
+    {
+        var builder = new Builder();
 
-                string query = _queryDataSerializer.EncodeBase64(new MoneyTransferQueryData
-                {
-                    Version = MoneyTransferQueryData.ServerVersion,
-                    Amount = data.Amount,
-                    Caption = data.Caption,
-                    ChatToken = data.ChatToken,
-                    CustomerFromId = data.CustomerFromId,
-                    CustomerToId = null,
-                    TargetId = customer.Id,
-                    MenuType = MenuType.MoneyTransferSelectTo
-                }, MenuType.MoneyTransferSelectTo);
+        for (var i = 0; i < userMessageInfo.Customers.Length; i++)
+        {
+            if (i % 3 == 0)
+                builder.AddLine();
 
-                builder.AddButton(customer.Caption + (customer.Id == data.TargetId ? " ☑" : ""), query);
-            }
+            var customer = userMessageInfo.Customers[i];
 
-            builder.AddLine();
+            // Не отображаем того, кто посылал.
+            if (customer.Id == data.CustomerFromId)
+                continue;
 
-            if (data.TargetId.HasValue)
-            {
-                builder.AddButton("Применить", _queryDataSerializer.EncodeBase64(new MoneyTransferQueryData
-                {
-                    Version = MoneyTransferQueryData.ServerVersion,
-                    Amount = data.Amount,
-                    Caption = data.Caption,
-                    ChatToken = data.ChatToken,
-                    CustomerFromId = data.CustomerFromId,
-                    CustomerToId = data.TargetId,
-                    TargetId = null,
-                    MenuType = MenuType.MoneyTransferAdd
-                }, MenuType.MoneyTransferSelectTo));
-            }
-
-            builder.AddButton("Отменить", _queryDataSerializer.EncodeBase64(new MoneyTransferQueryData
+            var query = _queryDataSerializer.EncodeBase64(new MoneyTransferQueryData
             {
                 Version = MoneyTransferQueryData.ServerVersion,
+                Amount = data.Amount,
+                Caption = data.Caption,
                 ChatToken = data.ChatToken,
-                MenuType = MenuType.MoneyTransferCancel
-            }, MenuType.MoneyTransferSelectTo));
+                CustomerFromId = data.CustomerFromId,
+                CustomerToId = null,
+                TargetId = customer.Id,
+                MenuType = MenuType.MoneyTransferSelectTo
+            }, MenuType.MoneyTransferSelectTo);
 
-            var markUp = builder.Build();
-
-            return new TelegramMenu
-            {
-                MenuType = MenuType.MoneyTransferSelectTo,
-                Markup = markUp,
-            };
+            builder.AddButton(customer.Caption + (customer.Id == data.TargetId ? " ☑" : ""), query);
         }
 
-        private class Builder
+        builder.AddLine();
+
+        if (data.TargetId.HasValue)
+            builder.AddButton("Применить", _queryDataSerializer.EncodeBase64(new MoneyTransferQueryData
+            {
+                Version = MoneyTransferQueryData.ServerVersion,
+                Amount = data.Amount,
+                Caption = data.Caption,
+                ChatToken = data.ChatToken,
+                CustomerFromId = data.CustomerFromId,
+                CustomerToId = data.TargetId,
+                TargetId = null,
+                MenuType = MenuType.MoneyTransferAdd
+            }, MenuType.MoneyTransferSelectTo));
+
+        builder.AddButton("Отменить", _queryDataSerializer.EncodeBase64(new MoneyTransferQueryData
         {
-            private readonly List<List<InlineKeyboardButton>> _markup;
+            Version = MoneyTransferQueryData.ServerVersion,
+            ChatToken = data.ChatToken,
+            MenuType = MenuType.MoneyTransferCancel
+        }, MenuType.MoneyTransferSelectTo));
 
-            public Builder()
+        var markUp = builder.Build();
+
+        return new TelegramMenu
+        {
+            MenuType = MenuType.MoneyTransferSelectTo,
+            Markup = markUp
+        };
+    }
+
+    private class Builder
+    {
+        private readonly List<List<InlineKeyboardButton>> _markup;
+
+        public Builder()
+        {
+            _markup = new List<List<InlineKeyboardButton>>();
+        }
+
+        public Builder AddButton(string text, string query)
+        {
+            if (_markup.Count == 0)
+                AddLine();
+
+            _markup.Last().Add(new InlineKeyboardButton
             {
-                _markup = new List<List<InlineKeyboardButton>>();
-            }
+                CallbackData = query,
+                Text = text
+            });
 
-            public Builder AddButton(string text, string query)
-            {
-                if (_markup.Count == 0)
-                    AddLine();
+            return this;
+        }
 
-                _markup.Last().Add(new InlineKeyboardButton
-                {
-                    CallbackData = query,
-                    Text = text,
-                });
+        public Builder AddLine()
+        {
+            _markup.Add(new List<InlineKeyboardButton>());
+            return this;
+        }
 
-                return this;
-            }
-
-            public Builder AddLine()
-            {
-                _markup.Add(new List<InlineKeyboardButton>());
-                return this;
-            }
-
-            public InlineKeyboardMarkup Build() => new InlineKeyboardMarkup(_markup.Select(x => x.ToArray()).Where(x => x.Length > 0).ToArray());
+        public InlineKeyboardMarkup Build()
+        {
+            return new InlineKeyboardMarkup(_markup.Select(x => x.ToArray()).Where(x => x.Length > 0).ToArray());
         }
     }
 }

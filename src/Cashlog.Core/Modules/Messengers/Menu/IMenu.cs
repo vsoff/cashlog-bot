@@ -1,7 +1,6 @@
-﻿namespace Cashlog.Core.Modules.Messengers.Menu
+﻿namespace Cashlog.Core.Modules.Messengers.Menu;
+
+public interface IMenu
 {
-    public interface IMenu
-    {
-        MenuType MenuType { get; }
-    }
+    MenuType MenuType { get; }
 }

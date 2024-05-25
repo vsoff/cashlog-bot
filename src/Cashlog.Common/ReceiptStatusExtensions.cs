@@ -1,14 +1,11 @@
-﻿using System;
+﻿namespace Cashlog.Common;
 
-namespace Cashlog.Common
+public static class ReceiptStatusExtensions
 {
-    public static class ReceiptStatusExtensions
+    public static bool IsFinalStatus(this ReceiptStatus status)
     {
-        public static bool IsFinalStatus(this ReceiptStatus status)
-        {
-            return status == ReceiptStatus.Filled
-                   || status == ReceiptStatus.Manual
-                   || status == ReceiptStatus.WithWarning;
-        }
+        return status == ReceiptStatus.Filled
+               || status == ReceiptStatus.Manual
+               || status == ReceiptStatus.WithWarning;
     }
 }

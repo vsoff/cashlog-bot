@@ -1,10 +1,7 @@
-﻿using System;
+﻿namespace Cashlog.Core.Common.Workers;
 
-namespace Cashlog.Core.Common.Workers
+public interface IWorker : IDisposable
 {
-    public interface IWorker : IDisposable
-    {
-        void Start();
-        void Stop();
-    }
+    void Start();
+    void Stop();
 }

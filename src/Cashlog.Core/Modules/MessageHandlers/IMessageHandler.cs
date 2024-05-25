@@ -1,11 +1,9 @@
-﻿using System.Threading.Tasks;
-using Cashlog.Core.Models;
+﻿using Cashlog.Core.Models;
 
-namespace Cashlog.Core.Modules.MessageHandlers
+namespace Cashlog.Core.Modules.MessageHandlers;
+
+public interface IMessageHandler
 {
-    public interface IMessageHandler
-    {
-        public MessageType MessageType { get; }
-        public Task HandleAsync(UserMessageInfo userMessageInfo);
-    }
+    public MessageType MessageType { get; }
+    public Task HandleAsync(UserMessageInfo userMessageInfo);
 }

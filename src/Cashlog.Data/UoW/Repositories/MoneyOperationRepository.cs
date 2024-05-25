@@ -1,22 +1,21 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Cashlog.Data.Entities;
+﻿using Cashlog.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Cashlog.Data.UoW.Repositories
+namespace Cashlog.Data.UoW.Repositories;
+
+public interface IMoneyOperationRepository : IRepository<MoneyOperationDto>
 {
-    public interface IMoneyOperationRepository : IRepository<MoneyOperationDto>
+    Task<MoneyOperationDto[]> GetByBillingPeriodIdAsync(long billingPeriodId);
+}
+
+public class MoneyOperationRepository : Repository<MoneyOperationDto>, IMoneyOperationRepository
+{
+    public MoneyOperationRepository(ApplicationContext context) : base(context)
     {
-        Task<MoneyOperationDto[]> GetByBillingPeriodIdAsync(long billingPeriodId);
     }
 
-    public class MoneyOperationRepository : Repository<MoneyOperationDto>, IMoneyOperationRepository
+    public async Task<MoneyOperationDto[]> GetByBillingPeriodIdAsync(long billingPeriodId)
     {
-        public MoneyOperationRepository(ApplicationContext context) : base(context)
-        {
-        }
-
-        public async Task<MoneyOperationDto[]> GetByBillingPeriodIdAsync(long billingPeriodId)
-            => await Context.MoneyOperations.Where(x => x.BillingPeriodId == billingPeriodId).ToArrayAsync();
+        return await Context.MoneyOperations.Where(x => x.BillingPeriodId == billingPeriodId).ToArrayAsync();
     }
 }

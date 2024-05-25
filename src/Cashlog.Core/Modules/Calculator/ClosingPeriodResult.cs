@@ -1,11 +1,10 @@
 ﻿using Cashlog.Core.Models.Main;
 
-namespace Cashlog.Core.Modules.Calculator
+namespace Cashlog.Core.Modules.Calculator;
+
+public class ClosingPeriodResult
 {
-    public class ClosingPeriodResult
-    {
-        public BillingPeriod PreviousPeriod { get; set; }
-        public BillingPeriod NewPeriod { get; set; }
-        public MoneyOperation[] Debts { get; set; }
-    }
+    public BillingPeriod PreviousPeriod { get; set; }
+    public BillingPeriod NewPeriod { get; set; }
+    public MoneyOperation[] Debts { get; set; }
 }

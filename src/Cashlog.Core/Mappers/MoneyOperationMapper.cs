@@ -1,38 +1,35 @@
-﻿using Cashlog.Common;
-using Cashlog.Core.Models;
-using Cashlog.Core.Models.Main;
+﻿using Cashlog.Core.Models.Main;
 using Cashlog.Data.Entities;
 
-namespace Cashlog.Core.Mappers
-{
-    public static class MoneyOperationMapper
-    {
-        public static MoneyOperationDto ToData(this MoneyOperation obj)
-        {
-            return new MoneyOperationDto
-            {
-                Amount = obj.Amount,
-                BillingPeriodId = obj.BillingPeriodId,
-                Comment = obj.Comment,
-                Id = obj.Id,
-                OperationType = obj.OperationType,
-                CustomerFromId = obj.CustomerFromId,
-                CustomerToId = obj.CustomerToId
-            };
-        }
+namespace Cashlog.Core.Mappers;
 
-        public static MoneyOperation ToCore(this MoneyOperationDto obj)
+public static class MoneyOperationMapper
+{
+    public static MoneyOperationDto ToData(this MoneyOperation obj)
+    {
+        return new MoneyOperationDto
         {
-            return new MoneyOperation
-            {
-                Amount = obj.Amount,
-                BillingPeriodId = obj.BillingPeriodId,
-                Comment = obj.Comment,
-                Id = obj.Id,
-                OperationType = obj.OperationType,
-                CustomerFromId = obj.CustomerFromId,
-                CustomerToId = obj.CustomerToId
-            };
-        }
+            Amount = obj.Amount,
+            BillingPeriodId = obj.BillingPeriodId,
+            Comment = obj.Comment,
+            Id = obj.Id,
+            OperationType = obj.OperationType,
+            CustomerFromId = obj.CustomerFromId,
+            CustomerToId = obj.CustomerToId
+        };
+    }
+
+    public static MoneyOperation ToCore(this MoneyOperationDto obj)
+    {
+        return new MoneyOperation
+        {
+            Amount = obj.Amount,
+            BillingPeriodId = obj.BillingPeriodId,
+            Comment = obj.Comment,
+            Id = obj.Id,
+            OperationType = obj.OperationType,
+            CustomerFromId = obj.CustomerFromId,
+            CustomerToId = obj.CustomerToId
+        };
     }
 }

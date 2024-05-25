@@ -1,23 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <PackageReference Include="Autofac" />
-    <PackageReference Include="Flurl" />
-    <PackageReference Include="Flurl.Http" />
-    <PackageReference Include="HtmlAgilityPack" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
-    <PackageReference Include="protobuf-net" />
-    <PackageReference Include="Serilog" />
-    <PackageReference Include="Serilog.Sinks.RollingFile" />
-    <PackageReference Include="System.Drawing.Common" />
-    <PackageReference Include="Telegram.Bot" />
-    <PackageReference Include="ZXing.Net" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Autofac"/>
+        <PackageReference Include="Flurl"/>
+        <PackageReference Include="Flurl.Http"/>
+        <PackageReference Include="HtmlAgilityPack"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets"/>
+        <PackageReference Include="protobuf-net"/>
+        <PackageReference Include="Serilog"/>
+        <PackageReference Include="Serilog.Sinks.RollingFile"/>
+        <PackageReference Include="System.Drawing.Common"/>
+        <PackageReference Include="Telegram.Bot"/>
+        <PackageReference Include="ZXing.Net"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Cashlog.Common\Cashlog.Common.csproj" />
-    <ProjectReference Include="..\Cashlog.Data\Cashlog.Data.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Cashlog.Common\Cashlog.Common.csproj"/>
+        <ProjectReference Include="..\Cashlog.Data\Cashlog.Data.csproj"/>
+    </ItemGroup>
 
 </Project>

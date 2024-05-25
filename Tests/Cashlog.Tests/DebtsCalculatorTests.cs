@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Cashlog.Common;
 using Cashlog.Core.Models.Main;
 using Cashlog.Core.Modules.Calculator;
@@ -9,126 +6,132 @@ using Cashlog.Core.Services;
 using Cashlog.Core.Services.Main;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Cashlog.Tests
+namespace Cashlog.Tests;
+
+[TestClass]
+public class DebtsCalculatorTests
 {
-    [TestClass]
-    public class DebtsCalculatorTests
+    private IDebtsCalculator _calculator;
+
+    [TestInitialize]
+    public void TestMethod1()
     {
-        private IDebtsCalculator _calculator;
+        _calculator = new DebtsCalculator();
+    }
 
-        [TestInitialize]
-        public void TestMethod1()
+    [TestMethod]
+    public async Task Test1()
+    {
+        MoneyOperation[] operations =
         {
-            _calculator = new DebtsCalculator();
-        }
-
-        [TestMethod]
-        public async Task Test1()
+            CreateOperation(2, 1, 200, MoneyOperationType.Debt),
+            CreateOperation(3, 1, 500, MoneyOperationType.Debt),
+            CreateOperation(2, 1, 200, MoneyOperationType.Transfer),
+            CreateOperation(3, 1, 300, MoneyOperationType.Transfer)
+        };
+        ReceiptCalculatorInfo[] receipts =
         {
-            MoneyOperation[] operations =
-            {
-                CreateOperation(2, 1, 200, MoneyOperationType.Debt),
-                CreateOperation(3, 1, 500, MoneyOperationType.Debt),
-                CreateOperation(2, 1, 200, MoneyOperationType.Transfer),
-                CreateOperation(3, 1, 300, MoneyOperationType.Transfer),
-            };
-            ReceiptCalculatorInfo[] receipts =
-            {
-                CreateReceipt(1, new long[] {1, 2, 3}, 300),
-                CreateReceipt(1, new long[] {1, 2, 3}, 600),
-                CreateReceipt(3, new long[] {1, 3}, 3000),
-                CreateReceipt(2, new long[] {1, 2}, 900),
-                CreateReceipt(2, new long[] {3, 2}, 900),
-            };
+            CreateReceipt(1, new long[] { 1, 2, 3 }, 300),
+            CreateReceipt(1, new long[] { 1, 2, 3 }, 600),
+            CreateReceipt(3, new long[] { 1, 3 }, 3000),
+            CreateReceipt(2, new long[] { 1, 2 }, 900),
+            CreateReceipt(2, new long[] { 3, 2 }, 900)
+        };
 
-            MoneyOperationShortInfo[] debts = await _calculator.Calculate(operations, receipts);
+        var debts = await _calculator.Calculate(operations, receipts);
 
-            Assert.IsNotNull(debts);
-            Assert.IsTrue(debts.Length > 0);
-        }
+        Assert.IsNotNull(debts);
+        Assert.IsTrue(debts.Length > 0);
+    }
 
-        [TestMethod]
-        public async Task Test2()
+    [TestMethod]
+    public async Task Test2()
+    {
+        MoneyOperation[] operations =
         {
-            MoneyOperation[] operations =
-            {
-                //CreateOperation(1, 2, 400, MoneyOperationType.Debt),
-                //CreateOperation(3, 1, 200, MoneyOperationType.Debt),
-                //CreateOperation(1, 2, 100, MoneyOperationType.Transfer),
-                //CreateOperation(1, 3, 300, MoneyOperationType.Transfer),
-                //CreateOperation(2, 3, 400, MoneyOperationType.Transfer),
-            };
-            ReceiptCalculatorInfo[] receipts =
-            {
-                CreateReceipt(1, new long[] {1, 3}, 300),
-                CreateReceipt(2, new long[] {1, 2, 3}, 600),
-                CreateReceipt(3, new long[] {1, 2, 3}, 600),
-                CreateReceipt(1, new long[] {1, 2, 3}, 1000),
-            };
-
-            MoneyOperationShortInfo[] debts = await _calculator.Calculate(operations, receipts);
-
-            Assert.IsNotNull(debts);
-            Assert.IsTrue(debts.Length > 0);
-        }
-
-        // TODO: Âûíåñòè â integration tests.
-        [Ignore]
-        [TestMethod]
-        public async Task CalculateTusaMrazeiTest()
+            //CreateOperation(1, 2, 400, MoneyOperationType.Debt),
+            //CreateOperation(3, 1, 200, MoneyOperationType.Debt),
+            //CreateOperation(1, 2, 100, MoneyOperationType.Transfer),
+            //CreateOperation(1, 3, 300, MoneyOperationType.Transfer),
+            //CreateOperation(2, 3, 400, MoneyOperationType.Transfer),
+        };
+        ReceiptCalculatorInfo[] receipts =
         {
-            var settingsService = new CashlogSettingsService();
-            var provider = new BotDatabaseContextProvider(settingsService);
-            BillingPeriodService service = new BillingPeriodService(provider);
-            var receiptService = new ReceiptService(provider);
-            var customerService = new CustomerService(provider);
-            var period = await service.GetLastByGroupIdAsync(5);
-            var periodReceipts = await receiptService.GetByBillingPeriodIdAsync(period.Id);
+            CreateReceipt(1, new long[] { 1, 3 }, 300),
+            CreateReceipt(2, new long[] { 1, 2, 3 }, 600),
+            CreateReceipt(3, new long[] { 1, 2, 3 }, 600),
+            CreateReceipt(1, new long[] { 1, 2, 3 }, 1000)
+        };
 
-            Dictionary<long, long[]> consumerMap = await receiptService.GetConsumerIdsByReceiptIdsMapAsync(periodReceipts.Select(x => x.Id).ToArray());
-            var customerNamesMap = (await customerService.GetListAsync(5)).ToDictionary(x => x.Id, x => x.Caption);
+        var debts = await _calculator.Calculate(operations, receipts);
 
-            var gg = periodReceipts.Select(x => $"Id{x.Id}: `{x.Comment}`; ñóììà: {x.TotalAmount}ð.; êóïèë: {customerNamesMap[x.CustomerId.Value]}");
-            var gg2 = string.Join("\n", gg);
-            var all = periodReceipts.Sum(x => x.TotalAmount);
-        }
+        Assert.IsNotNull(debts);
+        Assert.IsTrue(debts.Length > 0);
+    }
 
-        [TestMethod]
-        public async Task Test3()
+    // TODO: Ð’Ñ‹Ð½ÐµÑÑ‚Ð¸ Ð² integration tests.
+    [Ignore]
+    [TestMethod]
+    public async Task CalculateTusaMrazeiTest()
+    {
+        var settingsService = new CashlogSettingsService();
+        var provider = new BotDatabaseContextProvider(settingsService);
+        var service = new BillingPeriodService(provider);
+        var receiptService = new ReceiptService(provider);
+        var customerService = new CustomerService(provider);
+        var period = await service.GetLastByGroupIdAsync(5);
+        var periodReceipts = await receiptService.GetByBillingPeriodIdAsync(period.Id);
+
+        var consumerMap =
+            await receiptService.GetConsumerIdsByReceiptIdsMapAsync(periodReceipts.Select(x => x.Id).ToArray());
+        var customerNamesMap = (await customerService.GetListAsync(5)).ToDictionary(x => x.Id, x => x.Caption);
+
+        var gg = periodReceipts.Select(x => $"Id{x.Id}: `{x.Comment}`; ÑÑƒÐ¼Ð¼Ð°: {x.TotalAmount}Ñ€.; ÐºÑƒÐ¿Ð¸Ð»: {customerNamesMap[x.CustomerId.Value]}");
+        var gg2 = string.Join("\n", gg);
+        var all = periodReceipts.Sum(x => x.TotalAmount);
+    }
+
+    [TestMethod]
+    public async Task Test3()
+    {
+        MoneyOperation[] operations =
         {
-            MoneyOperation[] operations =
-            {
-                //CreateOperation(1, 2, 400, MoneyOperationType.Debt),
-                //CreateOperation(3, 1, 200, MoneyOperationType.Debt),
-                //CreateOperation(1, 2, 100, MoneyOperationType.Transfer),
-                //CreateOperation(1, 3, 300, MoneyOperationType.Transfer),
-                //CreateOperation(2, 3, 400, MoneyOperationType.Transfer),
-            };
-            ReceiptCalculatorInfo[] receipts =
-            {
-                CreateReceipt(1, new long[] {1, 2}, 300),
-                CreateReceipt(2, new long[] {2, 3}, 300),
-            };
+            //CreateOperation(1, 2, 400, MoneyOperationType.Debt),
+            //CreateOperation(3, 1, 200, MoneyOperationType.Debt),
+            //CreateOperation(1, 2, 100, MoneyOperationType.Transfer),
+            //CreateOperation(1, 3, 300, MoneyOperationType.Transfer),
+            //CreateOperation(2, 3, 400, MoneyOperationType.Transfer),
+        };
+        ReceiptCalculatorInfo[] receipts =
+        {
+            CreateReceipt(1, new long[] { 1, 2 }, 300),
+            CreateReceipt(2, new long[] { 2, 3 }, 300)
+        };
 
-            MoneyOperationShortInfo[] debts = await _calculator.Calculate(operations, receipts);
+        var debts = await _calculator.Calculate(operations, receipts);
 
-            Assert.IsNotNull(debts);
-            Assert.IsTrue(debts.Length > 0);
-        }
+        Assert.IsNotNull(debts);
+        Assert.IsTrue(debts.Length > 0);
+    }
 
-        private static MoneyOperation CreateOperation(long fromId, long toId, int amount, MoneyOperationType type) => new MoneyOperation
+    private static MoneyOperation CreateOperation(long fromId, long toId, int amount, MoneyOperationType type)
+    {
+        return new MoneyOperation()
         {
             Amount = amount,
             CustomerFromId = fromId,
             CustomerToId = toId,
             OperationType = type
         };
+    }
 
-        private static ReceiptCalculatorInfo CreateReceipt(long customerId, long[] consumerIds, int amount) => new ReceiptCalculatorInfo
+    private static ReceiptCalculatorInfo CreateReceipt(long customerId, long[] consumerIds, int amount)
+    {
+        return new ReceiptCalculatorInfo()
         {
             Amount = amount,
             CustomerId = customerId,
-            ConsumerIds = consumerIds,
+            ConsumerIds = consumerIds
         };
     }
 }

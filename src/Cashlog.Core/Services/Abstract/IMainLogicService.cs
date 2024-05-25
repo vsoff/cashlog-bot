@@ -1,21 +1,19 @@
-﻿using System.Threading.Tasks;
-using Cashlog.Core.Modules.Calculator;
+﻿using Cashlog.Core.Modules.Calculator;
 
-namespace Cashlog.Core.Services.Abstract
+namespace Cashlog.Core.Services.Abstract;
+
+/// <summary>
+///     Сервис основной логики проекта.
+/// </summary>
+public interface IMainLogicService
 {
     /// <summary>
-    /// Сервис основной логики проекта.
+    ///     Рассчитывает долги для расчётного периода.
     /// </summary>
-    public interface IMainLogicService
-    {
-        /// <summary>
-        /// Рассчитывает долги для расчётного периода.
-        /// </summary>
-        Task<MoneyOperationShortInfo[]> CalculatePeriodCurrentDebts(long billingPeriodId);
+    Task<MoneyOperationShortInfo[]> CalculatePeriodCurrentDebts(long billingPeriodId);
 
-        /// <summary>
-        /// Закрывает расчётный период и открывает новый.
-        /// </summary>
-        Task<ClosingPeriodResult> CloseCurrentAndOpenNewPeriod(long groupId);
-    }
+    /// <summary>
+    ///     Закрывает расчётный период и открывает новый.
+    /// </summary>
+    Task<ClosingPeriodResult> CloseCurrentAndOpenNewPeriod(long groupId);
 }
