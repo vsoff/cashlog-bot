@@ -1,25 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Serilog" Version="2.9.0" />
-    <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />
-    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Sinks.RollingFile" />
+    <PackageReference Include="System.Drawing.Common" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Cashlog.Core\Cashlog.Core.csproj" />
     <ProjectReference Include="..\Cashlog.Data\Cashlog.Data.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="botconfig.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

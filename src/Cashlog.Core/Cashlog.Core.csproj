@@ -1,23 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
-    <UserSecretsId>564dbaf0-e8e7-40ff-a6b2-d7b1fe3444e0</UserSecretsId>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="5.1.2" />
-    <PackageReference Include="Flurl" Version="2.8.2" />
-    <PackageReference Include="Flurl.Http" Version="2.4.2" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.18" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.0.2" />
-    <PackageReference Include="protobuf-net" Version="2.4.4" />
-    <PackageReference Include="Serilog" Version="2.9.0" />
-    <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />
-    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
-    <PackageReference Include="Telegram.Bot" Version="15.3.0" />
-    <PackageReference Include="ZXing.Net" Version="0.16.5" />
+    <PackageReference Include="Autofac" />
+    <PackageReference Include="Flurl" />
+    <PackageReference Include="Flurl.Http" />
+    <PackageReference Include="HtmlAgilityPack" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="protobuf-net" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Sinks.RollingFile" />
+    <PackageReference Include="System.Drawing.Common" />
+    <PackageReference Include="Telegram.Bot" />
+    <PackageReference Include="ZXing.Net" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,0 +1,15 @@
+<Project>
+    <PropertyGroup>
+        <LangVersion>default</LangVersion>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>true</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        
+        <NoWarn>CS1591</NoWarn>
+        
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+        <CentralPackageVersionOverrideEnabled>false</CentralPackageVersionOverrideEnabled>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    </PropertyGroup>
+</Project>
