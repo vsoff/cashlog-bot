@@ -1,6 +1,5 @@
 ﻿using Cashlog.Core.Mappers;
 using Cashlog.Core.Models.Main;
-using Cashlog.Core.Providers.Abstract;
 using Cashlog.Core.Services.Abstract;
 using Cashlog.Data;
 using Cashlog.Data.Entities;

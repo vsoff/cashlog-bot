@@ -1,5 +1,4 @@
 ﻿using Cashlog.Core.Options;
-using Cashlog.Core.Providers.Abstract;
 using Cashlog.Core.Services.Abstract;
 using Cashlog.Data;
 using Microsoft.Extensions.Options;

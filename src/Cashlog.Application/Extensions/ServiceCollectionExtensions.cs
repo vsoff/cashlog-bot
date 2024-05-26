@@ -6,10 +6,10 @@ using Cashlog.Core.Modules.Messengers;
 using Cashlog.Core.Modules.Messengers.Menu;
 using Cashlog.Core.Options;
 using Cashlog.Core.Providers;
-using Cashlog.Core.Providers.Abstract;
 using Cashlog.Core.Services;
 using Cashlog.Core.Services.Abstract;
 using Cashlog.Core.Services.Main;
+using Cashlog.Data;
 
 namespace Cashlog.Application.Extensions;
 
@@ -19,51 +19,54 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration config)
     {
-        services.AddCashlogOptions(config);
-        services.AddHandlers(config);
+        services
+            .AddCashlogOptions(config)
+            .AddHandlers()
 
-        // Data.
-        services.AddSingleton<IDatabaseContextProvider, BotDatabaseContextProvider>();
-        
-        // etc.
-        services.AddSingleton<IReceiptHandleService, ReceiptHandleService>();
-        services.AddSingleton<IQueryDataSerializer, QueryDataSerializer>();
-        services.AddSingleton<MessagesMainHandler>();
+            // Data.
+            .AddSingleton<IDatabaseContextProvider, BotDatabaseContextProvider>()
 
-        // Telegram services.
-        services.AddSingleton<IMenuProvider, TelegramMenuProvider>();
-        services.AddSingleton<IMessenger, TelegramMessenger>();
-        
-        // Core logic services.
-        services.AddSingleton<IMoneyOperationService, MoneyOperationService>();
-        services.AddSingleton<IBillingPeriodService, BillingPeriodService>();
-        services.AddSingleton<IMainLogicService, MainLogicService>();
-        services.AddSingleton<IDebtsCalculator, DebtsCalculator>();
-        services.AddSingleton<ICustomerService, CustomerService>();
-        services.AddSingleton<IReceiptService, ReceiptService>();
-        services.AddSingleton<IGroupService, GroupService>();
+            // etc.
+            .AddSingleton<IReceiptHandleService, ReceiptHandleService>()
+            .AddSingleton<IQueryDataSerializer, QueryDataSerializer>()
+            .AddSingleton<MessagesMainHandler>()
 
-        // Hosted services.
-        services.AddHostedService<MessagesHandlerHostedService>();
-        services.AddHostedService<MessengerHostedService>();
-        
+            // Telegram services.
+            .AddSingleton<IMenuProvider, TelegramMenuProvider>()
+            .AddSingleton<IMessenger, TelegramMessenger>()
+
+            // Core logic services.
+            .AddSingleton<IMoneyOperationService, MoneyOperationService>()
+            .AddSingleton<IBillingPeriodService, BillingPeriodService>()
+            .AddSingleton<IMainLogicService, MainLogicService>()
+            .AddSingleton<IDebtsCalculator, DebtsCalculator>()
+            .AddSingleton<ICustomerService, CustomerService>()
+            .AddSingleton<IReceiptService, ReceiptService>()
+            .AddSingleton<IGroupService, GroupService>()
+
+            // Hosted services.
+            .AddHostedService<MessagesHandlerHostedService>()
+            .AddHostedService<MessengerHostedService>()
+            ;
+
         return services;
     }
 
     private static IServiceCollection AddHandlers(
-        this IServiceCollection services,
-        IConfiguration config)
+        this IServiceCollection services)
     {
         // Text command handlers.
-        services.AddSingleton<IMessageHandler, SendMoneyMessagesHandler>();
-        services.AddSingleton<IMessageHandler, CustomerMessagesHandler>();
-        services.AddSingleton<IMessageHandler, ReceiptMessagesHandler>();
-        services.AddSingleton<IMessageHandler, PeriodMessagesHandler>();
-        services.AddSingleton<IMessageHandler, ReportMessagesHandler>();
-        services.AddSingleton<IMessageHandler, DebtsMessagesHandler>();
-        
-        // Photo command handlers.
-        services.AddSingleton<IMessageHandler, PhotoMessageHandler>();
+        services
+            .AddSingleton<IMessageHandler, SendMoneyMessagesHandler>()
+            .AddSingleton<IMessageHandler, CustomerMessagesHandler>()
+            .AddSingleton<IMessageHandler, ReceiptMessagesHandler>()
+            .AddSingleton<IMessageHandler, PeriodMessagesHandler>()
+            .AddSingleton<IMessageHandler, ReportMessagesHandler>()
+            .AddSingleton<IMessageHandler, DebtsMessagesHandler>()
+
+            // Photo command handlers.
+            .AddSingleton<IMessageHandler, PhotoMessageHandler>()
+            ;
 
         return services;
     }
@@ -73,8 +76,9 @@ public static class ServiceCollectionExtensions
         IConfiguration config)
     {
         // TODO: Find solution to remove `Bind`, because it has problems with realtime update.
-        services.Configure<CashlogOptions>(config.GetSection(CashlogOptions.SectionName).Bind);
-        services.Configure<DatabaseOptions>(config.GetSection(DatabaseOptions.SectionName).Bind);
+        services
+            .Configure<CashlogOptions>(config.GetSection(CashlogOptions.SectionName).Bind)
+            .Configure<DatabaseOptions>(config.GetSection(DatabaseOptions.SectionName).Bind);
 
         return services;
     }

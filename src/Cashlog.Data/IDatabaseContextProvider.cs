@@ -1,6 +1,4 @@
-﻿using Cashlog.Data;
-
-namespace Cashlog.Core.Providers.Abstract;
+﻿namespace Cashlog.Data;
 
 public interface IDatabaseContextProvider
 {
