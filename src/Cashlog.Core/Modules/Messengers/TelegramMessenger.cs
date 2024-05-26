@@ -3,6 +3,7 @@ using Cashlog.Core.Models;
 using Cashlog.Core.Modules.Messengers.Menu;
 using Cashlog.Core.Options;
 using Cashlog.Core.Services.Abstract;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Args;
@@ -23,7 +24,7 @@ public class TelegramMessenger : IMessenger
     private readonly IOptions<CashlogOptions> _cashlogOptions;
     private readonly ICustomerService _customerService;
     private readonly IGroupService _groupService;
-    private readonly ILogger _logger;
+    private readonly ILogger<TelegramMessenger> _logger;
     private readonly IQueryDataSerializer _queryDataSerializer;
     private readonly IReceiptHandleService _receiptHandleService;
 
@@ -35,7 +36,7 @@ public class TelegramMessenger : IMessenger
         IQueryDataSerializer queryDataSerializer,
         ICustomerService customerService,
         IGroupService groupService,
-        ILogger logger)
+        ILogger<TelegramMessenger> logger)
     {
         _cashlogOptions = cashlogOptions;
         _receiptHandleService = receiptHandleService;
@@ -69,7 +70,7 @@ public class TelegramMessenger : IMessenger
         _client.StartReceiving();
 
         _client.SendTextMessageAsync(cashlogOptions.AdminChatToken, "Бот запущен!").GetAwaiter().GetResult();
-        _logger.Info($"{GetType().Name}: Telegram бот начал работать");
+        _logger.LogInformation("Telegram бот начал работать");
     }
 
     public void StopReceiving()
@@ -119,7 +120,7 @@ public class TelegramMessenger : IMessenger
         }
         catch (Exception ex)
         {
-            _logger.Error($"{GetType().Name}: Произошла ошибка во время обработки query запроса ", ex);
+            _logger.LogError(ex, "Произошла ошибка во время обработки query запроса ");
         }
     }
 
@@ -134,7 +135,10 @@ public class TelegramMessenger : IMessenger
 
             if (chatId.ToString() != _cashlogOptions.Value.AdminChatToken)
             {
-                _logger.Info($"{GetType().Name}: Произведена попытка использования бота в группе `{e.Message.Chat.Title}` ({chatId})");
+                _logger.LogInformation("Произведена попытка использования бота в группе `{Title}` ({ChatId})",
+                    e.Message.Chat.Title,
+                    chatId);
+                
                 await _client.SendTextMessageAsync(chatId, "Чтобы бот мог работать в этой группе обратитесь к @vsoff");
                 return;
             }
@@ -150,7 +154,7 @@ public class TelegramMessenger : IMessenger
 
                 if (creator == null)
                 {
-                    _logger.Warning($"В группе {chatId} не был найден создатель");
+                    _logger.LogWarning("В группе {ChatId} не был найден создатель", chatId);
                     return;
                 }
 
@@ -183,8 +187,10 @@ public class TelegramMessenger : IMessenger
                 case MessageType.Photo:
                 {
                     var photoSize = e.Message.Photo.OrderByDescending(x => x.Width).First();
-                    _logger.Trace(
-                        $"{GetType().Name}: Получено фото чека с разрешением W:{photoSize.Width} H:{photoSize.Height}");
+                    _logger.LogTrace(
+                        "Получено фото чека с разрешением W:{Width} H:{Height}",
+                        photoSize.Width,
+                        photoSize.Height);
 
                     var file = await _client.GetFileAsync(photoSize.FileId);
 
@@ -201,13 +207,14 @@ public class TelegramMessenger : IMessenger
                         throw new Exception("Ошибка во время скачки изображения с чеком из telegram", ex);
                     }
 
-                    _logger.Trace(
-                        $"{GetType().Name}: Получено изображение из потока размером {imageBytes.Length} байт");
+                    _logger.LogTrace(
+                        "Получено изображение из потока размером {Bytes} байт",
+                        imageBytes.Length);
 
                     var data = _receiptHandleService.ParsePhoto(imageBytes);
-                    _logger.Trace(data == null
-                        ? $"{GetType().Name}: Не удалось распознать QR код на чеке"
-                        : $"{GetType().Name}: Данные с QR кода чека {data.RawData}");
+                    _logger.LogTrace(data == null
+                        ? "Не удалось распознать QR код на чеке"
+                        : $"Данные с QR кода чека {data.RawData}");
 
                     userMessageInfo.Message.ReceiptInfo = data;
                     userMessageInfo.MessageType = Models.MessageType.QrCode;
@@ -227,7 +234,7 @@ public class TelegramMessenger : IMessenger
         }
         catch (Exception ex)
         {
-            _logger.Error($"{GetType().Name}: Во время обработки полученного сообщения произошла ошибка", ex);
+            _logger.LogError(ex, "Во время обработки полученного сообщения произошла ошибка");
         }
     }
 }

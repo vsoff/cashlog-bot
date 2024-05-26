@@ -1,34 +1,35 @@
 <Project>
-    <PropertyGroup>
-        <TEST_VERSION>8.0.0</TEST_VERSION>
-    </PropertyGroup>
-    <ItemGroup>
-        <PackageVersion Include="Serilog" Version="2.9.0"/>
-        <PackageVersion Include="Serilog.Sinks.RollingFile" Version="3.3.0"/>
-        <PackageVersion Include="System.Drawing.Common" Version="4.7.0"/>
-        <PackageVersion Include="Autofac" Version="5.1.2"/>
-        <PackageVersion Include="Flurl" Version="2.8.2"/>
-        <PackageVersion Include="Flurl.Http" Version="2.4.2"/>
-        <PackageVersion Include="HtmlAgilityPack" Version="1.11.18"/>
-        <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0"/>
-        <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0"/>
-        <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1"/>
-        <PackageVersion Include="protobuf-net" Version="2.4.4"/>
-        <PackageVersion Include="Serilog" Version="2.9.0"/>
-        <PackageVersion Include="Serilog.Sinks.RollingFile" Version="3.3.0"/>
-        <PackageVersion Include="System.Drawing.Common" Version="4.7.0"/>
-        <PackageVersion Include="Telegram.Bot" Version="15.3.0"/>
-        <PackageVersion Include="ZXing.Net" Version="0.16.5"/>
-        <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="3.1.1"/>
-        <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.1"/>
-        <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="3.1.1"/>
-        <PackageVersion Include="System.Linq.Expressions" Version="4.3.0"/>
+  <PropertyGroup>
+    <TEST_VERSION>8.0.0</TEST_VERSION>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="System.Drawing.Common" Version="4.7.0" />
+    <PackageVersion Include="Autofac" Version="5.1.2" />
+    <PackageVersion Include="Flurl" Version="2.8.2" />
+    <PackageVersion Include="Flurl.Http" Version="2.4.2" />
+    <PackageVersion Include="HtmlAgilityPack" Version="1.11.18" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+    <PackageVersion Include="protobuf-net" Version="2.4.4" />
+    <PackageVersion Include="Serilog" Version="3.1.1" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageVersion Include="Serilog.AspNetCore" Version="8.0.1" />
+    <PackageVersion Include="System.Drawing.Common" Version="4.7.0" />
+    <PackageVersion Include="Telegram.Bot" Version="15.3.0" />
+    <PackageVersion Include="ZXing.Net" Version="0.16.5" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="3.1.1" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.1" />
+    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="3.1.1" />
+    <PackageVersion Include="System.Linq.Expressions" Version="4.3.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.5"/>
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
 
-        <!-- Tests -->
-        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="16.2.0"/>
-        <PackageVersion Include="Moq" Version="4.13.1"/>
-        <PackageVersion Include="MSTest.TestAdapter" Version="2.0.0"/>
-        <PackageVersion Include="MSTest.TestFramework" Version="2.0.0"/>
-        <PackageVersion Include="coverlet.collector" Version="1.0.1"/>
-    </ItemGroup>
+    <!-- Tests -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
+    <PackageVersion Include="Moq" Version="4.13.1" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="2.0.0" />
+    <PackageVersion Include="MSTest.TestFramework" Version="2.0.0" />
+    <PackageVersion Include="coverlet.collector" Version="1.0.1" />
+  </ItemGroup>
 </Project>

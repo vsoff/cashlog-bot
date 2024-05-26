@@ -5,6 +5,7 @@ using Cashlog.Core.Models.Main;
 using Cashlog.Core.Modules.Messengers;
 using Cashlog.Core.Modules.Messengers.Menu;
 using Cashlog.Core.Services.Abstract;
+using Microsoft.Extensions.Logging;
 
 namespace Cashlog.Core.Modules.MessageHandlers.Handlers;
 
@@ -14,23 +15,23 @@ namespace Cashlog.Core.Modules.MessageHandlers.Handlers;
 public class PhotoMessageHandler : IMessageHandler
 {
     private readonly IBillingPeriodService _billingPeriodService;
-    protected readonly ILogger Logger;
-    protected readonly IMenuProvider MenuProvider;
-    protected readonly IMessenger Messenger;
-    protected readonly IReceiptService ReceiptService;
+    private readonly IMenuProvider _menuProvider;
+    private readonly IMessenger _messenger;
+    private readonly ILogger<PhotoMessageHandler> _logger;
+    private readonly IReceiptService _receiptService;
 
     public PhotoMessageHandler(
         IBillingPeriodService billingPeriodService,
         IReceiptService receiptService,
         IMenuProvider menuProvider,
         IMessenger messenger,
-        ILogger logger)
+        ILogger<PhotoMessageHandler> logger)
     {
         _billingPeriodService = billingPeriodService ?? throw new ArgumentNullException(nameof(billingPeriodService));
-        ReceiptService = receiptService ?? throw new ArgumentNullException(nameof(receiptService));
-        MenuProvider = menuProvider ?? throw new ArgumentNullException(nameof(menuProvider));
-        Messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
-        Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _receiptService = receiptService ?? throw new ArgumentNullException(nameof(receiptService));
+        _menuProvider = menuProvider ?? throw new ArgumentNullException(nameof(menuProvider));
+        _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
+        _logger = logger;
     }
 
     public MessageType MessageType => MessageType.QrCode;
@@ -41,15 +42,15 @@ public class PhotoMessageHandler : IMessageHandler
 
         if (data == null)
         {
-            await Messenger.SendMessageAsync(userMessageInfo, Resources.ParsePhotoError, true);
-            Logger.Trace(Resources.ParsePhotoError);
+            await _messenger.SendMessageAsync(userMessageInfo, Resources.ParsePhotoError, true);
+            _logger.LogTrace(Resources.ParsePhotoError);
             return;
         }
 
         var lastBillingPeriod = await _billingPeriodService.GetLastByGroupIdAsync(userMessageInfo.Group.Id);
         if (lastBillingPeriod == null)
         {
-            await Messenger.SendMessageAsync(userMessageInfo, Resources.BillingPeriodNotCreated, true);
+            await _messenger.SendMessageAsync(userMessageInfo, Resources.BillingPeriodNotCreated, true);
             return;
         }
 
@@ -65,23 +66,23 @@ public class PhotoMessageHandler : IMessageHandler
             Comment = "Чек"
         };
 
-        if (await ReceiptService.IsReceiptExists(receipt))
+        if (await _receiptService.IsReceiptExists(receipt))
         {
-            await Messenger.SendMessageAsync(userMessageInfo, Resources.ReceiptAlredyAdded, true);
+            await _messenger.SendMessageAsync(userMessageInfo, Resources.ReceiptAlredyAdded, true);
             return;
         }
 
-        var newReceipt = await ReceiptService.AddAsync(receipt);
+        var newReceipt = await _receiptService.AddAsync(receipt);
 
-        var menu = MenuProvider.GetMenu(userMessageInfo, new AddReceiptQueryData
+        var menu = _menuProvider.GetMenu(userMessageInfo, new AddReceiptQueryData
         {
             MenuType = MenuType.NewReceiptSelectCustomer,
             ReceiptId = newReceipt.Id,
             SelectedCustomerId = null,
-            SelectedConsumerIds = new long[0],
+            SelectedConsumerIds = [],
             TargetId = null,
             Version = AddReceiptQueryData.ServerVersion
         });
-        await Messenger.SendMessageAsync(userMessageInfo, Resources.SelectCustomer, true, menu);
+        await _messenger.SendMessageAsync(userMessageInfo, Resources.SelectCustomer, true, menu);
     }
 }

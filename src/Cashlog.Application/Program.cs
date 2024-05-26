@@ -1,4 +1,5 @@
 using Cashlog.Application.Extensions;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,7 +7,7 @@ builder.Services
     .AddEndpointsApiExplorer()
     .AddSwaggerGen()
     .AddCashlog(builder.Configuration)
-    .AddOldLogger()
+    .AddSerilog()
     ;
 
 var app = builder.Build();

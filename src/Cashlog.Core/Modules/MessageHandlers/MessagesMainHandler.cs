@@ -6,16 +6,17 @@ using Cashlog.Core.Models.Main;
 using Cashlog.Core.Modules.Messengers;
 using Cashlog.Core.Modules.Messengers.Menu;
 using Cashlog.Core.Services.Abstract;
+using Microsoft.Extensions.Logging;
 
 namespace Cashlog.Core.Modules.MessageHandlers;
 
 public class MessagesMainHandler
 {
     private readonly IBillingPeriodService _billingPeriodService;
-    private readonly ILogger _logger;
     private readonly IMenuProvider _menuProvider;
     private readonly IReadOnlyDictionary<MessageType, IMessageHandler[]> _messageHandlersMap;
     private readonly IMessenger _messenger;
+    private readonly ILogger<MessagesMainHandler> _logger;
     private readonly IMoneyOperationService _moneyOperationService;
     private readonly IReceiptService _receiptService;
 
@@ -26,7 +27,7 @@ public class MessagesMainHandler
         IReceiptService receiptService,
         IMenuProvider menuProvider,
         IMessenger messenger,
-        ILogger logger)
+        ILogger<MessagesMainHandler> logger)
     {
         if (messageHandlers == null) throw new ArgumentNullException(nameof(messageHandlers));
         _moneyOperationService =
@@ -49,7 +50,11 @@ public class MessagesMainHandler
         var sw = Stopwatch.StartNew();
         try
         {
-            _logger.Trace($"Получено сообщение типа {e.MessageType} от {e.UserToken} из группы {e.Group.ChatToken}");
+            _logger.LogTrace("Получено сообщение типа {MessageType} от {UserToken} из группы {ChatToken}",
+                e.MessageType,
+                e.UserToken,
+                e.Group.ChatToken);
+            
             // TODO: отрефачить проверку.
             switch (e.MessageType)
             {
@@ -69,11 +74,13 @@ public class MessagesMainHandler
         }
         catch (Exception ex)
         {
-            _logger.Error($"{GetType().Name}: Во время обработки сообщения произошла ошибка", ex);
+            _logger.LogError(ex, "Во время обработки сообщения произошла ошибка");
         }
         finally
         {
-            _logger.Trace($"Обработка сообщения для @{e.UserToken} завершена за {sw.Elapsed}");
+            _logger.LogTrace("Обработка сообщения для @{UserToken} завершена за {Elapsed}",
+                e.UserToken,
+                sw.Elapsed);
         }
     }
 
@@ -136,7 +143,7 @@ public class MessagesMainHandler
                     var msgText = string.Format(Resources.NewReceiptAddedInfo, customerText, receipt.TotalAmount,
                         string.Join(", ", consumerTexts));
                     await _messenger.EditMessageAsync(userMessageInfo, msgText);
-                    _logger.Info(msgText);
+                    _logger.LogInformation(msgText);
                 }
 
                 break;
@@ -193,7 +200,7 @@ public class MessagesMainHandler
 
                 var msgText = string.Format(Resources.MoneyTransferSuccess, customerFrom, customerTo, data.Amount);
                 await _messenger.EditMessageAsync(userMessageInfo, msgText);
-                _logger.Info(msgText.Replace("\n", ""));
+                _logger.LogInformation(msgText.Replace("\n", ""));
                 break;
             }
             case MenuType.MoneyTransferCancel:
@@ -209,16 +216,18 @@ public class MessagesMainHandler
         // TODO Вынести проверку на верхний уровень.
         if (!_messageHandlersMap.ContainsKey(MessageType.Text))
         {
-            _logger.Warning("Не зарегистрировано ни одного обработчика текстовых команд.");
+            _logger.LogWarning("Не зарегистрировано ни одного обработчика текстовых команд.");
             return;
         }
 
-        _logger.Trace(
-            $"@{userMessageInfo.UserName} прислал сообщение. Длина сообщения: {userMessageInfo.Message.Text.Length}");
+        _logger.LogTrace(
+            "@{UserName} прислал сообщение. Длина сообщения: {MessageLength}",
+            userMessageInfo.UserName,
+            userMessageInfo.Message.Text.Length);
 
         // Читаем только команды.
         var text = userMessageInfo.Message.Text;
-        if (!text.StartsWith("/"))
+        if (!text.StartsWith('/'))
         {
             await _messenger.SendMessageAsync(userMessageInfo, Resources.UnknownMessageFormat, true);
             return;
@@ -241,13 +250,13 @@ public class MessagesMainHandler
     private async Task HandlePhotoMessageAsync(UserMessageInfo userMessageInfo)
     {
         // TODO Вынести проверку на верхний уровень.
-        if (!_messageHandlersMap.ContainsKey(MessageType.QrCode))
+        if (!_messageHandlersMap.TryGetValue(MessageType.QrCode, out var value))
         {
-            _logger.Warning("Не зарегистрирован обработчик фото с QR кодом.");
+            _logger.LogWarning("Не зарегистрирован обработчик фото с QR кодом.");
             return;
         }
 
-        var handler = _messageHandlersMap[MessageType.QrCode].Single();
+        var handler = value.Single();
         await handler.HandleAsync(userMessageInfo);
     }
 

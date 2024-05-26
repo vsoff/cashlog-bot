@@ -1,6 +1,4 @@
-﻿using Cashlog.Core.Common.Workers;
-using Cashlog.Core.Logging;
-using Cashlog.Core.Modules.Calculator;
+﻿using Cashlog.Core.Modules.Calculator;
 using Cashlog.Core.Modules.MessageHandlers;
 using Cashlog.Core.Modules.MessageHandlers.Handlers;
 using Cashlog.Core.Modules.Messengers;
@@ -11,31 +9,11 @@ using Cashlog.Core.Providers.Abstract;
 using Cashlog.Core.Services;
 using Cashlog.Core.Services.Abstract;
 using Cashlog.Core.Services.Main;
-using Serilog;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Cashlog.Application.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    [Obsolete("Should be removed. Use microsoft logger")]
-    public static IServiceCollection AddOldLogger(
-        this IServiceCollection services)
-    {
-        var fullPathFormat = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "Main_{Date}.txt");
-        var serilogLogger = new LoggerConfiguration()
-            .MinimumLevel.Verbose()
-            .WriteTo.RollingFile(fullPathFormat,
-                outputTemplate: "{Timestamp:HH:mm:ss.fff zzz} [{Level}]: {Message}{NewLine}{Exception}")
-            .CreateLogger();
-
-        var logger = new SerilogLogger(serilogLogger);
-
-        services.AddSingleton<Cashlog.Core.Common.ILogger>(logger);
-        return services;
-    }
-    
-
     public static IServiceCollection AddCashlog(
         this IServiceCollection services,
         IConfiguration config)
@@ -48,7 +26,6 @@ public static class ServiceCollectionExtensions
         
         // etc.
         services.AddSingleton<IReceiptHandleService, ReceiptHandleService>();
-        services.AddSingleton<IWorkerController, DefaultWorkerController>();
         services.AddSingleton<IQueryDataSerializer, QueryDataSerializer>();
         services.AddSingleton<MessagesMainHandler>();
 
