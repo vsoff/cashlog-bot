@@ -5,9 +5,11 @@ namespace Cashlog.Core.Modules.Messengers;
 
 public interface IMessenger
 {
-    void StartReceiving();
-    void StopReceiving();
     event EventHandler<UserMessageInfo> OnMessage;
-    Task SendMessageAsync(UserMessageInfo userMessageInfo, string text, bool isReply = false, IMenu menu = null);
-    Task EditMessageAsync(UserMessageInfo userMessageInfo, string text, IMenu menu = null);
+    
+    ValueTask StartReceivingAsync(CancellationToken cancellationToken);
+    ValueTask StopReceivingAsync(CancellationToken cancellationToken);
+    
+    ValueTask SendMessageAsync(UserMessageInfo userMessageInfo, string text, bool isReply = false, IMenu menu = null);
+    ValueTask EditMessageAsync(UserMessageInfo userMessageInfo, string text, IMenu menu = null);
 }

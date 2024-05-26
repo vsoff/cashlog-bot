@@ -1,4 +1,5 @@
-﻿using Cashlog.Core.Modules.Calculator;
+﻿using Cashlog.Application.HostedServices;
+using Cashlog.Core.Modules.Calculator;
 using Cashlog.Core.Modules.MessageHandlers;
 using Cashlog.Core.Modules.MessageHandlers.Handlers;
 using Cashlog.Core.Modules.Messengers;
@@ -42,6 +43,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IReceiptService, ReceiptService>();
         services.AddSingleton<IGroupService, GroupService>();
 
+        // Hosted services.
+        services.AddHostedService<MessagesHandlerHostedService>();
+        services.AddHostedService<MessengerHostedService>();
+        
         return services;
     }
 

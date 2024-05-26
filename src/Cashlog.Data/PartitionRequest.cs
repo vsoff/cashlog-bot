@@ -4,8 +4,8 @@ public class PartitionRequest
 {
     public PartitionRequest(int take, int page)
     {
-        if (take <= 0) throw new ArgumentOutOfRangeException(nameof(take));
-        if (page <= 0) throw new ArgumentOutOfRangeException(nameof(take));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(take);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(page);
         Take = take;
         Page = page;
     }

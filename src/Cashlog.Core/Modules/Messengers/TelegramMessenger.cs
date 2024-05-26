@@ -1,5 +1,4 @@
-﻿using Cashlog.Core.Common;
-using Cashlog.Core.Models;
+﻿using Cashlog.Core.Models;
 using Cashlog.Core.Modules.Messengers.Menu;
 using Cashlog.Core.Options;
 using Cashlog.Core.Services.Abstract;
@@ -48,13 +47,13 @@ public class TelegramMessenger : IMessenger
 
     public event EventHandler<UserMessageInfo> OnMessage;
 
-    public async Task EditMessageAsync(UserMessageInfo userMessageInfo, string text, IMenu menu = null)
+    public async ValueTask EditMessageAsync(UserMessageInfo userMessageInfo, string text, IMenu menu = null)
     {
         await _client.EditMessageTextAsync(userMessageInfo.Group.ChatToken, int.Parse(userMessageInfo.Message.Token),
             text, replyMarkup: (InlineKeyboardMarkup)((TelegramMenu)menu)?.Markup);
     }
 
-    public void StartReceiving()
+    public async ValueTask StartReceivingAsync(CancellationToken cancellationToken)
     {
         if (_client != null)
             throw new InvalidOperationException("Бот уже запущен");
@@ -67,29 +66,34 @@ public class TelegramMessenger : IMessenger
         _client.OnMessage += OnMessageReceived;
         _client.OnCallbackQuery += OnCallbackQuery;
 
-        _client.StartReceiving();
+        _client.StartReceiving(cancellationToken: cancellationToken);
 
-        _client.SendTextMessageAsync(cashlogOptions.AdminChatToken, "Бот запущен!").GetAwaiter().GetResult();
-        _logger.LogInformation("Telegram бот начал работать");
+        await _client.SendTextMessageAsync(
+            cashlogOptions.AdminChatToken,
+            text: "Бот запущен!",
+            cancellationToken: cancellationToken);
+
+        _logger.LogInformation("Telegram бот запущен");
     }
 
-    public void StopReceiving()
+    public ValueTask StopReceivingAsync(CancellationToken cancellationToken)
     {
         _client.StopReceiving();
+        _logger.LogInformation("Telegram бот остановлен");
+        return ValueTask.CompletedTask;
     }
 
-    public async Task SendMessageAsync(UserMessageInfo userMessageInfo, string text, bool isReply = false,
+    public async ValueTask SendMessageAsync(UserMessageInfo userMessageInfo, string text, bool isReply = false,
         IMenu menu = null)
     {
         var replyToMessageId = isReply ? int.Parse(userMessageInfo.Message.Token) : 0;
 
-        if (menu != null && menu.GetType() != typeof(TelegramMenu))
+        if (menu is not null && menu is not TelegramMenu)
             throw new ArgumentException(
-                $"{GetType().Name} может работать только с {nameof(IMenu)} типа {nameof(TelegramMenu)}");
+                $"{nameof(TelegramMessenger)} может работать только с {nameof(IMenu)} типа {nameof(TelegramMenu)}");
 
-        var telegramMenu = menu as TelegramMenu;
         await _client.SendTextMessageAsync(userMessageInfo.Group.ChatToken, text, replyToMessageId: replyToMessageId,
-            replyMarkup: telegramMenu?.Markup);
+            replyMarkup: (menu as TelegramMenu)?.Markup);
     }
 
     private async void OnCallbackQuery(object sender, CallbackQueryEventArgs e)
@@ -138,7 +142,7 @@ public class TelegramMessenger : IMessenger
                 _logger.LogInformation("Произведена попытка использования бота в группе `{Title}` ({ChatId})",
                     e.Message.Chat.Title,
                     chatId);
-                
+
                 await _client.SendTextMessageAsync(chatId, "Чтобы бот мог работать в этой группе обратитесь к @vsoff");
                 return;
             }

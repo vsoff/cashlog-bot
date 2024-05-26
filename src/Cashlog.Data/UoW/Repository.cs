@@ -20,7 +20,7 @@ public class Repository<T> : IRepository<T> where T : Entity
         return Context.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public Task<T> GetAsync(Expression<Func<T, bool>> whereExpression = null)
+    public Task<T> GetAsync(Expression<Func<T, bool>>? whereExpression = null)
     {
         return Context.Set<T>().FirstOrDefaultAsync(whereExpression ?? _defaultExpression);
     }
@@ -30,7 +30,7 @@ public class Repository<T> : IRepository<T> where T : Entity
         return Context.Set<T>().Where(x => ids.Contains(x.Id)).ToArrayAsync();
     }
 
-    public async Task<ICollection<T>> GetListAsync(Expression<Func<T, bool>> whereExpression = null)
+    public async Task<ICollection<T>> GetListAsync(Expression<Func<T, bool>>? whereExpression = null)
     {
         return await Context.Set<T>().Where(whereExpression ?? _defaultExpression).ToListAsync();
     }
@@ -41,7 +41,7 @@ public class Repository<T> : IRepository<T> where T : Entity
         return Context.Set<T>().ToArrayAsync();
     }
 
-    public Task<bool> AnyAsync(Expression<Func<T, bool>> whereExpression = null)
+    public Task<bool> AnyAsync(Expression<Func<T, bool>>? whereExpression = null)
     {
         return Context.Set<T>().AnyAsync(whereExpression ?? _defaultExpression);
     }
@@ -79,7 +79,7 @@ public class Repository<T> : IRepository<T> where T : Entity
     {
         var oldObj = await Context.Set<T>().FirstOrDefaultAsync(x => item.Id == x.Id);
         if (oldObj == null)
-            throw new NullReferenceException("Невозможно обновить объект, которого нету в БД");
+            throw new InvalidOperationException("Невозможно обновить объект, которого нету в БД");
 
         Context.Entry(oldObj).State = EntityState.Detached;
         item.CreatedAt = oldObj.CreatedAt;
@@ -88,7 +88,7 @@ public class Repository<T> : IRepository<T> where T : Entity
         return item;
     }
 
-    public Task<T[]> GetListAsync(PartitionRequest partitionRequest, Expression<Func<T, bool>> whereExpression = null)
+    public Task<T[]> GetListAsync(PartitionRequest partitionRequest, Expression<Func<T, bool>>? whereExpression = null)
     {
         return Context.Set<T>().Where(whereExpression ?? _defaultExpression).Skip(partitionRequest.Skip)
             .Take(partitionRequest.Take).ToArrayAsync();

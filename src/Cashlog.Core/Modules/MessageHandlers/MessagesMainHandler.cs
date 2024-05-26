@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Cashlog.Common;
-using Cashlog.Core.Common;
 using Cashlog.Core.Models;
 using Cashlog.Core.Models.Main;
 using Cashlog.Core.Modules.Messengers;
@@ -38,13 +37,22 @@ public class MessagesMainHandler
         _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        _messenger.OnMessage += OnMessage;
 
         _messageHandlersMap = messageHandlers
             .GroupBy(x => x.MessageType)
             .ToDictionary(x => x.Key, x => x.ToArray());
     }
 
+    public void Subscribe()
+    {
+        _messenger.OnMessage += OnMessage;
+    }
+    
+    public void UnSubscribe()
+    {
+        _messenger.OnMessage -= OnMessage;
+    }
+    
     private async void OnMessage(object sender, UserMessageInfo e)
     {
         var sw = Stopwatch.StartNew();
@@ -258,10 +266,5 @@ public class MessagesMainHandler
 
         var handler = value.Single();
         await handler.HandleAsync(userMessageInfo);
-    }
-
-    public void Dispose()
-    {
-        _messenger.OnMessage -= OnMessage;
     }
 }

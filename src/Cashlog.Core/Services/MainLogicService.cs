@@ -84,7 +84,7 @@ public class MainLogicService : IMainLogicService
 
         return new ClosingPeriodResult
         {
-            Debts = debts ?? new MoneyOperation[0],
+            Debts = debts ?? [],
             PreviousPeriod = lastBillingPeriod,
             NewPeriod = newBillingPeriod
         };

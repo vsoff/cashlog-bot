@@ -4,5 +4,6 @@ public enum DataProviderType
 {
     Unknown = 0,
     MsSql = 1,
-    MySql = 2
+    MySql = 2,
+    PostgreSql = 3
 }
