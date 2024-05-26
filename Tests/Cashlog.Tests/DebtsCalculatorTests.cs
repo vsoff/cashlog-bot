@@ -22,7 +22,7 @@ public class DebtsCalculatorTests
     [TestMethod]
     public async Task Test1()
     {
-        MoneyOperation[] operations =
+        MoneyOperationDto[] operations =
         {
             CreateOperation(2, 1, 200, MoneyOperationType.Debt),
             CreateOperation(3, 1, 500, MoneyOperationType.Debt),
@@ -47,7 +47,7 @@ public class DebtsCalculatorTests
     [TestMethod]
     public async Task Test2()
     {
-        MoneyOperation[] operations =
+        MoneyOperationDto[] operations =
         {
             //CreateOperation(1, 2, 400, MoneyOperationType.Debt),
             //CreateOperation(3, 1, 200, MoneyOperationType.Debt),
@@ -72,7 +72,7 @@ public class DebtsCalculatorTests
     [TestMethod]
     public async Task Test3()
     {
-        MoneyOperation[] operations =
+        MoneyOperationDto[] operations =
         {
             //CreateOperation(1, 2, 400, MoneyOperationType.Debt),
             //CreateOperation(3, 1, 200, MoneyOperationType.Debt),
@@ -92,9 +92,9 @@ public class DebtsCalculatorTests
         Assert.IsTrue(debts.Length > 0);
     }
 
-    private static MoneyOperation CreateOperation(long fromId, long toId, int amount, MoneyOperationType type)
+    private static MoneyOperationDto CreateOperation(long fromId, long toId, int amount, MoneyOperationType type)
     {
-        return new MoneyOperation()
+        return new MoneyOperationDto()
         {
             Amount = amount,
             CustomerFromId = fromId,

@@ -1,6 +1,6 @@
 ﻿namespace Cashlog.Data.Entities;
 
-public class BillingPeriodDto : Entity
+public class BillingPeriod : Entity
 {
     public long GroupId { get; set; }
 
@@ -14,7 +14,7 @@ public class BillingPeriodDto : Entity
     /// </summary>
     public DateTime? PeriodEnd { get; set; }
 
-    public virtual GroupDto Group { get; set; }
-    public virtual ICollection<ReceiptDto> Receipts { get; set; }
-    public virtual ICollection<MoneyOperationDto> MoneyOperations { get; set; }
+    public virtual Group Group { get; set; }
+    public virtual ICollection<Receipt> Receipts { get; set; }
+    public virtual ICollection<MoneyOperation> MoneyOperations { get; set; }
 }

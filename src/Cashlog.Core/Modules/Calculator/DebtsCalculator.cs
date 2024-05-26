@@ -5,7 +5,7 @@ namespace Cashlog.Core.Modules.Calculator;
 
 public class DebtsCalculator : IDebtsCalculator
 {
-    public async Task<MoneyOperationShortInfo[]> Calculate(MoneyOperation[] operations,
+    public async Task<MoneyOperationShortInfo[]> Calculate(MoneyOperationDto[] operations,
         ReceiptCalculatorInfo[] receiptCalculatorInfos)
     {
         // Получаем все денежные операции.

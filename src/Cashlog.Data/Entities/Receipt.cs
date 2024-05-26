@@ -2,7 +2,7 @@
 
 namespace Cashlog.Data.Entities;
 
-public class ReceiptDto : Entity
+public class Receipt : Entity
 {
     public string Comment { get; set; }
     public DateTime PurchaseTime { get; set; }
@@ -19,10 +19,9 @@ public class ReceiptDto : Entity
     public string RetailInn { get; set; }
     public string CompanyName { get; set; }
     public string CashierName { get; set; }
-    public string ReceiptItemsJson { get; set; }
 
-    public virtual ICollection<ReceiptConsumerMapDto> ConsumerMaps { get; set; }
-    public virtual BillingPeriodDto BillingPeriod { get; set; }
-    public virtual CustomerDto Customer { get; set; }
-    public virtual GroupDto Group { get; set; }
+    public virtual ICollection<ReceiptConsumerMap> ConsumerMaps { get; set; }
+    public virtual BillingPeriod BillingPeriod { get; set; }
+    public virtual Customer Customer { get; set; }
+    public virtual Group Group { get; set; }
 }

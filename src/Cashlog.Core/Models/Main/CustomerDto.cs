@@ -1,6 +1,6 @@
 ﻿namespace Cashlog.Core.Models.Main;
 
-public class Customer
+public class CustomerDto
 {
     public long Id { get; set; }
     public long GroupId { get; set; }

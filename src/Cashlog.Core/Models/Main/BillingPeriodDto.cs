@@ -1,6 +1,6 @@
 ﻿namespace Cashlog.Core.Models.Main;
 
-public class BillingPeriod
+public class BillingPeriodDto
 {
     public long Id { get; set; }
 

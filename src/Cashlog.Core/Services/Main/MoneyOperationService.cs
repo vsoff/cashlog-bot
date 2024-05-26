@@ -16,7 +16,7 @@ public class MoneyOperationService : IMoneyOperationService
             databaseContextProvider ?? throw new ArgumentNullException(nameof(databaseContextProvider));
     }
 
-    public async Task<MoneyOperation> AddAsync(MoneyOperation item)
+    public async Task<MoneyOperationDto> AddAsync(MoneyOperationDto item)
     {
         using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
         {
@@ -26,7 +26,7 @@ public class MoneyOperationService : IMoneyOperationService
         }
     }
 
-    public async Task<MoneyOperation[]> AddAsync(MoneyOperation[] items)
+    public async Task<MoneyOperationDto[]> AddAsync(MoneyOperationDto[] items)
     {
         using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
         {
@@ -36,7 +36,7 @@ public class MoneyOperationService : IMoneyOperationService
         }
     }
 
-    public async Task<MoneyOperation[]> GetByBillingPeriodIdAsync(long billingPeriodId)
+    public async Task<MoneyOperationDto[]> GetByBillingPeriodIdAsync(long billingPeriodId)
     {
         using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
         {

@@ -1,11 +1,9 @@
 ﻿using Cashlog.Common;
 
-namespace Cashlog.Core.Models.Main;
+namespace Cashlog.Data.Entities;
 
-public class MoneyOperation
+public class MoneyOperation : Entity
 {
-    public long Id { get; set; }
-
     /// <summary>
     ///     ID времени расчёта.
     /// </summary>
@@ -35,4 +33,6 @@ public class MoneyOperation
     ///     Комментарий операции.
     /// </summary>
     public string Comment { get; set; }
+
+    public virtual BillingPeriod BillingPeriod { get; set; }
 }

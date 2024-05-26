@@ -1,13 +1,14 @@
 ﻿using Cashlog.Core.Models.Main;
 using Cashlog.Data.Entities;
+using MoneyOperation = Cashlog.Data.Entities.MoneyOperation;
 
 namespace Cashlog.Core.Mappers;
 
 public static class MoneyOperationMapper
 {
-    public static MoneyOperationDto ToData(this MoneyOperation obj)
+    public static MoneyOperation ToData(this Models.Main.MoneyOperationDto obj)
     {
-        return new MoneyOperationDto
+        return new MoneyOperation
         {
             Amount = obj.Amount,
             BillingPeriodId = obj.BillingPeriodId,
@@ -19,9 +20,9 @@ public static class MoneyOperationMapper
         };
     }
 
-    public static MoneyOperation ToCore(this MoneyOperationDto obj)
+    public static Models.Main.MoneyOperationDto ToCore(this MoneyOperation obj)
     {
-        return new MoneyOperation
+        return new Models.Main.MoneyOperationDto
         {
             Amount = obj.Amount,
             BillingPeriodId = obj.BillingPeriodId,

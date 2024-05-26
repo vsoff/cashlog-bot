@@ -196,7 +196,7 @@ public class MessagesMainHandler
                     break;
                 }
 
-                await _moneyOperationService.AddAsync(new MoneyOperation
+                await _moneyOperationService.AddAsync(new MoneyOperationDto
                 {
                     Amount = data.Amount,
                     Comment = data.Caption,

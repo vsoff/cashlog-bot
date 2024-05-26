@@ -7,8 +7,8 @@ namespace Cashlog.Core.Services.Abstract;
 /// </summary>
 public interface IBillingPeriodService
 {
-    Task<BillingPeriod> AddAsync(BillingPeriod item);
-    Task<BillingPeriod> GetAsync(long billingPeriodId);
-    Task<BillingPeriod> UpdateAsync(BillingPeriod item);
-    Task<BillingPeriod> GetLastByGroupIdAsync(long groupId);
+    Task<BillingPeriodDto> AddAsync(BillingPeriodDto item);
+    Task<BillingPeriodDto> GetAsync(long billingPeriodId);
+    Task<BillingPeriodDto> UpdateAsync(BillingPeriodDto item);
+    Task<BillingPeriodDto> GetLastByGroupIdAsync(long groupId);
 }

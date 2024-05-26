@@ -18,7 +18,7 @@ public class ReceiptService : IReceiptService
             databaseContextProvider ?? throw new ArgumentNullException(nameof(databaseContextProvider));
     }
 
-    public async Task<ICollection<Receipt>> GetReceiptsInPeriodAsync(DateTime periodFrom, DateTime periodTo,
+    public async Task<ICollection<ReceiptDto>> GetReceiptsInPeriodAsync(DateTime periodFrom, DateTime periodTo,
         long groupId)
     {
         using var uow = new UnitOfWork(_databaseContextProvider.Create());
@@ -29,13 +29,13 @@ public class ReceiptService : IReceiptService
         return receipts.Select(x => x.ToCore()).ToList();
     }
 
-    public async Task<bool> IsReceiptExists(Receipt receipt)
+    public async Task<bool> IsReceiptExists(ReceiptDto receipt)
     {
         using var uow = new UnitOfWork(_databaseContextProvider.Create());
         return await IsReceiptExistsInternal(uow, receipt);
     }
 
-    public async Task<Receipt> AddAsync(Receipt receipt)
+    public async Task<ReceiptDto> AddAsync(ReceiptDto receipt)
     {
         using var uow = new UnitOfWork(_databaseContextProvider.Create());
         if (await IsReceiptExistsInternal(uow, receipt))
@@ -46,19 +46,19 @@ public class ReceiptService : IReceiptService
         return newReceipt.ToCore();
     }
 
-    public async Task<Receipt[]> GetListAsync(PartitionRequest partitionRequest)
+    public async Task<ReceiptDto[]> GetListAsync(PartitionRequest partitionRequest)
     {
         using var uow = new UnitOfWork(_databaseContextProvider.Create());
         return (await uow.Receipts.GetListAsync(partitionRequest)).Select(x => x.ToCore()).ToArray();
     }
 
-    public async Task<Receipt> GetAsync(long receiptId)
+    public async Task<ReceiptDto> GetAsync(long receiptId)
     {
         using var uow = new UnitOfWork(_databaseContextProvider.Create());
         return (await uow.Receipts.GetAsync(receiptId))?.ToCore();
     }
 
-    public async Task<Receipt> UpdateAsync(Receipt receipt)
+    public async Task<ReceiptDto> UpdateAsync(ReceiptDto receipt)
     {
         using var uow = new UnitOfWork(_databaseContextProvider.Create());
         var newReceipt = await uow.Receipts.UpdateAsync(receipt.ToData());
@@ -66,7 +66,7 @@ public class ReceiptService : IReceiptService
         return newReceipt.ToCore();
     }
 
-    public async Task<Receipt[]> GetByBillingPeriodIdAsync(long billingPeriodId)
+    public async Task<ReceiptDto[]> GetByBillingPeriodIdAsync(long billingPeriodId)
     {
         using var uow = new UnitOfWork(_databaseContextProvider.Create());
         return (await uow.Receipts.GetByBillingPeriodIdAsync(billingPeriodId))?.Select(x => x.ToCore()).ToArray();
@@ -75,7 +75,7 @@ public class ReceiptService : IReceiptService
     public async Task SetCustomersToReceiptAsync(long receiptId, long[] consumerIds)
     {
         using var uow = new UnitOfWork(_databaseContextProvider.Create());
-        await uow.ReceiptConsumerMaps.AddRangeAsync(consumerIds.Select(x => new ReceiptConsumerMapDto
+        await uow.ReceiptConsumerMaps.AddRangeAsync(consumerIds.Select(x => new ReceiptConsumerMap
         {
             ConsumerId = x,
             ReceiptId = receiptId
@@ -92,7 +92,7 @@ public class ReceiptService : IReceiptService
     /// <summary>
     ///     Возвращает true, если такой чек уже присутствует в БД.
     /// </summary>
-    private async Task<bool> IsReceiptExistsInternal(UnitOfWork uow, Receipt receipt)
+    private async Task<bool> IsReceiptExistsInternal(UnitOfWork uow, ReceiptDto receipt)
     {
         if (string.IsNullOrEmpty(receipt.FiscalDocument))
             return false;

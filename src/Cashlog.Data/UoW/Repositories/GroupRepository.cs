@@ -3,19 +3,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cashlog.Data.UoW.Repositories;
 
-public interface IGroupRepository : IRepository<GroupDto>
+public interface IGroupRepository : IRepository<Group>
 {
-    Task<GroupDto> GetByChatTokenAsync(string chatToken);
+    Task<Group> GetByChatTokenAsync(string chatToken);
 }
 
-public class GroupRepository : Repository<GroupDto>, IGroupRepository
+public class GroupRepository : Repository<Group>, IGroupRepository
 {
     public GroupRepository(ApplicationContext context) : base(context)
     {
     }
 
-    public async Task<GroupDto> GetByChatTokenAsync(string chatToken)
+    public async Task<Group> GetByChatTokenAsync(string chatToken)
     {
-        return await Context.Set<GroupDto>().FirstOrDefaultAsync(x => x.ChatToken == chatToken);
+        return await Context.Set<Group>().FirstOrDefaultAsync(x => x.ChatToken == chatToken);
     }
 }

@@ -16,7 +16,7 @@ public class CustomerService : ICustomerService
             databaseContextProvider ?? throw new ArgumentNullException(nameof(databaseContextProvider));
     }
 
-    public async Task<Customer> AddAsync(Customer customer)
+    public async Task<CustomerDto> AddAsync(CustomerDto customer)
     {
         using var uow = new UnitOfWork(_databaseContextProvider.Create());
         var newCustomer = await uow.Customers.AddAsync(customer.ToData());
@@ -24,19 +24,19 @@ public class CustomerService : ICustomerService
         return newCustomer.ToCore();
     }
 
-    public async Task<Customer> GetAsync(long customerId)
+    public async Task<CustomerDto> GetAsync(long customerId)
     {
         using var uow = new UnitOfWork(_databaseContextProvider.Create());
         return (await uow.Customers.GetAsync(customerId))?.ToCore();
     }
 
-    public async Task<Customer[]> GetListAsync(long[] customerIds)
+    public async Task<CustomerDto[]> GetListAsync(long[] customerIds)
     {
         using var uow = new UnitOfWork(_databaseContextProvider.Create());
         return (await uow.Customers.GetListAsync(customerIds))?.Select(x => x.ToCore()).ToArray();
     }
 
-    public async Task<Customer[]> GetListAsync(long groupId)
+    public async Task<CustomerDto[]> GetListAsync(long groupId)
     {
         using var uow = new UnitOfWork(_databaseContextProvider.Create());
         return (await uow.Customers.GetByGroupId(groupId))?.Select(x => x.ToCore()).ToArray();

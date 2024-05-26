@@ -3,19 +3,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cashlog.Data.UoW.Repositories;
 
-public interface IReceiptRepository : IRepository<ReceiptDto>
+public interface IReceiptRepository : IRepository<Receipt>
 {
-    Task<ReceiptDto[]> GetByBillingPeriodIdAsync(long billingPeriodId);
+    Task<Receipt[]> GetByBillingPeriodIdAsync(long billingPeriodId);
 }
 
-public class ReceiptRepository : Repository<ReceiptDto>, IReceiptRepository
+public class ReceiptRepository : Repository<Receipt>, IReceiptRepository
 {
     public ReceiptRepository(ApplicationContext context) : base(context)
     {
     }
 
-    public async Task<ReceiptDto[]> GetByBillingPeriodIdAsync(long billingPeriodId)
+    public async Task<Receipt[]> GetByBillingPeriodIdAsync(long billingPeriodId)
     {
-        return await Context.Set<ReceiptDto>().Where(x => x.BillingPeriodId == billingPeriodId).ToArrayAsync();
+        return await Context.Set<Receipt>().Where(x => x.BillingPeriodId == billingPeriodId).ToArrayAsync();
     }
 }

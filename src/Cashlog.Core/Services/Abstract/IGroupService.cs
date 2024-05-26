@@ -10,10 +10,10 @@ public interface IGroupService
     /// <summary>
     ///     Добавляет новую группу.
     /// </summary>
-    Task<Group> AddAsync(string chatToken, string adminToken, string chatName);
+    Task<GroupDto> AddAsync(string chatToken, string adminToken, string chatName);
 
     /// <summary>
     ///     Возвращает группу по её токену.
     /// </summary>
-    Task<Group> GetByChatTokenAsync(string chatToken);
+    Task<GroupDto> GetByChatTokenAsync(string chatToken);
 }

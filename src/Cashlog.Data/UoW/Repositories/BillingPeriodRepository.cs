@@ -3,20 +3,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cashlog.Data.UoW.Repositories;
 
-public interface IBillingPeriodRepository : IRepository<BillingPeriodDto>
+public interface IBillingPeriodRepository : IRepository<BillingPeriod>
 {
-    Task<BillingPeriodDto> GetLastByGroupIdAsync(long groupId);
+    Task<BillingPeriod> GetLastByGroupIdAsync(long groupId);
 }
 
-public class BillingPeriodRepository : Repository<BillingPeriodDto>, IBillingPeriodRepository
+public class BillingPeriodRepository : Repository<BillingPeriod>, IBillingPeriodRepository
 {
     public BillingPeriodRepository(ApplicationContext context) : base(context)
     {
     }
 
-    public async Task<BillingPeriodDto> GetLastByGroupIdAsync(long groupId)
+    public async Task<BillingPeriod> GetLastByGroupIdAsync(long groupId)
     {
-        return await Context.Set<BillingPeriodDto>().OrderByDescending(x => x.PeriodBegin)
+        return await Context.Set<BillingPeriod>().OrderByDescending(x => x.PeriodBegin)
             .FirstOrDefaultAsync(x => x.GroupId == groupId);
     }
 }

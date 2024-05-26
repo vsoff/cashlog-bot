@@ -8,13 +8,13 @@ namespace Cashlog.Core.Services.Abstract;
 /// </summary>
 public interface IReceiptService
 {
-    Task<ICollection<Receipt>> GetReceiptsInPeriodAsync(DateTime periodFrom, DateTime periodTo, long groupId);
-    Task<bool> IsReceiptExists(Receipt receipt);
-    Task<Receipt> AddAsync(Receipt receipt);
-    Task<Receipt> GetAsync(long receiptId);
-    Task<Receipt> UpdateAsync(Receipt receipt);
-    Task<Receipt[]> GetListAsync(PartitionRequest partitionRequest);
-    Task<Receipt[]> GetByBillingPeriodIdAsync(long billingPeriodId);
+    Task<ICollection<ReceiptDto>> GetReceiptsInPeriodAsync(DateTime periodFrom, DateTime periodTo, long groupId);
+    Task<bool> IsReceiptExists(ReceiptDto receipt);
+    Task<ReceiptDto> AddAsync(ReceiptDto receipt);
+    Task<ReceiptDto> GetAsync(long receiptId);
+    Task<ReceiptDto> UpdateAsync(ReceiptDto receipt);
+    Task<ReceiptDto[]> GetListAsync(PartitionRequest partitionRequest);
+    Task<ReceiptDto[]> GetByBillingPeriodIdAsync(long billingPeriodId);
     Task SetCustomersToReceiptAsync(long receiptId, long[] consumerIds);
     Task<Dictionary<long, long[]>> GetConsumerIdsByReceiptIdsMapAsync(long[] receiptIds);
 }

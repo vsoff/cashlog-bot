@@ -54,7 +54,7 @@ public class PhotoMessageHandler : IMessageHandler
             return;
         }
 
-        var receipt = new Receipt
+        var receipt = new ReceiptDto
         {
             BillingPeriodId = lastBillingPeriod.Id,
             TotalAmount = data.TotalAmount,
@@ -68,7 +68,7 @@ public class PhotoMessageHandler : IMessageHandler
 
         if (await _receiptService.IsReceiptExists(receipt))
         {
-            await _messenger.SendMessageAsync(userMessageInfo, Resources.ReceiptAlredyAdded, true);
+            await _messenger.SendMessageAsync(userMessageInfo, Resources.ReceiptAlreadyAdded, true);
             return;
         }
 

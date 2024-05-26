@@ -1,13 +1,14 @@
 ﻿using Cashlog.Core.Models.Main;
 using Cashlog.Data.Entities;
+using BillingPeriod = Cashlog.Data.Entities.BillingPeriod;
 
 namespace Cashlog.Core.Mappers;
 
 public static class BillingPeriodMapper
 {
-    public static BillingPeriodDto ToData(this BillingPeriod obj)
+    public static BillingPeriod ToData(this Models.Main.BillingPeriodDto obj)
     {
-        return new BillingPeriodDto
+        return new BillingPeriod
         {
             GroupId = obj.GroupId,
             Id = obj.Id,
@@ -16,9 +17,9 @@ public static class BillingPeriodMapper
         };
     }
 
-    public static BillingPeriod ToCore(this BillingPeriodDto obj)
+    public static Models.Main.BillingPeriodDto ToCore(this BillingPeriod obj)
     {
-        return new BillingPeriod
+        return new Models.Main.BillingPeriodDto
         {
             GroupId = obj.GroupId,
             Id = obj.Id,

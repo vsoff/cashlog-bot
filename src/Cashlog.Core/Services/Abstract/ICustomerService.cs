@@ -7,8 +7,8 @@ namespace Cashlog.Core.Services.Abstract;
 /// </summary>
 public interface ICustomerService
 {
-    Task<Customer> AddAsync(Customer customer);
-    Task<Customer> GetAsync(long customerId);
-    Task<Customer[]> GetListAsync(long[] customerIds);
-    Task<Customer[]> GetListAsync(long groupId);
+    Task<CustomerDto> AddAsync(CustomerDto customer);
+    Task<CustomerDto> GetAsync(long customerId);
+    Task<CustomerDto[]> GetListAsync(long[] customerIds);
+    Task<CustomerDto[]> GetListAsync(long groupId);
 }

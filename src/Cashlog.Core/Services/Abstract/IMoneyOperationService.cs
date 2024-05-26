@@ -10,15 +10,15 @@ public interface IMoneyOperationService
     /// <summary>
     ///     Добавляет новую денежную операцию.
     /// </summary>
-    Task<MoneyOperation> AddAsync(MoneyOperation item);
+    Task<MoneyOperationDto> AddAsync(MoneyOperationDto item);
 
     /// <summary>
     ///     Добавляет несколько новых денежных операций.
     /// </summary>
-    Task<MoneyOperation[]> AddAsync(MoneyOperation[] items);
+    Task<MoneyOperationDto[]> AddAsync(MoneyOperationDto[] items);
 
     /// <summary>
     ///     Возвращает все денежные операции за расчётный период.
     /// </summary>
-    Task<MoneyOperation[]> GetByBillingPeriodIdAsync(long billingPeriodId);
+    Task<MoneyOperationDto[]> GetByBillingPeriodIdAsync(long billingPeriodId);
 }

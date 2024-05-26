@@ -16,7 +16,7 @@ public class BillingPeriodService : IBillingPeriodService
             databaseContextProvider ?? throw new ArgumentNullException(nameof(databaseContextProvider));
     }
 
-    public async Task<BillingPeriod> AddAsync(BillingPeriod item)
+    public async Task<BillingPeriodDto> AddAsync(BillingPeriodDto item)
     {
         using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
         {
@@ -26,7 +26,7 @@ public class BillingPeriodService : IBillingPeriodService
         }
     }
 
-    public async Task<BillingPeriod> UpdateAsync(BillingPeriod item)
+    public async Task<BillingPeriodDto> UpdateAsync(BillingPeriodDto item)
     {
         using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
         {
@@ -36,7 +36,7 @@ public class BillingPeriodService : IBillingPeriodService
         }
     }
 
-    public async Task<BillingPeriod> GetLastByGroupIdAsync(long groupId)
+    public async Task<BillingPeriodDto> GetLastByGroupIdAsync(long groupId)
     {
         using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
         {
@@ -45,7 +45,7 @@ public class BillingPeriodService : IBillingPeriodService
         }
     }
 
-    public async Task<BillingPeriod> GetAsync(long billingPeriodId)
+    public async Task<BillingPeriodDto> GetAsync(long billingPeriodId)
     {
         using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
         {

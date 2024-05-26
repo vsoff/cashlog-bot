@@ -1,6 +1,6 @@
 ﻿namespace Cashlog.Core.Models.Main;
 
-public class Group
+public class GroupDto
 {
     public long Id { get; set; }
     public string ChatName { get; set; }

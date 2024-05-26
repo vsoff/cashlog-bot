@@ -17,12 +17,12 @@ public sealed class ApplicationContext : DbContext
             Database.Migrate();
     }
 
-    public DbSet<GroupDto> Groups { get; set; }
-    public DbSet<ReceiptDto> Receipts { get; set; }
-    public DbSet<CustomerDto> Customers { get; set; }
-    public DbSet<BillingPeriodDto> BillingPeriods { get; set; }
-    public DbSet<MoneyOperationDto> MoneyOperations { get; set; }
-    public DbSet<ReceiptConsumerMapDto> ReceiptConsumerMaps { get; set; }
+    public DbSet<Group> Groups { get; set; }
+    public DbSet<Receipt> Receipts { get; set; }
+    public DbSet<Customer> Customers { get; set; }
+    public DbSet<BillingPeriod> BillingPeriods { get; set; }
+    public DbSet<MoneyOperation> MoneyOperations { get; set; }
+    public DbSet<ReceiptConsumerMap> ReceiptConsumerMaps { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -49,62 +49,62 @@ public sealed class ApplicationContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ReceiptConsumerMapDto>().ToTable(nameof(ReceiptConsumerMaps));
-        modelBuilder.Entity<ReceiptConsumerMapDto>()
+        modelBuilder.Entity<ReceiptConsumerMap>().ToTable(nameof(ReceiptConsumerMaps));
+        modelBuilder.Entity<ReceiptConsumerMap>()
             .HasOne(x => x.Consumer)
             .WithMany(x => x.ConsumerReceiptMaps)
             .OnDelete(DeleteBehavior.Restrict);
-        modelBuilder.Entity<ReceiptConsumerMapDto>()
+        modelBuilder.Entity<ReceiptConsumerMap>()
             .HasOne(x => x.Receipt)
             .WithMany(x => x.ConsumerMaps)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<GroupDto>().ToTable(nameof(Groups));
-        modelBuilder.Entity<GroupDto>()
+        modelBuilder.Entity<Group>().ToTable(nameof(Groups));
+        modelBuilder.Entity<Group>()
             .HasMany(x => x.Customers)
             .WithOne(x => x.Group);
-        modelBuilder.Entity<GroupDto>()
+        modelBuilder.Entity<Group>()
             .HasMany(x => x.Receipts)
             .WithOne(x => x.Group);
-        modelBuilder.Entity<GroupDto>()
+        modelBuilder.Entity<Group>()
             .HasMany(x => x.BillingPeriods)
             .WithOne(x => x.Group);
 
-        modelBuilder.Entity<ReceiptDto>().ToTable(nameof(Receipts));
-        modelBuilder.Entity<ReceiptDto>()
+        modelBuilder.Entity<Receipt>().ToTable(nameof(Receipts));
+        modelBuilder.Entity<Receipt>()
             .HasMany(x => x.ConsumerMaps)
             .WithOne(x => x.Receipt);
-        modelBuilder.Entity<ReceiptDto>()
+        modelBuilder.Entity<Receipt>()
             .HasOne(x => x.Customer)
             .WithMany(x => x.CustomerReceipts);
-        modelBuilder.Entity<ReceiptDto>()
+        modelBuilder.Entity<Receipt>()
             .HasOne(x => x.BillingPeriod)
             .WithMany(x => x.Receipts);
 
-        modelBuilder.Entity<CustomerDto>().ToTable(nameof(Customers));
-        modelBuilder.Entity<CustomerDto>()
+        modelBuilder.Entity<Customer>().ToTable(nameof(Customers));
+        modelBuilder.Entity<Customer>()
             .HasMany(x => x.ConsumerReceiptMaps)
             .WithOne(x => x.Consumer);
-        modelBuilder.Entity<CustomerDto>()
+        modelBuilder.Entity<Customer>()
             .HasMany(x => x.CustomerReceipts)
             .WithOne(x => x.Customer);
-        modelBuilder.Entity<CustomerDto>()
+        modelBuilder.Entity<Customer>()
             .HasOne(x => x.Group)
             .WithMany(x => x.Customers);
 
-        modelBuilder.Entity<BillingPeriodDto>().ToTable(nameof(BillingPeriods));
-        modelBuilder.Entity<BillingPeriodDto>()
+        modelBuilder.Entity<BillingPeriod>().ToTable(nameof(BillingPeriods));
+        modelBuilder.Entity<BillingPeriod>()
             .HasOne(x => x.Group)
             .WithMany(x => x.BillingPeriods);
-        modelBuilder.Entity<BillingPeriodDto>()
+        modelBuilder.Entity<BillingPeriod>()
             .HasMany(x => x.Receipts)
             .WithOne(x => x.BillingPeriod);
-        modelBuilder.Entity<BillingPeriodDto>()
+        modelBuilder.Entity<BillingPeriod>()
             .HasMany(x => x.MoneyOperations)
             .WithOne(x => x.BillingPeriod);
 
-        modelBuilder.Entity<MoneyOperationDto>().ToTable(nameof(MoneyOperations));
-        modelBuilder.Entity<MoneyOperationDto>()
+        modelBuilder.Entity<MoneyOperation>().ToTable(nameof(MoneyOperations));
+        modelBuilder.Entity<MoneyOperation>()
             .HasOne(x => x.BillingPeriod)
             .WithMany(x => x.MoneyOperations);
     }

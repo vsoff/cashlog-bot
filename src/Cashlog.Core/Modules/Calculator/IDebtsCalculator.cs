@@ -4,6 +4,6 @@ namespace Cashlog.Core.Modules.Calculator;
 
 public interface IDebtsCalculator
 {
-    Task<MoneyOperationShortInfo[]> Calculate(MoneyOperation[] operations,
+    Task<MoneyOperationShortInfo[]> Calculate(MoneyOperationDto[] operations,
         ReceiptCalculatorInfo[] receiptCalculatorInfos);
 }

@@ -94,7 +94,7 @@ public class ReceiptMessagesHandler : TextCommandMessageHandler
             return;
         }
 
-        var newReceipt = await _receiptService.AddAsync(new Receipt
+        var newReceipt = await _receiptService.AddAsync(new ReceiptDto
         {
             BillingPeriodId = lastBillingPeriod.Id,
             TotalAmount = amount,
@@ -252,7 +252,7 @@ public class CustomerMessagesHandler : TextCommandMessageHandler
             return;
         }
 
-        await _customerService.AddAsync(new Customer
+        await _customerService.AddAsync(new CustomerDto
         {
             Caption = argument,
             GroupId = userMessageInfo.Group.Id

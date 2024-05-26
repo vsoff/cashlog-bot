@@ -2,12 +2,34 @@
 using Cashlog.Core.Models.Main;
 using Cashlog.Data.Entities;
 using Newtonsoft.Json;
+using Receipt = Cashlog.Data.Entities.Receipt;
 
 namespace Cashlog.Core.Mappers;
 
 public static class ReceiptMapper
 {
-    public static Receipt ToCore(this ReceiptDto obj)
+    public static Models.Main.ReceiptDto ToCore(this Receipt obj)
+    {
+        return new Models.Main.ReceiptDto
+        {
+            Id = obj.Id,
+            Comment = obj.Comment,
+            BillingPeriodId = obj.BillingPeriodId,
+            PurchaseTime = obj.PurchaseTime,
+            TotalAmount = obj.TotalAmount,
+            FiscalDocument = obj.FiscalDocument,
+            FiscalNumber = obj.FiscalNumber,
+            FiscalSign = obj.FiscalSign,
+            Status = obj.Status,
+            CustomerId = obj.CustomerId,
+            RetailAddress = obj.RetailAddress,
+            RetailInn = obj.RetailInn,
+            CompanyName = obj.CompanyName,
+            CashierName = obj.CashierName,
+        };
+    }
+
+    public static Receipt ToData(this Models.Main.ReceiptDto obj)
     {
         return new Receipt
         {
@@ -25,42 +47,6 @@ public static class ReceiptMapper
             RetailInn = obj.RetailInn,
             CompanyName = obj.CompanyName,
             CashierName = obj.CashierName,
-            Items = JsonConvert.DeserializeObject<ReceiptItem[]>(obj.ReceiptItemsJson)
-        };
-    }
-
-    public static ReceiptDto ToData(this Receipt obj)
-    {
-        return new ReceiptDto
-        {
-            Id = obj.Id,
-            Comment = obj.Comment,
-            BillingPeriodId = obj.BillingPeriodId,
-            PurchaseTime = obj.PurchaseTime,
-            TotalAmount = obj.TotalAmount,
-            FiscalDocument = obj.FiscalDocument,
-            FiscalNumber = obj.FiscalNumber,
-            FiscalSign = obj.FiscalSign,
-            Status = obj.Status,
-            CustomerId = obj.CustomerId,
-            RetailAddress = obj.RetailAddress,
-            RetailInn = obj.RetailInn,
-            CompanyName = obj.CompanyName,
-            CashierName = obj.CashierName,
-            ReceiptItemsJson = JsonConvert.SerializeObject(obj.Items)
-        };
-    }
-
-    public static ReceiptMainInfo ToReceiptMainInfo(this Receipt obj)
-    {
-        return new ReceiptMainInfo
-        {
-            RawData = null,
-            PurchaseTime = obj.PurchaseTime,
-            TotalAmount = obj.TotalAmount,
-            FiscalDocument = obj.FiscalDocument,
-            FiscalNumber = obj.FiscalNumber,
-            FiscalSign = obj.FiscalSign
         };
     }
 }

@@ -4,7 +4,7 @@ namespace Cashlog.Core.Modules.Calculator;
 
 public class ClosingPeriodResult
 {
-    public required BillingPeriod PreviousPeriod { get; init; }
-    public required BillingPeriod NewPeriod { get; init; }
-    public required IReadOnlyCollection<MoneyOperation> Debts { get; init; }
+    public required BillingPeriodDto PreviousPeriod { get; init; }
+    public required BillingPeriodDto NewPeriod { get; init; }
+    public required IReadOnlyCollection<MoneyOperationDto> Debts { get; init; }
 }

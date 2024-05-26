@@ -57,7 +57,7 @@ public class MainLogicService : IMainLogicService
         }
 
         // Создаём новый период.
-        var newBillingPeriod = await _billingPeriodService.AddAsync(new BillingPeriod
+        var newBillingPeriod = await _billingPeriodService.AddAsync(new BillingPeriodDto
         {
             GroupId = groupId,
             PeriodBegin = now,
@@ -65,12 +65,12 @@ public class MainLogicService : IMainLogicService
         });
 
         // Рассчитываем затраты за предыдущий период.
-        MoneyOperation[] debts = null;
+        MoneyOperationDto[] debts = null;
         if (lastBillingPeriod != null)
         {
             // Записываем задолжности за предыдущий расчётный период.
             var debtsShortInfo = await CalculatePeriodCurrentDebts(lastBillingPeriod.Id);
-            debts = debtsShortInfo.Select(x => new MoneyOperation
+            debts = debtsShortInfo.Select(x => new MoneyOperationDto
             {
                 Amount = (int)x.Amount,
                 BillingPeriodId = newBillingPeriod.Id,
