@@ -1,22 +1,24 @@
-﻿using Cashlog.Core.Providers.Abstract;
+﻿using Cashlog.Core.Options;
+using Cashlog.Core.Providers.Abstract;
 using Cashlog.Core.Services.Abstract;
 using Cashlog.Data;
+using Microsoft.Extensions.Options;
 
 namespace Cashlog.Core.Providers;
 
 public class BotDatabaseContextProvider : IDatabaseContextProvider
 {
-    private readonly ISettingsService<CashlogSettings> _cashlogSettingsService;
+    private readonly IOptions<DatabaseOptions> _databaseOptions;
 
-    public BotDatabaseContextProvider(ISettingsService<CashlogSettings> cashlogSettingsService)
+    public BotDatabaseContextProvider(IOptions<DatabaseOptions> databaseOptions)
     {
-        _cashlogSettingsService =
-            cashlogSettingsService ?? throw new ArgumentNullException(nameof(cashlogSettingsService));
+        _databaseOptions = databaseOptions;
     }
 
     public ApplicationContext Create()
     {
-        var settings = _cashlogSettingsService.ReadSettings();
-        return new ApplicationContext(settings.DataBaseConnectionString, settings.DataProviderType);
+        return new ApplicationContext(
+            _databaseOptions.Value.DataBaseConnectionString,
+            _databaseOptions.Value.DataProviderType);
     }
 }

@@ -1,7 +1,9 @@
 ﻿using Cashlog.Core.Common;
 using Cashlog.Core.Models;
 using Cashlog.Core.Modules.Messengers.Menu;
+using Cashlog.Core.Options;
 using Cashlog.Core.Services.Abstract;
+using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types.Enums;
@@ -18,7 +20,7 @@ namespace Cashlog.Core.Modules.Messengers;
 /// </remarks>
 public class TelegramMessenger : IMessenger
 {
-    private readonly ISettingsService<CashlogSettings> _cashlogSettingsService;
+    private readonly IOptions<CashlogOptions> _cashlogOptions;
     private readonly ICustomerService _customerService;
     private readonly IGroupService _groupService;
     private readonly ILogger _logger;
@@ -28,20 +30,19 @@ public class TelegramMessenger : IMessenger
     private TelegramBotClient _client;
 
     public TelegramMessenger(
-        ISettingsService<CashlogSettings> cashlogSettingsService,
+        IOptions<CashlogOptions> cashlogOptions,
         IReceiptHandleService receiptHandleService,
         IQueryDataSerializer queryDataSerializer,
         ICustomerService customerService,
         IGroupService groupService,
         ILogger logger)
     {
-        _cashlogSettingsService =
-            cashlogSettingsService ?? throw new ArgumentNullException(nameof(cashlogSettingsService));
-        _receiptHandleService = receiptHandleService ?? throw new ArgumentNullException(nameof(receiptHandleService));
-        _queryDataSerializer = queryDataSerializer ?? throw new ArgumentNullException(nameof(queryDataSerializer));
-        _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
-        _groupService = groupService ?? throw new ArgumentNullException(nameof(groupService));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _cashlogOptions = cashlogOptions;
+        _receiptHandleService = receiptHandleService;
+        _queryDataSerializer = queryDataSerializer;
+        _customerService = customerService;
+        _groupService = groupService;
+        _logger = logger;
     }
 
     public event EventHandler<UserMessageInfo> OnMessage;
@@ -57,17 +58,17 @@ public class TelegramMessenger : IMessenger
         if (_client != null)
             throw new InvalidOperationException("Бот уже запущен");
 
-        var settings = _cashlogSettingsService.ReadSettings();
-        if (string.IsNullOrEmpty(settings?.TelegramBotToken))
+        var cashlogOptions = _cashlogOptions.Value;
+        if (string.IsNullOrEmpty(cashlogOptions.TelegramBotToken))
             throw new InvalidOperationException("Telegram токен не должен быть пустым");
 
-        _client = new TelegramBotClient(settings.TelegramBotToken);
+        _client = new TelegramBotClient(cashlogOptions.TelegramBotToken);
         _client.OnMessage += OnMessageReceived;
         _client.OnCallbackQuery += OnCallbackQuery;
 
         _client.StartReceiving();
 
-        _client.SendTextMessageAsync(settings.AdminChatToken, "Бот запущен!").GetAwaiter().GetResult();
+        _client.SendTextMessageAsync(cashlogOptions.AdminChatToken, "Бот запущен!").GetAwaiter().GetResult();
         _logger.Info($"{GetType().Name}: Telegram бот начал работать");
     }
 
@@ -131,13 +132,12 @@ public class TelegramMessenger : IMessenger
 
             var chatId = e.Message.Chat.Id;
 
-            var settings = _cashlogSettingsService.ReadSettings();
-            /*if (chatId.ToString() != settings.AdminChatToken)
+            if (chatId.ToString() != _cashlogOptions.Value.AdminChatToken)
             {
                 _logger.Info($"{GetType().Name}: Произведена попытка использования бота в группе `{e.Message.Chat.Title}` ({chatId})");
                 await _client.SendTextMessageAsync(chatId, "Чтобы бот мог работать в этой группе обратитесь к @vsoff");
                 return;
-            }*/
+            }
 
             // Получаем группу этого чата.
             var group = await _groupService.GetByChatTokenAsync(chatId.ToString());

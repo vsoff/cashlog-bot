@@ -3,7 +3,7 @@
 public class ReceiptMainInfo
 {
     /// <summary>
-    ///     Сырой вид данных, зашифроманных в QR коде чека.
+    ///     Сырой вид данных, зашифрованных в QR коде чека.
     /// </summary>
     public string RawData { get; set; }
 

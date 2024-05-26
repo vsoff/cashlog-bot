@@ -1,4 +1,4 @@
-﻿using Cashlog.Core;
+﻿using Cashlog.Core.Options;
 using Cashlog.Data;
 using Cashlog.Data.Entities;
 using Cashlog.Data.UoW;
@@ -11,12 +11,12 @@ internal class Program
     {
         Console.WriteLine("Нажмите enter, чтобы начать миграцию данных");
         Console.ReadLine();
-        var settingsFrom = new CashlogSettings
+        var settingsFrom = new DatabaseOptions
         {
             DataBaseConnectionString = "",
             DataProviderType = DataProviderType.MsSql
         };
-        var settingsTo = new CashlogSettings
+        var settingsTo = new DatabaseOptions
         {
             DataBaseConnectionString = "",
             DataProviderType = DataProviderType.MySql
@@ -55,8 +55,11 @@ internal class Program
     /// <param name="getTargetField">Функция-указатель на поле репозитория.</param>
     /// <param name="settingsFrom">Настройки сервера с которого происходит миграция данных.</param>
     /// <param name="settingsTo">Настройки сервера на который происходит миграция данных.</param>
-    private static async Task MigrateObjects<T>(Func<UnitOfWork, IRepository<T>> getTargetField,
-        CashlogSettings settingsFrom, CashlogSettings settingsTo) where T : Entity
+    private static async Task MigrateObjects<T>(
+        Func<UnitOfWork, IRepository<T>> getTargetField,
+        DatabaseOptions settingsFrom, 
+        DatabaseOptions settingsTo)
+        where T : Entity
     {
         Console.WriteLine($"Миграция данных для типа {typeof(T)}...");
 

@@ -69,28 +69,6 @@ public class DebtsCalculatorTests
         Assert.IsTrue(debts.Length > 0);
     }
 
-    // TODO: Вынести в integration tests.
-    [Ignore]
-    [TestMethod]
-    public async Task CalculateTusaMrazeiTest()
-    {
-        var settingsService = new CashlogSettingsService();
-        var provider = new BotDatabaseContextProvider(settingsService);
-        var service = new BillingPeriodService(provider);
-        var receiptService = new ReceiptService(provider);
-        var customerService = new CustomerService(provider);
-        var period = await service.GetLastByGroupIdAsync(5);
-        var periodReceipts = await receiptService.GetByBillingPeriodIdAsync(period.Id);
-
-        var consumerMap =
-            await receiptService.GetConsumerIdsByReceiptIdsMapAsync(periodReceipts.Select(x => x.Id).ToArray());
-        var customerNamesMap = (await customerService.GetListAsync(5)).ToDictionary(x => x.Id, x => x.Caption);
-
-        var gg = periodReceipts.Select(x => $"Id{x.Id}: `{x.Comment}`; сумма: {x.TotalAmount}р.; купил: {customerNamesMap[x.CustomerId.Value]}");
-        var gg2 = string.Join("\n", gg);
-        var all = periodReceipts.Sum(x => x.TotalAmount);
-    }
-
     [TestMethod]
     public async Task Test3()
     {

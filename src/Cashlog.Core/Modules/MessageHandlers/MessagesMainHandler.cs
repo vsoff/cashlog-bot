@@ -20,7 +20,7 @@ public class MessagesMainHandler
     private readonly IReceiptService _receiptService;
 
     public MessagesMainHandler(
-        IMessageHandler[] messageHandlers,
+        IEnumerable<IMessageHandler> messageHandlers,
         IMoneyOperationService moneyOperationService,
         IBillingPeriodService billingPeriodService,
         IReceiptService receiptService,

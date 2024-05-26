@@ -11,9 +11,4 @@ public interface IReceiptHandleService
     ///     Парсит данные из QR код на фотографии и возвращает их. Если QR код не удалось распознать, тогда возвращает null.
     /// </summary>
     ReceiptMainInfo ParsePhoto(byte[] photoBytes);
-
-    /// <summary>
-    ///     Возвращает подробную информацию о чеке, по данным из QR кода.
-    /// </summary>
-    Task<ReceiptInfo> GetReceiptInfoAsync(ReceiptMainInfo data);
 }

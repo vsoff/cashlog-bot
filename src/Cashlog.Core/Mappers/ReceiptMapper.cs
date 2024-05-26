@@ -1,40 +1,9 @@
 ﻿using Cashlog.Core.Models;
 using Cashlog.Core.Models.Main;
-using Cashlog.Core.Modules.Fns.Models;
 using Cashlog.Data.Entities;
 using Newtonsoft.Json;
 
 namespace Cashlog.Core.Mappers;
-
-public static class FnsMapper
-{
-    public static ReceiptInfo ToCore(this FnsReceiptDetailInfo detailInfo, ReceiptMainInfo receiptMainInfo)
-    {
-        return new ReceiptInfo
-        {
-            PurchaseTime = receiptMainInfo.PurchaseTime,
-            FiscalSign = receiptMainInfo.FiscalSign,
-            FiscalDocument = receiptMainInfo.FiscalDocument,
-            FiscalNumber = receiptMainInfo.FiscalNumber,
-            TotalAmount = (double)detailInfo.TotalSum / 100,
-            RetailAddress = detailInfo.RetailPlaceAddress,
-            RetailInn = detailInfo.RetailInn,
-            CompanyName = detailInfo.StoreName,
-            CashierName = detailInfo.Cashier,
-            Items = detailInfo.Items.Select(x => x.ToCore()).ToArray()
-        };
-    }
-
-    public static ReceiptItem ToCore(this Item obj)
-    {
-        return new ReceiptItem
-        {
-            Name = obj.Name,
-            Price = (double)obj.Price / 100,
-            Quantity = obj.Quantity
-        };
-    }
-}
 
 public static class ReceiptMapper
 {

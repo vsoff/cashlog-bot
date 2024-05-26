@@ -2,9 +2,6 @@
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Cashlog.Core.Mappers;
-using Cashlog.Core.Models;
-using Cashlog.Core.Modules.Fns;
 using Cashlog.Core.Services.Abstract;
 using ZXing;
 
@@ -12,18 +9,6 @@ namespace Cashlog.Core.Services;
 
 public class ReceiptHandleService : IReceiptHandleService
 {
-    private readonly ISettingsService<CashlogSettings> _cashlogSettingsService;
-    private readonly IFnsService _fnsService;
-
-    public ReceiptHandleService(
-        ISettingsService<CashlogSettings> cashlogSettingsService,
-        IFnsService fnsService)
-    {
-        _cashlogSettingsService =
-            cashlogSettingsService ?? throw new ArgumentNullException(nameof(cashlogSettingsService));
-        _fnsService = fnsService ?? throw new ArgumentNullException(nameof(fnsService));
-    }
-
     public ReceiptMainInfo ParsePhoto(byte[] photoBytes)
     {
         // Получаем изображение из потока.
@@ -88,19 +73,6 @@ public class ReceiptHandleService : IReceiptHandleService
         }
 
         return null;
-    }
-
-    public async Task<ReceiptInfo> GetReceiptInfoAsync(ReceiptMainInfo data)
-    {
-        if (data == null) throw new ArgumentNullException(nameof(data));
-
-        var receiptExists = await _fnsService.ReceiptExistsAsync(data);
-        if (!receiptExists)
-            return null;
-
-        var settings = _cashlogSettingsService.ReadSettings();
-        var detailInfo = await _fnsService.GetReceiptAsync(data, settings.FnsPhone, settings.FnsPassword);
-        return detailInfo?.ToCore(data);
     }
 
     /// <summary>
