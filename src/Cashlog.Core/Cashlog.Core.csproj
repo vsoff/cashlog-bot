@@ -5,6 +5,7 @@
         <PackageReference Include="Flurl"/>
         <PackageReference Include="Flurl.Http"/>
         <PackageReference Include="HtmlAgilityPack"/>
+        <PackageReference Include="MediatR" />
         <PackageReference Include="Microsoft.Extensions.Configuration"/>
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets"/>
         <PackageReference Include="protobuf-net"/>

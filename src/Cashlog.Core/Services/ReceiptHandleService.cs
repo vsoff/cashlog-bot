@@ -9,7 +9,7 @@ namespace Cashlog.Core.Services;
 
 public class ReceiptHandleService : IReceiptHandleService
 {
-    public ReceiptMainInfo ParsePhoto(byte[] photoBytes)
+    public ReceiptMainInfo? ParsePhoto(byte[] photoBytes)
     {
         // Получаем изображение из потока.
         byte[] byteArray;

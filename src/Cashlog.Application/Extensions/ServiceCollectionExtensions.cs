@@ -6,10 +6,12 @@ using Cashlog.Core.Modules.Messengers;
 using Cashlog.Core.Modules.Messengers.Menu;
 using Cashlog.Core.Options;
 using Cashlog.Core.Providers;
+using Cashlog.Core.RequestHandlers;
 using Cashlog.Core.Services;
 using Cashlog.Core.Services.Abstract;
 using Cashlog.Core.Services.Main;
 using Cashlog.Data;
+using MediatR;
 
 namespace Cashlog.Application.Extensions;
 
@@ -20,10 +22,14 @@ public static class ServiceCollectionExtensions
         IConfiguration config)
     {
         services
-            .AddMediatR(options =>
-            {
-            })
-    .AddCashlogOptions(config)
+            .AddMediatR(options => { options.RegisterServicesFromAssemblyContaining(typeof(LoggingBehavior<,>)); })
+            .AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>))
+            .AddTransient<IPipelineBehavior<ConsumeUserMessageRequest, Unit>, UserIdentifyBehavior>()
+            .AddTransient<IPipelineBehavior<ConsumeUserMessageRequest, Unit>, DecodeImageBehavior>()
+            .AddTransient<IRequestHandler<ConsumeUserMessageRequest, Unit>, ConsumeUserMessageRequestHandler>();
+
+        services
+            .AddCashlogOptions(config)
             .AddHandlers()
 
             // Data.

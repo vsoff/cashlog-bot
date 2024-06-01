@@ -43,7 +43,7 @@ public class MessagesMainHandler : IMessagesMainHandler
             .ToDictionary(x => x.Key, x => x.ToArray());
     }
 
-    public async Task HandleMessage(UserMessageInfo userMessageInfo)
+    public async Task HandleMessageAsync(UserMessageInfo userMessageInfo, CancellationToken cancellationToken)
     {
         var sw = Stopwatch.StartNew();
         try
