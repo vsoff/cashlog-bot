@@ -1,11 +1,13 @@
 ﻿using Cashlog.Core.Models;
+using Cashlog.Core.Modules.MessageHandlers;
 using Cashlog.Core.Modules.Messengers.Menu;
 using Cashlog.Core.Options;
 using Cashlog.Core.Services.Abstract;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
-using Telegram.Bot.Args;
+using Telegram.Bot.Polling;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using MessageType = Telegram.Bot.Types.Enums.MessageType;
@@ -21,18 +23,21 @@ namespace Cashlog.Core.Modules.Messengers;
 public class TelegramMessenger : IMessenger
 {
     private readonly IOptions<CashlogOptions> _cashlogOptions;
+    private readonly IReceiptHandleService _receiptHandleService;
+    private readonly IQueryDataSerializer _queryDataSerializer;
+    private readonly IMessagesMainHandler _messagesMainHandler;
     private readonly ICustomerService _customerService;
     private readonly IGroupService _groupService;
     private readonly ILogger<TelegramMessenger> _logger;
-    private readonly IQueryDataSerializer _queryDataSerializer;
-    private readonly IReceiptHandleService _receiptHandleService;
 
     private TelegramBotClient _client;
+    private CancellationTokenSource _clientCancellationTokenSource;
 
     public TelegramMessenger(
         IOptions<CashlogOptions> cashlogOptions,
         IReceiptHandleService receiptHandleService,
         IQueryDataSerializer queryDataSerializer,
+        IMessagesMainHandler messagesMainHandler,
         ICustomerService customerService,
         IGroupService groupService,
         ILogger<TelegramMessenger> logger)
@@ -40,12 +45,11 @@ public class TelegramMessenger : IMessenger
         _cashlogOptions = cashlogOptions;
         _receiptHandleService = receiptHandleService;
         _queryDataSerializer = queryDataSerializer;
+        _messagesMainHandler = messagesMainHandler;
         _customerService = customerService;
         _groupService = groupService;
         _logger = logger;
     }
-
-    public event EventHandler<UserMessageInfo> OnMessage;
 
     public async ValueTask EditMessageAsync(UserMessageInfo userMessageInfo, string text, IMenu menu = null)
     {
@@ -63,10 +67,22 @@ public class TelegramMessenger : IMessenger
             throw new InvalidOperationException("Telegram токен не должен быть пустым");
 
         _client = new TelegramBotClient(cashlogOptions.TelegramBotToken);
-        _client.OnMessage += OnMessageReceived;
-        _client.OnCallbackQuery += OnCallbackQuery;
 
-        _client.StartReceiving(cancellationToken: cancellationToken);
+        var receiverOptions = new ReceiverOptions
+        {
+            AllowedUpdates =
+            [
+                UpdateType.Message,
+                UpdateType.CallbackQuery
+            ],
+            ThrowPendingUpdates = true
+        };
+        _clientCancellationTokenSource = new CancellationTokenSource();
+        _client.StartReceiving(
+            HandleUpdate, 
+            PollingErrorHandler, 
+            receiverOptions, 
+            _clientCancellationTokenSource.Token);
 
         await _client.SendTextMessageAsync(
             cashlogOptions.AdminChatToken,
@@ -76,11 +92,11 @@ public class TelegramMessenger : IMessenger
         _logger.LogInformation("Telegram бот запущен");
     }
 
-    public ValueTask StopReceivingAsync(CancellationToken cancellationToken)
+    public async ValueTask StopReceivingAsync(CancellationToken cancellationToken)
     {
-        _client.StopReceiving();
+        await _clientCancellationTokenSource.CancelAsync();
+        
         _logger.LogInformation("Telegram бот остановлен");
-        return ValueTask.CompletedTask;
     }
 
     public async ValueTask SendMessageAsync(UserMessageInfo userMessageInfo, string text, bool isReply = false,
@@ -92,15 +108,41 @@ public class TelegramMessenger : IMessenger
             throw new ArgumentException(
                 $"{nameof(TelegramMessenger)} может работать только с {nameof(IMenu)} типа {nameof(TelegramMenu)}");
 
-        await _client.SendTextMessageAsync(userMessageInfo.Group.ChatToken, text, replyToMessageId: replyToMessageId,
+        await _client.SendTextMessageAsync(
+            userMessageInfo.Group.ChatToken, 
+            text, 
+            replyToMessageId: replyToMessageId,
             replyMarkup: (menu as TelegramMenu)?.Markup);
     }
 
-    private async void OnCallbackQuery(object sender, CallbackQueryEventArgs e)
+    private Task PollingErrorHandler(ITelegramBotClient client, Exception exception, CancellationToken cancellationToken)
+    {
+        _logger.LogError(exception, "Telegram exception occurred");
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleUpdate(ITelegramBotClient client, Update updateData, CancellationToken cancellationToken)
+    {
+        switch (updateData.Type)
+        {
+            case UpdateType.Message:
+            {
+                await HandleMessage(updateData.Message);
+                break;
+            }
+            case UpdateType.CallbackQuery:
+            {
+                await HandleCallbackQuery(updateData.CallbackQuery);
+                break;
+            }
+        }
+    }
+    
+    private async Task HandleCallbackQuery(CallbackQuery query)
     {
         try
         {
-            var queryData = _queryDataSerializer.DecodeBase64(e.CallbackQuery.Data);
+            var queryData = _queryDataSerializer.DecodeBase64(query.Data);
             var group = await _groupService.GetByChatTokenAsync(queryData.ChatToken);
             var customers = await _customerService.GetListAsync(group.Id);
 
@@ -109,18 +151,18 @@ public class TelegramMessenger : IMessenger
             {
                 Group = group,
                 Customers = customers,
-                UserName = e.CallbackQuery.From.Username,
-                UserToken = e.CallbackQuery.From.Id.ToString(),
+                UserName = query.From.Username,
+                UserToken = query.From.Id.ToString(),
                 MessageType = Models.MessageType.Query,
                 Message = new MessageInfo
                 {
-                    Token = e.CallbackQuery.Message.MessageId.ToString(),
-                    Text = e.CallbackQuery.Message.Text,
+                    Token = query.Message.MessageId.ToString(),
+                    Text = query.Message.Text,
                     QueryData = queryData
                 }
             };
 
-            OnMessage?.Invoke(this, userMessageInfo);
+            await _messagesMainHandler.HandleMessage(userMessageInfo);
         }
         catch (Exception ex)
         {
@@ -128,19 +170,19 @@ public class TelegramMessenger : IMessenger
         }
     }
 
-    private async void OnMessageReceived(object sender, MessageEventArgs e)
+    private async Task HandleMessage(Message message)
     {
         try
         {
-            if (e.Message.Chat.Type != ChatType.Group)
+            if (message.Chat.Type != ChatType.Group)
                 return;
 
-            var chatId = e.Message.Chat.Id;
+            var chatId = message.Chat.Id;
 
             if (chatId.ToString() != _cashlogOptions.Value.AdminChatToken)
             {
                 _logger.LogInformation("Произведена попытка использования бота в группе `{Title}` ({ChatId})",
-                    e.Message.Chat.Title,
+                    message.Chat.Title,
                     chatId);
 
                 await _client.SendTextMessageAsync(chatId, "Чтобы бот мог работать в этой группе обратитесь к @vsoff");
@@ -162,8 +204,8 @@ public class TelegramMessenger : IMessenger
                     return;
                 }
 
-                group = await _groupService.AddAsync(e.Message.Chat.Id.ToString(), creator.User.Id.ToString(),
-                    e.Message.Chat.Title ?? "Default chat name");
+                group = await _groupService.AddAsync(message.Chat.Id.ToString(), creator.User.Id.ToString(),
+                    message.Chat.Title ?? "Default chat name");
             }
 
             var customers = await _customerService.GetListAsync(group.Id);
@@ -173,24 +215,24 @@ public class TelegramMessenger : IMessenger
             {
                 Group = group,
                 Customers = customers,
-                UserName = e.Message.From.Username,
-                UserToken = e.Message.From.Id.ToString(),
+                UserName = message.From.Username,
+                UserToken = message.From.Id.ToString(),
                 MessageType = Models.MessageType.Unknown,
                 Message = new MessageInfo
                 {
-                    //e.Message.ReplyToMessage.MessageId
-                    Token = e.Message.MessageId.ToString(),
+                    //message.ReplyToMessagmessageId
+                    Token = message.MessageId.ToString(),
                     ReceiptInfo = null,
-                    Text = e.Message.Text
+                    Text = message.Text
                 }
             };
 
             // Дописываем дополнительную инфу.
-            switch (e.Message.Type)
+            switch (message.Type)
             {
                 case MessageType.Photo:
                 {
-                    var photoSize = e.Message.Photo.OrderByDescending(x => x.Width).First();
+                    var photoSize = message.Photo.OrderByDescending(x => x.Width).First();
                     _logger.LogTrace(
                         "Получено фото чека с разрешением W:{Width} H:{Height}",
                         photoSize.Width,
@@ -234,7 +276,7 @@ public class TelegramMessenger : IMessenger
             }
 
             // Уведомляем подписчиков о новом сообщении.
-            OnMessage?.Invoke(this, userMessageInfo);
+            await _messagesMainHandler.HandleMessage(userMessageInfo);
         }
         catch (Exception ex)
         {

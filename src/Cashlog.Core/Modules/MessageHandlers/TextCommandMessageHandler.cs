@@ -107,7 +107,7 @@ public class ReceiptMessagesHandler : TextCommandMessageHandler
             MenuType = MenuType.NewReceiptSelectCustomer,
             ReceiptId = newReceipt.Id,
             SelectedCustomerId = null,
-            SelectedConsumerIds = new long[0],
+            SelectedConsumerIds = [],
             TargetId = null,
             Version = AddReceiptQueryData.ServerVersion
         });

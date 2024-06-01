@@ -20,7 +20,10 @@ public static class ServiceCollectionExtensions
         IConfiguration config)
     {
         services
-            .AddCashlogOptions(config)
+            .AddMediatR(options =>
+            {
+            })
+    .AddCashlogOptions(config)
             .AddHandlers()
 
             // Data.
@@ -29,7 +32,7 @@ public static class ServiceCollectionExtensions
             // etc.
             .AddSingleton<IReceiptHandleService, ReceiptHandleService>()
             .AddSingleton<IQueryDataSerializer, QueryDataSerializer>()
-            .AddSingleton<MessagesMainHandler>()
+            .AddSingleton<IMessagesMainHandler, MessagesMainHandler>()
 
             // Telegram services.
             .AddSingleton<IMenuProvider, TelegramMenuProvider>()
@@ -45,7 +48,6 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IGroupService, GroupService>()
 
             // Hosted services.
-            .AddHostedService<MessagesHandlerHostedService>()
             .AddHostedService<MessengerHostedService>()
             ;
 

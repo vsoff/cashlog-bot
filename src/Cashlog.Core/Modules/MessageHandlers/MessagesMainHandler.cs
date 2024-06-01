@@ -9,15 +9,15 @@ using Microsoft.Extensions.Logging;
 
 namespace Cashlog.Core.Modules.MessageHandlers;
 
-public class MessagesMainHandler
+public class MessagesMainHandler : IMessagesMainHandler
 {
-    private readonly IBillingPeriodService _billingPeriodService;
-    private readonly IMenuProvider _menuProvider;
     private readonly IReadOnlyDictionary<MessageType, IMessageHandler[]> _messageHandlersMap;
+    private readonly IMoneyOperationService _moneyOperationService;
+    private readonly IBillingPeriodService _billingPeriodService;
+    private readonly IReceiptService _receiptService;
+    private readonly IMenuProvider _menuProvider;
     private readonly IMessenger _messenger;
     private readonly ILogger<MessagesMainHandler> _logger;
-    private readonly IMoneyOperationService _moneyOperationService;
-    private readonly IReceiptService _receiptService;
 
     public MessagesMainHandler(
         IEnumerable<IMessageHandler> messageHandlers,
@@ -43,40 +43,30 @@ public class MessagesMainHandler
             .ToDictionary(x => x.Key, x => x.ToArray());
     }
 
-    public void Subscribe()
-    {
-        _messenger.OnMessage += OnMessage;
-    }
-    
-    public void UnSubscribe()
-    {
-        _messenger.OnMessage -= OnMessage;
-    }
-    
-    private async void OnMessage(object sender, UserMessageInfo e)
+    public async Task HandleMessage(UserMessageInfo userMessageInfo)
     {
         var sw = Stopwatch.StartNew();
         try
         {
             _logger.LogTrace("Получено сообщение типа {MessageType} от {UserToken} из группы {ChatToken}",
-                e.MessageType,
-                e.UserToken,
-                e.Group.ChatToken);
+                userMessageInfo.MessageType,
+                userMessageInfo.UserToken,
+                userMessageInfo.Group.ChatToken);
             
             // TODO: отрефачить проверку.
-            switch (e.MessageType)
+            switch (userMessageInfo.MessageType)
             {
                 case MessageType.Text:
-                    await HandleTextMessageAsync(e);
+                    await HandleTextMessageAsync(userMessageInfo);
                     break;
                 case MessageType.QrCode:
-                    await HandlePhotoMessageAsync(e);
+                    await HandlePhotoMessageAsync(userMessageInfo);
                     break;
                 case MessageType.Query:
-                    await HandleCommandMessageAsync(e);
+                    await HandleCommandMessageAsync(userMessageInfo);
                     break;
                 default:
-                    await _messenger.SendMessageAsync(e, Resources.UnknownMessageType, true);
+                    await _messenger.SendMessageAsync(userMessageInfo, Resources.UnknownMessageType, true);
                     break;
             }
         }
@@ -87,7 +77,7 @@ public class MessagesMainHandler
         finally
         {
             _logger.LogTrace("Обработка сообщения для @{UserToken} завершена за {Elapsed}",
-                e.UserToken,
+                userMessageInfo.UserToken,
                 sw.Elapsed);
         }
     }

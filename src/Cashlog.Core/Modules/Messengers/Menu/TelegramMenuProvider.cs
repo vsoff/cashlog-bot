@@ -277,10 +277,9 @@ public class TelegramMenuProvider : IMenuProvider
             if (_markup.Count == 0)
                 AddLine();
 
-            _markup.Last().Add(new InlineKeyboardButton
+            _markup.Last().Add(new InlineKeyboardButton(text)
             {
-                CallbackData = query,
-                Text = text
+                CallbackData = query
             });
 
             return this;
