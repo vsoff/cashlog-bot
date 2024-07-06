@@ -132,7 +132,10 @@ namespace Cashlog.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Добавление перевода было успешно совершено.\nПеревёл: {0}\nКому: {1}\nСумма: {2} руб..
+        ///   Looks up a localized string similar to Добавление перевода было успешно совершено.
+        ///Перевёл: {0}
+        ///Кому: {1}
+        ///Сумма: {2} руб..
         /// </summary>
         public static string MoneyTransferSuccess {
             get {
@@ -141,7 +144,10 @@ namespace Cashlog.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Добавлен новый чек!\nОплатил: {0}\nСумма: {1} руб.\nДелится на: {2}.
+        ///   Looks up a localized string similar to Добавлен новый чек!
+        ///Оплатил: {0}
+        ///Сумма: {1} руб.
+        ///Делится на: {2}.
         /// </summary>
         public static string NewReceiptAddedInfo {
             get {

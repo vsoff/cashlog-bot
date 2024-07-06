@@ -1,6 +1,6 @@
 ﻿using Cashlog.Common;
-using Cashlog.Core.Models.Main;
-using Cashlog.Core.Modules.Calculator;
+using Cashlog.Common.Models.Main;
+using Cashlog.Core.Calculator;
 using Cashlog.Core.Services.Abstract;
 
 namespace Cashlog.Core.Services;
@@ -46,7 +46,7 @@ public class MainLogicService : IMainLogicService
 
     public async Task<ClosingPeriodResult> CloseCurrentAndOpenNewPeriod(long groupId)
     {
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
 
         // Закрываем старый период.
         var lastBillingPeriod = await _billingPeriodService.GetLastByGroupIdAsync(groupId);

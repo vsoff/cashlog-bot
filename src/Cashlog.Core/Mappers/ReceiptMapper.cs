@@ -1,5 +1,4 @@
-﻿using Cashlog.Core.Models;
-using Cashlog.Core.Models.Main;
+﻿using Cashlog.Common.Models.Main;
 using Cashlog.Data.Entities;
 using Newtonsoft.Json;
 using Receipt = Cashlog.Data.Entities.Receipt;
@@ -8,9 +7,9 @@ namespace Cashlog.Core.Mappers;
 
 public static class ReceiptMapper
 {
-    public static Models.Main.ReceiptDto ToCore(this Receipt obj)
+    public static ReceiptDto ToCore(this Receipt obj)
     {
-        return new Models.Main.ReceiptDto
+        return new ReceiptDto
         {
             Id = obj.Id,
             Comment = obj.Comment,
@@ -22,6 +21,7 @@ public static class ReceiptMapper
             FiscalSign = obj.FiscalSign,
             Status = obj.Status,
             CustomerId = obj.CustomerId,
+            GroupId = obj.GroupId,
             RetailAddress = obj.RetailAddress,
             RetailInn = obj.RetailInn,
             CompanyName = obj.CompanyName,
@@ -29,7 +29,7 @@ public static class ReceiptMapper
         };
     }
 
-    public static Receipt ToData(this Models.Main.ReceiptDto obj)
+    public static Receipt ToData(this ReceiptDto obj)
     {
         return new Receipt
         {
@@ -43,6 +43,7 @@ public static class ReceiptMapper
             FiscalSign = obj.FiscalSign,
             Status = obj.Status,
             CustomerId = obj.CustomerId,
+            GroupId = obj.GroupId,
             RetailAddress = obj.RetailAddress,
             RetailInn = obj.RetailInn,
             CompanyName = obj.CompanyName,

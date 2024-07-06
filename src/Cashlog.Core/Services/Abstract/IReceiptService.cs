@@ -1,4 +1,4 @@
-﻿using Cashlog.Core.Models.Main;
+﻿using Cashlog.Common.Models.Main;
 using Cashlog.Data;
 
 namespace Cashlog.Core.Services.Abstract;

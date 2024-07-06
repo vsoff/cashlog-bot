@@ -1,5 +1,4 @@
 ﻿using Cashlog.Core.Options;
-using Cashlog.Core.Services.Abstract;
 using Cashlog.Data;
 using Microsoft.Extensions.Options;
 
@@ -17,7 +16,6 @@ public class BotDatabaseContextProvider : IDatabaseContextProvider
     public ApplicationContext Create()
     {
         return new ApplicationContext(
-            _databaseOptions.Value.DataBaseConnectionString,
-            _databaseOptions.Value.DataProviderType);
+            _databaseOptions.Value.DataBaseConnectionString);
     }
 }

@@ -8,7 +8,9 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Cashlog.Core.MessageHandlers\Cashlog.Core.MessageHandlers.csproj" />
         <ProjectReference Include="..\Cashlog.Core\Cashlog.Core.csproj"/>
+        <ProjectReference Include="..\Cashlog.Messenger.Telegram\Cashlog.Messenger.Telegram.csproj" />
     </ItemGroup>
 
 </Project>

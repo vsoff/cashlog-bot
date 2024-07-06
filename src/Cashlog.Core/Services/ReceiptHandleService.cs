@@ -2,6 +2,7 @@
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Cashlog.Common.Models;
 using Cashlog.Core.Services.Abstract;
 using ZXing;
 

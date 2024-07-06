@@ -142,10 +142,16 @@
     <value>Кому переводит?</value>
   </data>
   <data name="MoneyTransferSuccess" xml:space="preserve">
-    <value>Добавление перевода было успешно совершено.\nПеревёл: {0}\nКому: {1}\nСумма: {2} руб.</value>
+    <value>Добавление перевода было успешно совершено.
+Перевёл: {0}
+Кому: {1}
+Сумма: {2} руб.</value>
   </data>
   <data name="NewReceiptAddedInfo" xml:space="preserve">
-    <value>Добавлен новый чек!\nОплатил: {0}\nСумма: {1} руб.\nДелится на: {2}</value>
+    <value>Добавлен новый чек!
+Оплатил: {0}
+Сумма: {1} руб.
+Делится на: {2}</value>
   </data>
   <data name="NewReceiptCancel" xml:space="preserve">
     <value>Добавление чека было отменено</value>

@@ -1,4 +1,4 @@
-﻿using Cashlog.Core.Models.Main;
+﻿using Cashlog.Common.Models.Main;
 using Cashlog.Data.Entities;
 using Group = Cashlog.Data.Entities.Group;
 
@@ -6,9 +6,9 @@ namespace Cashlog.Core.Mappers;
 
 public static class GroupMapper
 {
-    public static Models.Main.GroupDto ToCore(this Group obj)
+    public static GroupDto ToCore(this Group obj)
     {
-        return new Models.Main.GroupDto
+        return new GroupDto
         {
             AdminToken = obj.AdminToken,
             ChatName = obj.ChatName,
@@ -17,7 +17,7 @@ public static class GroupMapper
         };
     }
 
-    public static Group ToData(this Models.Main.GroupDto obj)
+    public static Group ToData(this GroupDto obj)
     {
         return new Group
         {

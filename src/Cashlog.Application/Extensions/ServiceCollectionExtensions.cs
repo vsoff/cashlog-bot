@@ -1,9 +1,6 @@
 ﻿using Cashlog.Application.HostedServices;
-using Cashlog.Core.Modules.Calculator;
-using Cashlog.Core.Modules.MessageHandlers;
-using Cashlog.Core.Modules.MessageHandlers.Handlers;
-using Cashlog.Core.Modules.Messengers;
-using Cashlog.Core.Modules.Messengers.Menu;
+using Cashlog.Core.Calculator;
+using Cashlog.Core.MessageHandlers;
 using Cashlog.Core.Options;
 using Cashlog.Core.Providers;
 using Cashlog.Core.RequestHandlers;
@@ -11,38 +8,57 @@ using Cashlog.Core.Services;
 using Cashlog.Core.Services.Abstract;
 using Cashlog.Core.Services.Main;
 using Cashlog.Data;
-using MediatR;
+using Cashlog.Messenger.Menu;
+using Cashlog.Messenger.Telegram;
+using MediatR.Pipeline;
+using Serilog;
+using Serilog.Events;
 
 namespace Cashlog.Application.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    public static IServiceCollection AddCashlogLogger(
+        this IServiceCollection services,
+        IHostBuilder host)
+    {
+        Log.Logger = new LoggerConfiguration()
+            .Enrich.FromLogContext()
+            .WriteTo.Console()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+            .WriteTo.File(Path.Combine(AppContext.BaseDirectory, "logs", "log.txt"),
+                rollingInterval: RollingInterval.Day)
+            .CreateLogger();
+
+        services
+            .AddLogging()
+            .AddSerilog()
+            ;
+
+        host
+            .ConfigureLogging(logging =>
+            {
+                logging.AddSerilog();
+                logging.SetMinimumLevel(LogLevel.Information);
+            })
+            .UseSerilog();
+
+        return services;
+    }
+
     public static IServiceCollection AddCashlog(
         this IServiceCollection services,
         IConfiguration config)
     {
         services
-            .AddMediatR(options => { options.RegisterServicesFromAssemblyContaining(typeof(LoggingBehavior<,>)); })
-            .AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>))
-            .AddTransient<IPipelineBehavior<ConsumeUserMessageRequest, Unit>, UserIdentifyBehavior>()
-            .AddTransient<IPipelineBehavior<ConsumeUserMessageRequest, Unit>, DecodeImageBehavior>()
-            .AddTransient<IRequestHandler<ConsumeUserMessageRequest, Unit>, ConsumeUserMessageRequestHandler>();
-
-        services
-            .AddCashlogOptions(config)
-            .AddHandlers()
-
-            // Data.
-            .AddSingleton<IDatabaseContextProvider, BotDatabaseContextProvider>()
+            .AddMediatorHandlers()
+            .AddCashlogDatabase(config)
+            .AddTelegramMessenger()
+            .AddMessageHandlers()
 
             // etc.
             .AddSingleton<IReceiptHandleService, ReceiptHandleService>()
             .AddSingleton<IQueryDataSerializer, QueryDataSerializer>()
-            .AddSingleton<IMessagesMainHandler, MessagesMainHandler>()
-
-            // Telegram services.
-            .AddSingleton<IMenuProvider, TelegramMenuProvider>()
-            .AddSingleton<IMessenger, TelegramMessenger>()
 
             // Core logic services.
             .AddSingleton<IMoneyOperationService, MoneyOperationService>()
@@ -60,33 +76,28 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static IServiceCollection AddHandlers(
-        this IServiceCollection services)
+    public static IServiceCollection AddCashlogDatabase(
+        this IServiceCollection services,
+        IConfiguration config)
     {
-        // Text command handlers.
         services
-            .AddSingleton<IMessageHandler, SendMoneyMessagesHandler>()
-            .AddSingleton<IMessageHandler, CustomerMessagesHandler>()
-            .AddSingleton<IMessageHandler, ReceiptMessagesHandler>()
-            .AddSingleton<IMessageHandler, PeriodMessagesHandler>()
-            .AddSingleton<IMessageHandler, ReportMessagesHandler>()
-            .AddSingleton<IMessageHandler, DebtsMessagesHandler>()
-
-            // Photo command handlers.
-            .AddSingleton<IMessageHandler, PhotoMessageHandler>()
-            ;
+            .AddSingleton<IDatabaseContextProvider, BotDatabaseContextProvider>()
+            // TODO: Find solution to remove `Bind`, because it has problems with realtime update.
+            .Configure<DatabaseOptions>(config.GetSection(DatabaseOptions.SectionName).Bind);
 
         return services;
     }
 
-    private static IServiceCollection AddCashlogOptions(
-        this IServiceCollection services,
-        IConfiguration config)
+    private static IServiceCollection AddMediatorHandlers(
+        this IServiceCollection services)
     {
-        // TODO: Find solution to remove `Bind`, because it has problems with realtime update.
         services
-            .Configure<CashlogOptions>(config.GetSection(CashlogOptions.SectionName).Bind)
-            .Configure<DatabaseOptions>(config.GetSection(DatabaseOptions.SectionName).Bind);
+            .AddMediatR(options =>
+            {
+                options.RegisterServicesFromAssemblyContaining(typeof(LoggingExceptionHandler<,,>));
+            })
+            .AddTransient(typeof(IRequestExceptionHandler<,,>), typeof(LoggingExceptionHandler<,,>))
+            ;
 
         return services;
     }

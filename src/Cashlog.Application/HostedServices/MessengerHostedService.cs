@@ -1,4 +1,4 @@
-﻿using Cashlog.Core.Modules.Messengers;
+﻿using Cashlog.Messenger;
 
 namespace Cashlog.Application.HostedServices;
 

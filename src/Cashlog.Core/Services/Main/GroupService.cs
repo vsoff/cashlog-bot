@@ -1,5 +1,5 @@
-﻿using Cashlog.Core.Mappers;
-using Cashlog.Core.Models.Main;
+﻿using Cashlog.Common.Models.Main;
+using Cashlog.Core.Mappers;
 using Cashlog.Core.Services.Abstract;
 using Cashlog.Data;
 using Cashlog.Data.Entities;
@@ -18,7 +18,7 @@ public class GroupService : IGroupService
             databaseContextProvider ?? throw new ArgumentNullException(nameof(databaseContextProvider));
     }
 
-    public async Task<Models.Main.GroupDto> AddAsync(string chatToken, string adminToken, string chatName)
+    public async Task<GroupDto> AddAsync(string chatToken, string adminToken, string chatName)
     {
         using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
         {
@@ -33,7 +33,7 @@ public class GroupService : IGroupService
         }
     }
 
-    public async Task<Models.Main.GroupDto> GetByChatTokenAsync(string chatToken)
+    public async Task<GroupDto> GetByChatTokenAsync(string chatToken)
     {
         using (var uow = new UnitOfWork(_databaseContextProvider.Create()))
         {

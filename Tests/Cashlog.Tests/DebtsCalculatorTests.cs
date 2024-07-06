@@ -1,6 +1,6 @@
 using Cashlog.Common;
-using Cashlog.Core.Models.Main;
-using Cashlog.Core.Modules.Calculator;
+using Cashlog.Common.Models.Main;
+using Cashlog.Core.Calculator;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Cashlog.Tests;

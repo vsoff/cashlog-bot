@@ -83,7 +83,7 @@ public class Repository<T> : IRepository<T> where T : Entity
 
         Context.Entry(oldObj).State = EntityState.Detached;
         item.CreatedAt = oldObj.CreatedAt;
-        item.UpdatedAt = DateTime.Now;
+        item.UpdatedAt = DateTime.UtcNow;
         Context.Entry(item).State = EntityState.Modified;
         return item;
     }
